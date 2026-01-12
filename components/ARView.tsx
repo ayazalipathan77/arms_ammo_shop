@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera, X, RefreshCw, Smartphone, Check, Move } from 'lucide-react';
+import { Camera, X, RefreshCw, Smartphone, Check, Move, Frame } from 'lucide-react';
 import { Artwork } from '../types';
 
 interface ARViewProps {
@@ -7,11 +7,20 @@ interface ARViewProps {
   onClose: () => void;
 }
 
+const FRAMES = [
+  { id: 'none', name: 'No Frame', style: 'none', color: 'transparent' },
+  { id: 'black', name: 'Minimal Black', style: '12px solid #1c1917', color: '#1c1917' }, // stone-900
+  { id: 'white', name: 'Gallery White', style: '16px solid #f5f5f4', color: '#f5f5f4' }, // stone-100
+  { id: 'wood', name: 'Walnut', style: '20px solid #5c4033', color: '#5c4033' },
+  { id: 'gold', name: 'Ornate Gold', style: '24px solid #d4af37', color: '#d4af37' },
+];
+
 export const ARView: React.FC<ARViewProps> = ({ artwork, onClose }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string>('');
   const [arStep, setArStep] = useState<'SCANNING' | 'READY' | 'PLACED'>('SCANNING');
+  const [activeFrame, setActiveFrame] = useState(FRAMES[0]);
 
   useEffect(() => {
     const startCamera = async () => {
@@ -123,15 +132,29 @@ export const ARView: React.FC<ARViewProps> = ({ artwork, onClose }) => {
                {/* Placed Artwork */}
                {arStep === 'PLACED' && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                     <div className="relative group cursor-grab active:cursor-grabbing">
+                     <div className="relative group cursor-grab active:cursor-grabbing pointer-events-auto">
                         {/* Shadow to ground it */}
-                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-black/60 blur-xl rounded-[100%]"></div>
-                        {/* Artwork */}
-                        <img 
-                           src={artwork.imageUrl} 
-                           alt="AR Overlay" 
-                           className="w-64 md:w-80 h-auto object-contain drop-shadow-2xl border-4 border-white/10" 
-                        />
+                        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-8 bg-black/60 blur-xl rounded-[100%] transition-all duration-300"></div>
+                        
+                        {/* Artwork with Frame Container */}
+                        <div 
+                           className="transition-all duration-300 ease-out"
+                           style={{
+                              border: activeFrame.style,
+                              boxShadow: activeFrame.id !== 'none' ? '0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.5)' : 'none',
+                              backgroundColor: activeFrame.id !== 'none' ? '#fff' : 'transparent', // Matting backdrop
+                           }}
+                        >
+                           <img 
+                              src={artwork.imageUrl} 
+                              alt="AR Overlay" 
+                              className="w-64 md:w-80 h-auto object-contain drop-shadow-2xl" 
+                              style={{
+                                 border: activeFrame.id === 'white' ? '1px solid #e5e5e5' : 'none' // Inner border for white frame
+                              }}
+                           />
+                        </div>
+
                         {/* Interactive Hints */}
                         <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                            <div className="bg-black/60 p-2 rounded-full text-white"><Move size={16}/></div>
@@ -144,8 +167,33 @@ export const ARView: React.FC<ARViewProps> = ({ artwork, onClose }) => {
         )}
       </div>
       
+      {/* Frame Selection (Only visible when Placed) */}
+      {arStep === 'PLACED' && (
+         <div className="bg-gradient-to-t from-stone-950 to-transparent pb-2 pt-6 px-4 absolute bottom-24 w-full overflow-x-auto">
+            <div className="flex justify-center gap-4">
+               {FRAMES.map(frame => (
+                  <button 
+                     key={frame.id} 
+                     onClick={(e) => { e.stopPropagation(); setActiveFrame(frame); }}
+                     className={`flex flex-col items-center gap-2 min-w-[60px] group transition-transform ${activeFrame.id === frame.id ? 'scale-110' : 'opacity-70'}`}
+                  >
+                     <div 
+                        className={`w-12 h-12 bg-stone-800 shadow-lg flex items-center justify-center border-2 transition-all ${activeFrame.id === frame.id ? 'border-amber-500' : 'border-transparent'}`}
+                        style={{ borderColor: activeFrame.id === frame.id ? '#f59e0b' : 'transparent' }}
+                     >
+                        <div className="w-8 h-8 bg-stone-900" style={{ border: frame.id === 'none' ? '1px dashed #666' : `4px solid ${frame.color}` }}></div>
+                     </div>
+                     <span className={`text-[10px] uppercase tracking-wider ${activeFrame.id === frame.id ? 'text-amber-500' : 'text-stone-400'}`}>
+                        {frame.name}
+                     </span>
+                  </button>
+               ))}
+            </div>
+         </div>
+      )}
+
       {/* Footer Controls */}
-      <div className="bg-stone-950/80 backdrop-blur-md p-6 pb-8 border-t border-white/10">
+      <div className="bg-stone-950/80 backdrop-blur-md p-6 pb-8 border-t border-white/10 z-50">
         <div className="flex justify-between items-center max-w-md mx-auto">
            {arStep === 'PLACED' ? (
               <div className="flex gap-4 w-full justify-center">

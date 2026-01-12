@@ -1,22 +1,111 @@
-import React from 'react';
-import { BarChart, Upload, DollarSign, Image as ImageIcon } from 'lucide-react';
+import React, { useState } from 'react';
+import { BarChart, Upload, DollarSign, Image as ImageIcon, X, Save, Eye, Edit2, Trash2, MoreHorizontal, CheckCircle } from 'lucide-react';
+import { useGallery } from '../context/GalleryContext';
+import { useCurrency } from '../App';
+import { Artwork } from '../types';
+
+// Mock current artist session
+const CURRENT_ARTIST_ID = 'a1';
+const CURRENT_ARTIST_NAME = 'Sadequain (Tribute)';
 
 export const ArtistDashboard: React.FC = () => {
+  const { artworks, addArtwork, updateArtwork, deleteArtwork } = useGallery();
+  const { convertPrice } = useCurrency();
+  
+  // Local State
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
+  
+  // Form State
+  const initialFormState: Partial<Artwork> = {
+    title: '',
+    price: 0,
+    medium: '',
+    dimensions: '',
+    year: new Date().getFullYear(),
+    category: 'Abstract',
+    description: '',
+    imageUrl: '',
+    inStock: true
+  };
+  const [formData, setFormData] = useState<Partial<Artwork>>(initialFormState);
+
+  // Derived Data
+  const artistArtworks = artworks.filter(a => a.artistId === CURRENT_ARTIST_ID);
+  const totalEarnings = artistArtworks.reduce((sum, art) => sum + (art.inStock ? 0 : art.price), 0); // Mock logic: sold items calculated
+  const totalViews = artistArtworks.length * 1243; // Mock views
+
+  // Handlers
+  const handleOpenUpload = () => {
+    setSelectedArtwork(null);
+    setFormData(initialFormState);
+    setIsFormOpen(true);
+  };
+
+  const handleOpenEdit = (art: Artwork) => {
+    setSelectedArtwork(art);
+    setFormData({ ...art });
+    setIsFormOpen(true);
+  };
+
+  const handleOpenDetails = (art: Artwork) => {
+    setSelectedArtwork(art);
+    setIsDetailsOpen(true);
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to remove this artwork from your portfolio?')) {
+       deleteArtwork(id);
+       if (isDetailsOpen) setIsDetailsOpen(false);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (selectedArtwork) {
+      // Edit Mode
+      updateArtwork(selectedArtwork.id, formData);
+    } else {
+      // Create Mode
+      const newArtwork: Artwork = {
+        ...formData as Artwork,
+        id: Date.now().toString(),
+        artistId: CURRENT_ARTIST_ID,
+        artistName: CURRENT_ARTIST_NAME,
+        imageUrl: formData.imageUrl || `https://picsum.photos/800/1000?random=${Date.now()}`,
+        reviews: [],
+        provenanceId: `BLK-${Date.now().toString().slice(-6)}`,
+      };
+      addArtwork(newArtwork);
+    }
+    setIsFormOpen(false);
+  };
+
   return (
     <div className="pt-32 pb-12 max-w-7xl mx-auto px-4">
+       {/* Header */}
        <div className="flex justify-between items-center mb-12">
-          <h1 className="font-serif text-4xl text-white">Artist Studio</h1>
-          <button className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 flex items-center gap-2 text-sm uppercase tracking-widest">
+          <div>
+            <h1 className="font-serif text-4xl text-white">Artist Studio</h1>
+            <p className="text-stone-500 mt-1">Welcome back, {CURRENT_ARTIST_NAME}</p>
+          </div>
+          <button 
+            onClick={handleOpenUpload}
+            className="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 flex items-center gap-2 text-sm uppercase tracking-widest shadow-lg shadow-amber-900/20"
+          >
              <Upload size={16} /> Upload New Work
           </button>
        </div>
 
+       {/* Stats Cards */}
        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-stone-900 p-6 border border-stone-800">
              <div className="flex justify-between items-start mb-4">
                 <div>
-                   <p className="text-stone-500 text-xs uppercase tracking-widest">Total Earnings</p>
-                   <h3 className="text-3xl text-white font-serif mt-2">PKR 2.4M</h3>
+                   <p className="text-stone-500 text-xs uppercase tracking-widest">Est. Revenue (Sold)</p>
+                   <h3 className="text-3xl text-white font-serif mt-2">{convertPrice(totalEarnings)}</h3>
                 </div>
                 <DollarSign className="text-amber-500" />
              </div>
@@ -25,8 +114,8 @@ export const ArtistDashboard: React.FC = () => {
           <div className="bg-stone-900 p-6 border border-stone-800">
              <div className="flex justify-between items-start mb-4">
                 <div>
-                   <p className="text-stone-500 text-xs uppercase tracking-widest">Artworks Sold</p>
-                   <h3 className="text-3xl text-white font-serif mt-2">14</h3>
+                   <p className="text-stone-500 text-xs uppercase tracking-widest">Portfolio Size</p>
+                   <h3 className="text-3xl text-white font-serif mt-2">{artistArtworks.length} Items</h3>
                 </div>
                 <ImageIcon className="text-amber-500" />
              </div>
@@ -34,8 +123,8 @@ export const ArtistDashboard: React.FC = () => {
           <div className="bg-stone-900 p-6 border border-stone-800">
              <div className="flex justify-between items-start mb-4">
                 <div>
-                   <p className="text-stone-500 text-xs uppercase tracking-widest">Profile Views</p>
-                   <h3 className="text-3xl text-white font-serif mt-2">1.2k</h3>
+                   <p className="text-stone-500 text-xs uppercase tracking-widest">Total Impressions</p>
+                   <h3 className="text-3xl text-white font-serif mt-2">{totalViews.toLocaleString()}</h3>
                 </div>
                 <BarChart className="text-amber-500" />
              </div>
@@ -43,41 +132,231 @@ export const ArtistDashboard: React.FC = () => {
        </div>
 
        <h2 className="font-serif text-2xl text-white mb-6">Portfolio Management</h2>
-       <div className="bg-stone-900 border border-stone-800 overflow-hidden">
-          <table className="w-full text-left text-sm text-stone-400">
-             <thead className="bg-stone-950 text-stone-500 uppercase text-xs">
-                <tr>
-                   <th className="p-4">Artwork</th>
-                   <th className="p-4">Status</th>
-                   <th className="p-4">Price</th>
-                   <th className="p-4">Views</th>
-                   <th className="p-4">Action</th>
-                </tr>
-             </thead>
-             <tbody className="divide-y divide-stone-800">
-                <tr className="hover:bg-stone-800/50">
-                   <td className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 bg-stone-800"></div>
-                      <span>Mystic River</span>
-                   </td>
-                   <td className="p-4"><span className="text-green-500 bg-green-900/20 px-2 py-1 text-xs rounded">Active</span></td>
-                   <td className="p-4">PKR 120,000</td>
-                   <td className="p-4">342</td>
-                   <td className="p-4 text-amber-500 cursor-pointer">Edit</td>
-                </tr>
-                <tr className="hover:bg-stone-800/50">
-                   <td className="p-4 flex items-center gap-3">
-                      <div className="w-10 h-10 bg-stone-800"></div>
-                      <span>Old Lahore</span>
-                   </td>
-                   <td className="p-4"><span className="text-stone-500 bg-stone-800 px-2 py-1 text-xs rounded">Sold</span></td>
-                   <td className="p-4">PKR 450,000</td>
-                   <td className="p-4">892</td>
-                   <td className="p-4 text-amber-500 cursor-pointer">Details</td>
-                </tr>
-             </tbody>
-          </table>
+       
+       {/* Artworks Table */}
+       <div className="bg-stone-900 border border-stone-800 overflow-hidden rounded-sm">
+          {artistArtworks.length === 0 ? (
+            <div className="p-12 text-center text-stone-500">
+               <p className="mb-4">Your portfolio is currently empty.</p>
+               <button onClick={handleOpenUpload} className="text-amber-500 hover:underline">Upload your first masterpiece</button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-stone-400">
+                <thead className="bg-stone-950 text-stone-500 uppercase text-xs">
+                    <tr>
+                      <th className="p-4">Artwork</th>
+                      <th className="p-4">Category</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4">Price</th>
+                      <th className="p-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-800">
+                    {artistArtworks.map(art => (
+                      <tr key={art.id} className="hover:bg-stone-800/50 transition-colors">
+                          <td className="p-4 flex items-center gap-4">
+                            <img src={art.imageUrl} alt={art.title} className="w-12 h-12 object-cover rounded-sm border border-stone-700" />
+                            <div>
+                                <span className="block text-white font-medium">{art.title}</span>
+                                <span className="text-xs text-stone-500">{art.year} • {art.medium}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">{art.category}</td>
+                          <td className="p-4">
+                            <span className={`px-2 py-1 text-xs rounded border ${art.inStock ? 'border-green-900 text-green-500 bg-green-900/10' : 'border-stone-700 text-stone-500 bg-stone-800'}`}>
+                                {art.inStock ? 'Active' : 'Sold'}
+                            </span>
+                          </td>
+                          <td className="p-4 font-mono">{convertPrice(art.price)}</td>
+                          <td className="p-4">
+                            <div className="flex gap-3">
+                                <button onClick={() => handleOpenDetails(art)} title="View Details" className="text-stone-400 hover:text-white transition-colors"><Eye size={18}/></button>
+                                <button onClick={() => handleOpenEdit(art)} title="Edit" className="text-stone-400 hover:text-amber-500 transition-colors"><Edit2 size={18}/></button>
+                                <button onClick={() => handleDelete(art.id)} title="Delete" className="text-stone-400 hover:text-red-500 transition-colors"><Trash2 size={18}/></button>
+                            </div>
+                          </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
        </div>
+
+       {/* --- MODALS --- */}
+
+       {/* Upload / Edit Modal */}
+       {isFormOpen && (
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+             <div className="bg-stone-900 border border-stone-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg shadow-2xl animate-fade-in">
+                <div className="sticky top-0 bg-stone-900 border-b border-stone-800 p-6 flex justify-between items-center z-10">
+                   <h2 className="font-serif text-2xl text-white">{selectedArtwork ? 'Edit Masterpiece' : 'Upload New Work'}</h2>
+                   <button onClick={() => setIsFormOpen(false)} className="text-stone-400 hover:text-white"><X size={24}/></button>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                         <div>
+                            <label className="block text-xs uppercase text-stone-500 mb-1">Title</label>
+                            <input required type="text" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                         </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <div>
+                               <label className="block text-xs uppercase text-stone-500 mb-1">Price (PKR)</label>
+                               <input required type="number" value={formData.price} onChange={e => setFormData({...formData, price: Number(e.target.value)})} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                            </div>
+                            <div>
+                               <label className="block text-xs uppercase text-stone-500 mb-1">Year</label>
+                               <input required type="number" value={formData.year} onChange={e => setFormData({...formData, year: Number(e.target.value)})} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                            </div>
+                         </div>
+                         <div>
+                            <label className="block text-xs uppercase text-stone-500 mb-1">Category</label>
+                            <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value as any})} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none">
+                               <option value="Abstract">Abstract</option>
+                               <option value="Calligraphy">Calligraphy</option>
+                               <option value="Landscape">Landscape</option>
+                               <option value="Miniature">Miniature</option>
+                               <option value="Portrait">Portrait</option>
+                            </select>
+                         </div>
+                         <div>
+                            <label className="block text-xs uppercase text-stone-500 mb-1">Medium</label>
+                            <input required type="text" placeholder="e.g. Oil on Canvas" value={formData.medium} onChange={e => setFormData({...formData, medium: e.target.value})} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                         </div>
+                         <div>
+                            <label className="block text-xs uppercase text-stone-500 mb-1">Dimensions</label>
+                            <input required type="text" placeholder="e.g. 24x36 inches" value={formData.dimensions} onChange={e => setFormData({...formData, dimensions: e.target.value})} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                         </div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                         <div>
+                            <label className="block text-xs uppercase text-stone-500 mb-1">Image URL</label>
+                            <div className="flex gap-2">
+                               <input type="text" placeholder="https://..." value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                            </div>
+                            <div className="mt-2 aspect-square bg-stone-950 border border-stone-800 flex items-center justify-center overflow-hidden">
+                               {formData.imageUrl ? (
+                                  <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                               ) : (
+                                  <div className="text-center text-stone-600">
+                                     <ImageIcon className="mx-auto mb-2 opacity-50" />
+                                     <span className="text-xs">Image Preview</span>
+                                  </div>
+                               )}
+                            </div>
+                         </div>
+                      </div>
+                   </div>
+
+                   <div>
+                      <label className="block text-xs uppercase text-stone-500 mb-1">Description</label>
+                      <textarea required rows={4} value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                   </div>
+
+                   <div className="pt-4 border-t border-stone-800 flex justify-end gap-3">
+                      <button type="button" onClick={() => setIsFormOpen(false)} className="px-6 py-3 text-sm text-stone-400 hover:text-white transition-colors">Cancel</button>
+                      <button type="submit" className="bg-amber-600 hover:bg-amber-500 text-white px-8 py-3 text-sm uppercase tracking-widest flex items-center gap-2">
+                         <Save size={16} /> Save Artwork
+                      </button>
+                   </div>
+                </form>
+             </div>
+          </div>
+       )}
+
+       {/* Details Modal */}
+       {isDetailsOpen && selectedArtwork && (
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+             <div className="bg-stone-900 border border-stone-700 w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg shadow-2xl flex flex-col md:flex-row animate-fade-in">
+                
+                {/* Image Side */}
+                <div className="md:w-1/2 bg-black relative">
+                   <img src={selectedArtwork.imageUrl} alt={selectedArtwork.title} className="w-full h-full object-contain" />
+                   <div className="absolute top-4 left-4 bg-stone-900/80 backdrop-blur px-3 py-1 rounded-full text-xs text-white border border-stone-700">
+                      {selectedArtwork.category}
+                   </div>
+                </div>
+
+                {/* Info Side */}
+                <div className="md:w-1/2 p-8 flex flex-col">
+                   <div className="flex justify-between items-start mb-6">
+                      <div>
+                         <h2 className="font-serif text-3xl text-white mb-1">{selectedArtwork.title}</h2>
+                         <p className="text-amber-500 text-sm uppercase tracking-widest">{selectedArtwork.artistName}</p>
+                      </div>
+                      <button onClick={() => setIsDetailsOpen(false)} className="text-stone-400 hover:text-white"><X size={24}/></button>
+                   </div>
+
+                   <div className="space-y-6 flex-1">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                         <div>
+                            <p className="text-stone-500 text-xs uppercase">Price</p>
+                            <p className="text-white font-mono text-lg">{convertPrice(selectedArtwork.price)}</p>
+                         </div>
+                         <div>
+                            <p className="text-stone-500 text-xs uppercase">Status</p>
+                            <p className={selectedArtwork.inStock ? "text-green-500" : "text-stone-400"}>
+                               {selectedArtwork.inStock ? "Available" : "Sold Out"}
+                            </p>
+                         </div>
+                         <div>
+                            <p className="text-stone-500 text-xs uppercase">Dimensions</p>
+                            <p className="text-stone-300">{selectedArtwork.dimensions}</p>
+                         </div>
+                         <div>
+                            <p className="text-stone-500 text-xs uppercase">Medium</p>
+                            <p className="text-stone-300">{selectedArtwork.medium}</p>
+                         </div>
+                      </div>
+
+                      <div>
+                         <p className="text-stone-500 text-xs uppercase mb-2">Description</p>
+                         <p className="text-stone-300 text-sm leading-relaxed">{selectedArtwork.description}</p>
+                      </div>
+
+                      <div className="bg-stone-950 p-4 border border-stone-800 rounded">
+                         <h4 className="text-white font-serif mb-3">Performance Analytics</h4>
+                         <div className="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                               <p className="text-stone-500 text-[10px] uppercase">Views</p>
+                               <p className="text-white font-mono">1,240</p>
+                            </div>
+                            <div>
+                               <p className="text-stone-500 text-[10px] uppercase">Saves</p>
+                               <p className="text-white font-mono">85</p>
+                            </div>
+                            <div>
+                               <p className="text-stone-500 text-[10px] uppercase">In Carts</p>
+                               <p className="text-amber-500 font-mono">3</p>
+                            </div>
+                         </div>
+                      </div>
+                      
+                      <div className="bg-stone-950 p-4 border border-stone-800 rounded flex items-center gap-3">
+                         <CheckCircle className="text-green-500" size={20} />
+                         <div>
+                            <p className="text-xs text-stone-400 uppercase">Provenance ID</p>
+                            <p className="text-white font-mono text-xs">{selectedArtwork.provenanceId || 'N/A'}</p>
+                         </div>
+                      </div>
+                   </div>
+
+                   <div className="pt-6 mt-6 border-t border-stone-800 flex justify-end gap-3">
+                      <button onClick={() => handleDelete(selectedArtwork.id)} className="flex items-center gap-2 px-4 py-2 border border-stone-700 text-stone-400 hover:text-red-500 hover:border-red-900 transition-colors text-xs uppercase">
+                         <Trash2 size={14}/> Delete
+                      </button>
+                      <button onClick={() => { setIsDetailsOpen(false); handleOpenEdit(selectedArtwork); }} className="flex items-center gap-2 px-6 py-2 bg-stone-800 hover:bg-stone-700 text-white transition-colors text-xs uppercase">
+                         <Edit2 size={14}/> Edit Work
+                      </button>
+                   </div>
+                </div>
+             </div>
+          </div>
+       )}
     </div>
   );
 };
