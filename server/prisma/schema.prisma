@@ -55,26 +55,34 @@ model Artist {
 }
 
 model Artwork {
-  id             String    @id @default(uuid())
-  artistId       String
-  artist         Artist    @relation(fields: [artistId], references: [id])
-  title          String
-  description    String?
-  price          Decimal   @db.Decimal(12, 2)
-  currency       String    @default("PKR")
-  category       String
-  medium         String
-  dimensions     String?
-  imageUrl       String
-  provenanceHash String?
-  year           Int
-  isAuction      Boolean   @default(false)
-  inStock        Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id               String   @id @default(uuid())
+  artistId         String
+  artist           Artist   @relation(fields: [artistId], references: [id])
+  title            String
+  description      String?
+  price            Decimal  @db.Decimal(12, 2)
+  currency         String   @default("PKR")
+  category         String
+  medium           String
+  dimensions       String?
+  imageUrl         String
+  thumbnailUrl     String?
+  additionalImages String[] @default([])
+  provenanceHash   String?
+  year             Int
+  isAuction        Boolean  @default(false)
+  inStock          Boolean  @default(true)
+  viewCount        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   orderItems OrderItem[]
   reviews    Review[]
+
+  @@index([artistId])
+  @@index([category])
+  @@index([medium])
+  @@index([inStock])
 }
 
 model Order {

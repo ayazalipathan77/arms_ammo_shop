@@ -1,25 +1,66 @@
-import React, { useState, useMemo } from 'react';
-import { MOCK_ARTWORKS } from '../constants';
-import { Filter, Search, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useGallery } from '../context/GalleryContext';
+import { Filter, Search, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '../App';
 
 export const Gallery: React.FC = () => {
   const { convertPrice } = useCurrency();
+  const {
+    artworks,
+    isLoading,
+    error,
+    availableCategories,
+    availableMediums,
+    fetchArtworks
+  } = useGallery();
+
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedMedium, setSelectedMedium] = useState<string>('All');
-  
-  const filteredArtworks = useMemo(() => {
-    return MOCK_ARTWORKS.filter(art => {
-      const matchesSearch = art.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            art.artistName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategory === 'All' || art.category === selectedCategory;
-      const matchesMedium = selectedMedium === 'All' || art.medium.includes(selectedMedium);
-      return matchesSearch && matchesCategory && matchesMedium;
-    });
-  }, [searchTerm, selectedCategory, selectedMedium]);
+
+  // Fetch artworks when filters change
+  useEffect(() => {
+    const filters: any = {};
+
+    if (selectedCategory !== 'All') {
+      filters.category = selectedCategory;
+    }
+
+    if (selectedMedium !== 'All') {
+      filters.medium = selectedMedium;
+    }
+
+    if (searchTerm) {
+      filters.search = searchTerm;
+    }
+
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      fetchArtworks(filters);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [selectedCategory, selectedMedium, searchTerm, fetchArtworks]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('All');
+    setSelectedMedium('All');
+  };
+
+  // Build category list from API + default "All"
+  const categories = ['All', ...availableCategories];
+  const mediums = ['All', ...availableMediums.map(m => {
+    // Extract short name from medium (e.g., "Oil on Canvas" -> "Oil")
+    if (m.includes('Oil')) return 'Oil';
+    if (m.includes('Acrylic')) return 'Acrylic';
+    if (m.includes('Silver')) return 'Silver Leaf';
+    if (m.includes('Gouache')) return 'Gouache';
+    if (m.includes('Mixed')) return 'Mixed Media';
+    return m;
+  })].filter((v, i, a) => a.indexOf(v) === i); // Remove duplicates
 
   return (
     <div className="pt-32 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,19 +69,19 @@ export const Gallery: React.FC = () => {
            <h1 className="font-serif text-5xl text-stone-100 mb-2">The Collection</h1>
            <p className="text-stone-500 text-sm tracking-wide uppercase">Authentic works from verified artists.</p>
         </div>
-        
+
         <div className="flex gap-4 w-full md:w-auto items-center">
           <div className="relative flex-1 md:w-80 border-b border-stone-700 focus-within:border-amber-500 transition-colors">
             <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-stone-500" size={16} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="SEARCH MASTERPIECES..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-transparent pl-8 pr-4 py-3 text-sm focus:outline-none text-white placeholder:text-stone-600 uppercase tracking-widest"
             />
           </div>
-          <button 
+          <button
             onClick={() => setFilterOpen(!filterOpen)}
             className={`p-3 border border-stone-700 hover:border-amber-500 transition-colors ${filterOpen ? 'bg-stone-800' : ''}`}
           >
@@ -55,8 +96,8 @@ export const Gallery: React.FC = () => {
             <div>
               <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Category</h3>
               <div className="space-y-3">
-                {['All', 'Calligraphy', 'Landscape', 'Abstract', 'Miniature', 'Portrait'].map(cat => (
-                  <button 
+                {categories.map(cat => (
+                  <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
                     className={`block w-full text-left text-xs uppercase tracking-widest transition-colors ${selectedCategory === cat ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'}`}
@@ -70,8 +111,8 @@ export const Gallery: React.FC = () => {
             <div>
               <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Medium</h3>
               <div className="space-y-3">
-                {['All', 'Oil', 'Acrylic', 'Silver Leaf', 'Gouache', 'Mixed Media'].map(med => (
-                  <button 
+                {mediums.map(med => (
+                  <button
                     key={med}
                     onClick={() => setSelectedMedium(med)}
                     className={`block w-full text-left text-xs uppercase tracking-widest transition-colors ${selectedMedium === med ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'}`}
@@ -81,7 +122,7 @@ export const Gallery: React.FC = () => {
                 ))}
               </div>
             </div>
-            
+
             <div>
                <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Price</h3>
                {/* Simple Range Slider Placeholder */}
@@ -91,19 +132,30 @@ export const Gallery: React.FC = () => {
 
         {/* Grid */}
         <div className="flex-1 min-h-[500px]">
-          {filteredArtworks.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+              <span className="ml-3 text-stone-400">Loading artworks...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20 text-red-500 border border-dashed border-red-800">
+               <p className="font-serif text-2xl mb-2">Error loading artworks</p>
+               <p className="text-sm text-stone-500 mb-4">{error}</p>
+               <button onClick={() => fetchArtworks()} className="text-amber-500 text-sm hover:underline">Try Again</button>
+            </div>
+          ) : artworks.length === 0 ? (
             <div className="text-center py-20 text-stone-500 border border-dashed border-stone-800">
                <p className="font-serif text-2xl mb-2">No artworks found</p>
-               <button onClick={() => {setSearchTerm(''); setSelectedCategory('All');}} className="text-amber-500 text-sm hover:underline">Clear Filters</button>
+               <button onClick={clearFilters} className="text-amber-500 text-sm hover:underline">Clear Filters</button>
             </div>
           ) : (
             <div className={`grid grid-cols-1 md:grid-cols-2 ${!filterOpen ? 'lg:grid-cols-3' : 'lg:grid-cols-2'} gap-8`}>
-              {filteredArtworks.map((art) => (
+              {artworks.map((art) => (
                 <Link key={art.id} to={`/artwork/${art.id}`} className="group block bg-stone-900/50 hover:bg-stone-900 transition-colors duration-500">
                   <div className="aspect-[4/5] overflow-hidden relative">
-                    <img 
-                      src={art.imageUrl} 
-                      alt={art.title} 
+                    <img
+                      src={art.imageUrl}
+                      alt={art.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     {art.inStock ? null : (

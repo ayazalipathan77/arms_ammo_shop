@@ -1,34 +1,77 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MOCK_ARTWORKS } from '../constants';
 import { useCart, useCurrency } from '../App';
+import { useGallery } from '../context/GalleryContext';
 import { ARView } from '../components/ARView';
-import { ShieldCheck, Truck, Box, CreditCard, Share2, Star, FileText, X } from 'lucide-react';
-import { CartItem } from '../types';
+import { ShieldCheck, Truck, Box, CreditCard, Share2, Star, FileText, X, Loader2 } from 'lucide-react';
+import { CartItem, Artwork } from '../types';
+import { artworkApi, transformArtwork } from '../services/api';
 
 export const ArtworkDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { convertPrice, rawConvert } = useCurrency();
+  const { convertPrice } = useCurrency();
+  const { artworks } = useGallery();
+
+  const [artwork, setArtwork] = useState<Artwork | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [showAR, setShowAR] = useState(false);
   const [showProvenance, setShowProvenance] = useState(false);
-  
+
   // Print Logic
   const [purchaseType, setPurchaseType] = useState<'ORIGINAL' | 'PRINT'>('ORIGINAL');
   const [selectedPrintSize, setSelectedPrintSize] = useState<'A4' | 'A3' | 'CANVAS_24x36'>('A3');
-  
-  const artwork = MOCK_ARTWORKS.find(a => a.id === id);
 
-  // Scroll to top when ID changes (in case Layout wrapper doesn't catch it immediately or for smooth UX within same route)
+  // Fetch artwork from API
   useEffect(() => {
+    const fetchArtwork = async () => {
+      if (!id) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await artworkApi.getById(id);
+        const transformedArtwork = transformArtwork(response.artwork);
+        setArtwork(transformedArtwork);
+      } catch (err) {
+        console.error('Error fetching artwork:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch artwork');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchArtwork();
     window.scrollTo(0, 0);
   }, [id]);
 
-  if (!artwork) return <div className="pt-32 text-center text-stone-500">Artwork not found</div>;
+  if (isLoading) {
+    return (
+      <div className="pt-32 min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+        <span className="ml-3 text-stone-400">Loading artwork...</span>
+      </div>
+    );
+  }
 
-  const relatedArtworks = MOCK_ARTWORKS.filter(art => 
-    art.id !== id && 
+  if (error || !artwork) {
+    return (
+      <div className="pt-32 min-h-screen flex flex-col items-center justify-center">
+        <p className="text-stone-500 text-xl mb-4">{error || 'Artwork not found'}</p>
+        <Link to="/gallery" className="text-amber-500 hover:underline">
+          Back to Gallery
+        </Link>
+      </div>
+    );
+  }
+
+  // Related artworks from context (already loaded)
+  const relatedArtworks = artworks.filter(art =>
+    art.id !== id &&
     (art.category === artwork.category || art.artistName === artwork.artistName)
   ).slice(0, 3);
 
@@ -45,9 +88,9 @@ export const ArtworkDetail: React.FC = () => {
   const finalPricePKR = calculatePrice();
 
   const handleAddToCart = () => {
-    const item: CartItem = { 
-      ...artwork, 
-      quantity: 1, 
+    const item: CartItem = {
+      ...artwork,
+      quantity: 1,
       selectedPrintSize: purchaseType === 'PRINT' ? selectedPrintSize : 'ORIGINAL',
       finalPrice: finalPricePKR
     };
@@ -58,7 +101,7 @@ export const ArtworkDetail: React.FC = () => {
   return (
     <div className="pt-32 pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {showAR && <ARView artwork={artwork} onClose={() => setShowAR(false)} />}
-      
+
       {/* Provenance/Certificate Modal */}
       {showProvenance && (
          <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
@@ -71,9 +114,9 @@ export const ArtworkDetail: React.FC = () => {
                   <h3 className="font-bold text-2xl mb-1">{artwork.title}</h3>
                   <p className="text-sm uppercase tracking-wide mb-6">by {artwork.artistName}</p>
                   <p className="text-sm text-stone-600 mb-8 leading-relaxed">
-                     Is an authentic original artwork created in {artwork.year}. 
+                     Is an authentic original artwork created in {artwork.year}.
                      This work is recorded in the Muraqqa blockchain registry under ID:
-                     <span className="block font-mono bg-stone-200 mt-2 py-1 select-all">{artwork.provenanceId}</span>
+                     <span className="block font-mono bg-stone-200 mt-2 py-1 select-all">{artwork.provenanceId || 'N/A'}</span>
                   </p>
                   <div className="flex justify-between items-end mt-12 pt-4 border-t border-stone-400">
                      <div className="text-left">
@@ -111,7 +154,7 @@ export const ArtworkDetail: React.FC = () => {
           <div>
             <h1 className="font-serif text-4xl lg:text-6xl text-stone-100 mb-4 leading-tight">{artwork.title}</h1>
             <h2 className="text-xl text-amber-500 tracking-[0.2em] uppercase">{artwork.artistName}</h2>
-            
+
             {/* Rating */}
             <div className="flex items-center gap-2 mt-4 text-amber-500">
                {[1,2,3,4,5].map(s => <Star key={s} size={14} fill={s <= (artwork.reviews[0]?.rating || 4) ? "currentColor" : "none"} />)}
@@ -125,16 +168,16 @@ export const ArtworkDetail: React.FC = () => {
 
           {/* Configuration */}
           <div className="bg-stone-900 p-8 rounded-sm border border-stone-800 space-y-8">
-            
+
             {/* Type Selector */}
             <div className="flex border-b border-stone-800 pb-6">
-               <button 
+               <button
                   onClick={() => setPurchaseType('ORIGINAL')}
                   className={`flex-1 pb-2 text-sm uppercase tracking-widest transition-colors ${purchaseType === 'ORIGINAL' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-stone-500'}`}
                >
                  Original
                </button>
-               <button 
+               <button
                   onClick={() => setPurchaseType('PRINT')}
                   className={`flex-1 pb-2 text-sm uppercase tracking-widest transition-colors ${purchaseType === 'PRINT' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-stone-500'}`}
                >
@@ -146,7 +189,7 @@ export const ArtworkDetail: React.FC = () => {
             {purchaseType === 'PRINT' && (
                <div className="grid grid-cols-3 gap-4">
                   {(['A4', 'A3', 'CANVAS_24x36'] as const).map(size => (
-                     <button 
+                     <button
                         key={size}
                         onClick={() => setSelectedPrintSize(size)}
                         className={`py-3 text-xs border ${selectedPrintSize === size ? 'border-amber-500 bg-amber-900/20 text-white' : 'border-stone-700 text-stone-500 hover:border-stone-500'}`}
@@ -173,7 +216,7 @@ export const ArtworkDetail: React.FC = () => {
                  </button>
                )}
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 text-[10px] text-stone-500 uppercase tracking-wider pt-4 border-t border-stone-800">
                <span className="flex items-center gap-2"><Truck size={12}/> {purchaseType === 'ORIGINAL' ? 'Insured Shipping' : 'Standard Shipping'}</span>
                <span className="flex items-center gap-2"><ShieldCheck size={12}/> Authenticity Guaranteed</span>
@@ -216,9 +259,9 @@ export const ArtworkDetail: React.FC = () => {
                {relatedArtworks.map((art) => (
                   <Link key={art.id} to={`/artwork/${art.id}`} className="group block bg-stone-900/50 hover:bg-stone-900 transition-colors">
                      <div className="aspect-[3/4] overflow-hidden relative mb-4">
-                        <img 
-                           src={art.imageUrl} 
-                           alt={art.title} 
+                        <img
+                           src={art.imageUrl}
+                           alt={art.title}
                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                         <div className="absolute top-3 right-3 bg-stone-950/80 backdrop-blur px-2 py-1 text-[10px] text-white uppercase">

@@ -1,7 +1,7 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Artwork, Order, ShippingConfig, OrderStatus, Conversation, SiteContent } from '../types';
-import { MOCK_ARTWORKS, MOCK_CONVERSATIONS, DEFAULT_SITE_CONTENT } from '../constants';
+import { MOCK_CONVERSATIONS, DEFAULT_SITE_CONTENT } from '../constants';
+import { artworkApi, transformArtwork, ArtworkFilters } from '../services/api';
 
 interface GalleryContextType {
   artworks: Artwork[];
@@ -9,16 +9,36 @@ interface GalleryContextType {
   shippingConfig: ShippingConfig;
   conversations: Conversation[];
   siteContent: SiteContent;
-  
+
+  // Loading states
+  isLoading: boolean;
+  error: string | null;
+
+  // Filters data
+  availableCategories: string[];
+  availableMediums: string[];
+
+  // Pagination
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+
+  // Fetch actions
+  fetchArtworks: (filters?: ArtworkFilters) => Promise<void>;
+  fetchFilters: () => Promise<void>;
+
   // Inventory Actions
   addArtwork: (art: Artwork) => void;
   updateArtwork: (id: string, updates: Partial<Artwork>) => void;
   deleteArtwork: (id: string) => void;
-  
+
   // Order Actions
   addOrder: (order: Order) => void;
   updateOrderStatus: (id: string, status: OrderStatus, tracking?: string) => void;
-  
+
   // Settings Actions
   updateShippingConfig: (config: Partial<ShippingConfig>) => void;
   updateSiteContent: (content: Partial<SiteContent>) => void;
@@ -26,7 +46,7 @@ interface GalleryContextType {
   // Conversation Actions
   addConversation: (conv: Conversation) => void;
   deleteConversation: (id: string) => void;
-  
+
   // Financials (Mock)
   stripeConnected: boolean;
   connectStripe: () => void;
@@ -43,7 +63,21 @@ export const useGallery = () => {
 
 export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // --- Inventory State ---
-  const [artworks, setArtworks] = useState<Artwork[]>(MOCK_ARTWORKS);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // --- Filters State ---
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableMediums, setAvailableMediums] = useState<string[]>([]);
+
+  // --- Pagination State ---
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 12,
+    totalPages: 0,
+  });
 
   // --- Order State (Mock Initial Data) ---
   const [orders, setOrders] = useState<Order[]>([
@@ -51,7 +85,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       id: 'ORD-001',
       customerName: 'Ali Khan',
       customerEmail: 'ali@example.com',
-      items: [MOCK_ARTWORKS[0] as any],
+      items: [],
       totalAmount: 450000,
       currency: 'PKR' as any,
       status: 'SHIPPED',
@@ -66,7 +100,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       id: 'ORD-002',
       customerName: 'John Smith',
       customerEmail: 'john@london.co.uk',
-      items: [MOCK_ARTWORKS[3] as any],
+      items: [],
       totalAmount: 950000,
       currency: 'PKR' as any,
       status: 'PROCESSING',
@@ -93,8 +127,40 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const [stripeConnected, setStripeConnected] = useState(false);
 
-  // --- Actions ---
+  // --- Fetch Actions ---
+  const fetchArtworks = useCallback(async (filters: ArtworkFilters = {}) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await artworkApi.getAll(filters);
+      const transformedArtworks = response.artworks.map(transformArtwork);
+      setArtworks(transformedArtworks);
+      setPagination(response.pagination);
+    } catch (err) {
+      console.error('Error fetching artworks:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch artworks');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
+  const fetchFilters = useCallback(async () => {
+    try {
+      const response = await artworkApi.getFilters();
+      setAvailableCategories(response.categories);
+      setAvailableMediums(response.mediums);
+    } catch (err) {
+      console.error('Error fetching filters:', err);
+    }
+  }, []);
+
+  // --- Initial Load ---
+  useEffect(() => {
+    fetchArtworks();
+    fetchFilters();
+  }, [fetchArtworks, fetchFilters]);
+
+  // --- Actions ---
   const addArtwork = (art: Artwork) => {
     setArtworks(prev => [art, ...prev]);
   };
@@ -132,7 +198,6 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   const connectStripe = () => {
-    // Simulate connection
     setTimeout(() => setStripeConnected(true), 1500);
   };
 
@@ -145,6 +210,13 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       shippingConfig,
       conversations,
       siteContent,
+      isLoading,
+      error,
+      availableCategories,
+      availableMediums,
+      pagination,
+      fetchArtworks,
+      fetchFilters,
       addArtwork,
       updateArtwork,
       deleteArtwork,

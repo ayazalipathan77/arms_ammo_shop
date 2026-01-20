@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Instagram, Facebook, Twitter, Clock, Monitor } from 'lucide-react';
+import { ArrowRight, Instagram, Facebook, Twitter, Monitor, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { MOCK_ARTWORKS, MOCK_EXHIBITIONS, UI_TEXT } from '../constants';
+import { MOCK_EXHIBITIONS } from '../constants';
 import { useCurrency } from '../App';
 import { useGallery } from '../context/GalleryContext';
 
@@ -13,8 +12,8 @@ interface HomeProps {
 
 export const Home: React.FC<HomeProps> = ({ lang }) => {
   const { convertPrice } = useCurrency();
-  const { siteContent } = useGallery();
-  const auctionItem = MOCK_ARTWORKS.find(a => a.isAuction);
+  const { siteContent, artworks, isLoading } = useGallery();
+  const auctionItem = artworks.find(a => a.isAuction);
 
   return (
     <div className="w-full overflow-hidden">
@@ -22,16 +21,16 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-stone-950">
            {/* Moving Graphics Rendition */}
-           <motion.div 
+           <motion.div
              animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
              transition={{ duration: 15, repeat: Infinity }}
              className="absolute inset-0 bg-[url('https://picsum.photos/1920/1080?grayscale')] bg-cover bg-center"
            />
         </div>
         <div className="absolute inset-0 bg-gradient-to-b from-stone-950/80 via-stone-950/40 to-stone-950"></div>
-        
+
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, ease: "easeOut" }}
@@ -39,7 +38,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
           >
             {siteContent.heroTitle}
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 1 }}
@@ -106,7 +105,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
             </div>
             <Link to="/exhibitions" className="text-amber-500 text-sm uppercase tracking-wide flex items-center gap-2">View All <ArrowRight size={14} /></Link>
          </div>
-         
+
          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {MOCK_EXHIBITIONS.map(ex => (
               <div key={ex.id} className="group relative overflow-hidden h-80 bg-stone-900 border border-stone-800">
@@ -130,25 +129,32 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {MOCK_ARTWORKS.slice(0, 3).map((art) => (
-            <Link key={art.id} to={`/artwork/${art.id}`} className="group cursor-pointer block">
-              <div className="relative aspect-[3/4] overflow-hidden bg-stone-900 mb-4">
-                <img 
-                  src={art.imageUrl} 
-                  alt={art.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                />
-                <div className="absolute top-4 right-4 bg-stone-950/80 backdrop-blur px-3 py-1 text-xs text-white uppercase tracking-wider">
-                   {art.category}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+            <span className="ml-3 text-stone-400">Loading artworks...</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {artworks.slice(0, 3).map((art) => (
+              <Link key={art.id} to={`/artwork/${art.id}`} className="group cursor-pointer block">
+                <div className="relative aspect-[3/4] overflow-hidden bg-stone-900 mb-4">
+                  <img
+                    src={art.imageUrl}
+                    alt={art.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                  />
+                  <div className="absolute top-4 right-4 bg-stone-950/80 backdrop-blur px-3 py-1 text-xs text-white uppercase tracking-wider">
+                     {art.category}
+                  </div>
                 </div>
-              </div>
-              <h3 className="font-serif text-xl text-stone-300 group-hover:text-amber-500 transition-colors">{art.title}</h3>
-              <p className="text-stone-500 text-sm uppercase tracking-wide mt-1">{art.artistName}</p>
-              <p className="text-stone-400 mt-2 font-mono text-xs">{convertPrice(art.price)}</p>
-            </Link>
-          ))}
-        </div>
+                <h3 className="font-serif text-xl text-stone-300 group-hover:text-amber-500 transition-colors">{art.title}</h3>
+                <p className="text-stone-500 text-sm uppercase tracking-wide mt-1">{art.artistName}</p>
+                <p className="text-stone-400 mt-2 font-mono text-xs">{convertPrice(art.price)}</p>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Social Feed Simulation */}

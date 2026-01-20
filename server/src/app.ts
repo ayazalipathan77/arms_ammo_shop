@@ -9,6 +9,8 @@ import { env } from './config/env';
 
 // Import Routes
 import authRoutes from './routes/auth.routes';
+import artworkRoutes from './routes/artwork.routes';
+import artistRoutes from './routes/artist.routes';
 
 const app: Application = express();
 
@@ -34,6 +36,8 @@ app.get('/health', (req: Request, res: Response) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/artworks', artworkRoutes);
+app.use('/api/artists', artistRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
