@@ -739,3 +739,31 @@ export const paymentApi = {
         return response.json();
     },
 };
+
+// Upload API
+export const uploadApi = {
+    uploadImage: async (file: File): Promise<string> => {
+        const token = getAuthToken();
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const headers: Record<string, string> = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            headers,
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to upload image');
+        }
+
+        const data = await response.json();
+        return data.url;
+    },
+};
