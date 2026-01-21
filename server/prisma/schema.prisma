@@ -39,6 +39,7 @@ model User {
   artistProfile Artist?
   orders        Order[]
   reviews       Review[]
+  cartItems     CartItem[]
 }
 
 model Artist {
@@ -78,6 +79,7 @@ model Artwork {
 
   orderItems OrderItem[]
   reviews    Review[]
+  cartItems  CartItem[]
 
   @@index([artistId])
   @@index([category])
@@ -122,4 +124,20 @@ model Review {
   rating    Int
   comment   String?
   createdAt DateTime @default(now())
+}
+
+model CartItem {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artworkId String
+  artwork   Artwork      @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  quantity  Int          @default(1)
+  type      PurchaseType @default(ORIGINAL)
+  printSize String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([userId, artworkId, type, printSize])
+  @@index([userId])
 }

@@ -362,3 +362,303 @@ export const transformArtist = (apiArtist: ApiArtist): import('../types').Artist
         specialty: apiArtist.originCity || 'Contemporary Art',
     };
 };
+
+// Cart API types
+export interface ApiCartItem {
+    id: string;
+    userId: string;
+    artworkId: string;
+    quantity: number;
+    type: 'ORIGINAL' | 'PRINT';
+    printSize: string | null;
+    createdAt: string;
+    updatedAt: string;
+    artwork: ApiArtwork;
+}
+
+export interface CartSummary {
+    itemCount: number;
+    totalQuantity: number;
+    subtotal: number;
+}
+
+// Order API types
+export interface ApiOrderItem {
+    id: string;
+    orderId: string;
+    artworkId: string;
+    quantity: number;
+    priceAtPurchase: string;
+    type: 'ORIGINAL' | 'PRINT';
+    printSize: string | null;
+    artwork: {
+        id: string;
+        title: string;
+        imageUrl: string;
+        dimensions?: string;
+        medium?: string;
+        artist: {
+            user: {
+                fullName: string;
+            };
+        };
+    };
+}
+
+export interface ApiOrder {
+    id: string;
+    userId: string;
+    totalAmount: string;
+    status: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+    shippingAddress: string;
+    trackingNumber: string | null;
+    paymentMethod: 'STRIPE' | 'BANK';
+    createdAt: string;
+    updatedAt: string;
+    items: ApiOrderItem[];
+    user: {
+        id: string;
+        fullName: string;
+        email: string;
+    };
+}
+
+// Cart API
+export const cartApi = {
+    // Get user's cart
+    getCart: async (): Promise<{ cartItems: ApiCartItem[]; summary: CartSummary }> => {
+        const response = await authFetch(`${API_URL}/cart`);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch cart');
+        }
+        return response.json();
+    },
+
+    // Add item to cart
+    addToCart: async (data: {
+        artworkId: string;
+        quantity?: number;
+        type?: 'ORIGINAL' | 'PRINT';
+        printSize?: string;
+    }): Promise<{ message: string; cartItem: ApiCartItem }> => {
+        const response = await authFetch(`${API_URL}/cart`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to add to cart');
+        }
+        return response.json();
+    },
+
+    // Update cart item quantity
+    updateCartItem: async (itemId: string, quantity: number): Promise<{ message: string; cartItem: ApiCartItem }> => {
+        const response = await authFetch(`${API_URL}/cart/${itemId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ quantity }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update cart item');
+        }
+        return response.json();
+    },
+
+    // Remove item from cart
+    removeFromCart: async (itemId: string): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/cart/${itemId}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to remove from cart');
+        }
+        return response.json();
+    },
+
+    // Clear entire cart
+    clearCart: async (): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/cart`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to clear cart');
+        }
+        return response.json();
+    },
+};
+
+// Order API
+export const orderApi = {
+    // Create a new order
+    createOrder: async (data: {
+        items: Array<{
+            artworkId: string;
+            quantity: number;
+            type: 'ORIGINAL' | 'PRINT';
+            printSize?: string;
+        }>;
+        shippingAddress: string;
+        shippingCity: string;
+        shippingCountry: string;
+        paymentMethod: 'STRIPE' | 'BANK';
+        currency?: 'PKR' | 'USD' | 'GBP';
+        notes?: string;
+    }): Promise<{ message: string; order: ApiOrder }> => {
+        const response = await authFetch(`${API_URL}/orders`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create order');
+        }
+        return response.json();
+    },
+
+    // Get user's orders
+    getUserOrders: async (filters: {
+        status?: string;
+        page?: number;
+        limit?: number;
+        sortBy?: 'createdAt' | 'totalAmount' | 'status';
+        sortOrder?: 'asc' | 'desc';
+    } = {}): Promise<{ orders: ApiOrder[]; pagination: PaginationInfo }> => {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined && value !== '') {
+                params.append(key, String(value));
+            }
+        });
+
+        const response = await authFetch(`${API_URL}/orders?${params}`);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch orders');
+        }
+        return response.json();
+    },
+
+    // Get single order by ID
+    getOrderById: async (id: string): Promise<{ order: ApiOrder }> => {
+        const response = await authFetch(`${API_URL}/orders/${id}`);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch order');
+        }
+        return response.json();
+    },
+
+    // Cancel order
+    cancelOrder: async (id: string): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/cancel`, {
+            method: 'PUT',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to cancel order');
+        }
+        return response.json();
+    },
+
+    // Get all orders (Admin only)
+    getAllOrders: async (filters: {
+        status?: string;
+        page?: number;
+        limit?: number;
+        sortBy?: 'createdAt' | 'totalAmount' | 'status';
+        sortOrder?: 'asc' | 'desc';
+    } = {}): Promise<{
+        orders: ApiOrder[];
+        pagination: PaginationInfo;
+        summary: {
+            totalOrders: number;
+            totalRevenue: number;
+            pendingCount: number;
+            paidCount: number;
+            shippedCount: number;
+        };
+    }> => {
+        const params = new URLSearchParams();
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value !== undefined && value !== '') {
+                params.append(key, String(value));
+            }
+        });
+
+        const response = await authFetch(`${API_URL}/orders/admin?${params}`);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch orders');
+        }
+        return response.json();
+    },
+
+    // Update order status (Admin only)
+    updateOrderStatus: async (id: string, data: {
+        status: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+        trackingNumber?: string;
+    }): Promise<{ message: string; order: ApiOrder }> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/status`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update order status');
+        }
+        return response.json();
+    },
+};
+
+// Transform API cart item to frontend CartItem type
+export const transformCartItem = (apiCartItem: ApiCartItem): import('../types').CartItem => {
+    const artwork = transformArtwork(apiCartItem.artwork);
+    return {
+        ...artwork,
+        selectedPrintSize: apiCartItem.type === 'ORIGINAL'
+            ? 'ORIGINAL'
+            : (apiCartItem.printSize as 'A4' | 'A3' | 'CANVAS_24x36') || 'A4',
+        quantity: apiCartItem.quantity,
+        finalPrice: Number(apiCartItem.artwork.price) * apiCartItem.quantity,
+    };
+};
+
+// Transform API order to frontend Order type
+export const transformOrder = (apiOrder: ApiOrder): import('../types').Order => {
+    return {
+        id: apiOrder.id,
+        customerName: apiOrder.user.fullName,
+        customerEmail: apiOrder.user.email,
+        items: apiOrder.items.map(item => ({
+            id: item.artwork.id,
+            title: item.artwork.title,
+            artistName: item.artwork.artist.user.fullName,
+            artistId: '',
+            price: parseFloat(item.priceAtPurchase),
+            imageUrl: item.artwork.imageUrl,
+            medium: item.artwork.medium || '',
+            dimensions: item.artwork.dimensions || '',
+            year: 0,
+            description: '',
+            category: 'Abstract' as const,
+            inStock: true,
+            reviews: [],
+            selectedPrintSize: item.type === 'ORIGINAL' ? 'ORIGINAL' : (item.printSize as any) || 'A4',
+            quantity: item.quantity,
+            finalPrice: parseFloat(item.priceAtPurchase) * item.quantity,
+        })),
+        totalAmount: parseFloat(apiOrder.totalAmount),
+        currency: 'PKR' as const,
+        status: apiOrder.status,
+        date: new Date(apiOrder.createdAt),
+        shippingAddress: apiOrder.shippingAddress,
+        shippingCountry: apiOrder.shippingAddress.split(', ').pop() || '',
+        trackingNumber: apiOrder.trackingNumber || undefined,
+        paymentMethod: apiOrder.paymentMethod,
+        transactionId: undefined,
+    };
+};

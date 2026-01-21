@@ -15,10 +15,11 @@ import { Artists } from './pages/Artists';
 import { Conversations } from './pages/Conversations';
 import { InvoiceView } from './pages/InvoiceView';
 import { AICurator } from './components/AICurator';
-import { CartItem, Currency } from './types';
+import { Currency } from './types';
 import { RATES } from './constants';
 import { GalleryProvider, useGallery } from './context/GalleryContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { CartProvider, useCartContext } from './context/CartContext';
 
 // Currency Context
 interface CurrencyContextType {
@@ -35,19 +36,15 @@ export const useCurrency = () => {
   return context;
 };
 
-// Cart Context
-interface CartContextType {
-  cart: CartItem[];
-  addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string) => void;
-  clearCart: () => void;
-}
-const CartContext = createContext<CartContextType | undefined>(undefined);
-
+// Cart Hook - wrapper around the new CartContext for backward compatibility
 export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) throw new Error('useCart must be used within CartProvider');
-  return context;
+  const context = useCartContext();
+  return {
+    cart: context.cart,
+    addToCart: context.addToCart,
+    removeFromCart: context.removeFromCart,
+    clearCart: context.clearCart,
+  };
 };
 
 // Layout wrapper
@@ -117,7 +114,6 @@ const App: React.FC = () => {
   console.log('App component rendering');
   const [lang, setLang] = useState<'EN' | 'UR'>('EN');
   const [currency, setCurrency] = useState<Currency>(Currency.PKR);
-  const [cart, setCart] = useState<CartItem[]>([]);
 
   // Currency Helpers
   const convertPrice = (pricePKR: number) => {
@@ -130,22 +126,11 @@ const App: React.FC = () => {
 
   const rawConvert = (pricePKR: number) => pricePKR * RATES[currency];
 
-  // Cart Helpers
-  const addToCart = (item: CartItem) => {
-    setCart([...cart, item]);
-  };
-
-  const removeFromCart = (id: string) => {
-    setCart(cart.filter(item => item.id !== id));
-  };
-
-  const clearCart = () => setCart([]);
-
   return (
     <AuthProvider>
       <GalleryProvider>
-        <CurrencyContext.Provider value={{ currency, setCurrency, convertPrice, rawConvert }}>
-          <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
+        <CartProvider>
+          <CurrencyContext.Provider value={{ currency, setCurrency, convertPrice, rawConvert }}>
             <HashRouter>
               <Layout>
                 <div className="bg-stone-950 min-h-screen text-stone-200 selection:bg-amber-900 selection:text-white flex flex-col font-sans">
@@ -171,8 +156,8 @@ const App: React.FC = () => {
                 </div>
               </Layout>
             </HashRouter>
-          </CartContext.Provider>
-        </CurrencyContext.Provider>
+          </CurrencyContext.Provider>
+        </CartProvider>
       </GalleryProvider>
     </AuthProvider>
   );

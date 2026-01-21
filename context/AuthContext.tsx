@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 interface User {
     id: string;
@@ -35,7 +35,7 @@ export const useAuth = () => {
 
 const decodeToken = (token: string): User | null => {
     try {
-        const decoded: JWTPayload = jwt_decode(token);
+        const decoded: JWTPayload = jwtDecode(token);
         return {
             id: decoded.userId,
             email: decoded.email,
@@ -86,19 +86,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setToken(newToken);
         setUser(newUser);
         localStorage.setItem('authToken', newToken);
-
-        return (
-            <AuthContext.Provider
-                value={{
-                    user,
-                    token,
-                    isAuthenticated: !!token,
-                    login,
-                    logout,
-                    register,
-                }}
-            >
-                {children}
-            </AuthContext.Provider>
-        );
     };
+
+    return (
+        <AuthContext.Provider
+            value={{
+                user,
+                token,
+                isAuthenticated: !!token,
+                login,
+                logout,
+                register,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
+};

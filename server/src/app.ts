@@ -11,6 +11,8 @@ import { env } from './config/env';
 import authRoutes from './routes/auth.routes';
 import artworkRoutes from './routes/artwork.routes';
 import artistRoutes from './routes/artist.routes';
+import cartRoutes from './routes/cart.routes';
+import orderRoutes from './routes/order.routes';
 
 const app: Application = express();
 
@@ -38,6 +40,8 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/artworks', artworkRoutes);
 app.use('/api/artists', artistRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {
