@@ -662,3 +662,80 @@ export const transformOrder = (apiOrder: ApiOrder): import('../types').Order => 
         transactionId: undefined,
     };
 };
+
+// Payment API types
+export interface StripeConfig {
+    enabled: boolean;
+    publishableKey?: string;
+    message?: string;
+}
+
+export interface PaymentIntentResponse {
+    clientSecret: string;
+    paymentIntentId: string;
+    amount: number;
+    currency: string;
+}
+
+export interface PaymentStatus {
+    orderId: string;
+    status: string;
+    paymentMethod: 'STRIPE' | 'BANK';
+    amount: number;
+    isPaid: boolean;
+}
+
+// Payment API
+export const paymentApi = {
+    // Get Stripe configuration
+    getConfig: async (): Promise<StripeConfig> => {
+        const response = await fetch(`${API_URL}/payments/config`);
+        if (!response.ok) {
+            throw new Error('Failed to get payment configuration');
+        }
+        return response.json();
+    },
+
+    // Create a payment intent
+    createPaymentIntent: async (data: {
+        orderId: string;
+        currency?: 'pkr' | 'usd' | 'gbp';
+    }): Promise<PaymentIntentResponse> => {
+        const response = await authFetch(`${API_URL}/payments/create-intent`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create payment intent');
+        }
+        return response.json();
+    },
+
+    // Get payment status for an order
+    getPaymentStatus: async (orderId: string): Promise<PaymentStatus> => {
+        const response = await authFetch(`${API_URL}/payments/${orderId}`);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to get payment status');
+        }
+        return response.json();
+    },
+
+    // Confirm bank transfer (Admin only)
+    confirmBankTransfer: async (data: {
+        orderId: string;
+        transactionReference: string;
+        notes?: string;
+    }): Promise<{ message: string; order: ApiOrder }> => {
+        const response = await authFetch(`${API_URL}/payments/confirm-bank-transfer`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to confirm bank transfer');
+        }
+        return response.json();
+    },
+};

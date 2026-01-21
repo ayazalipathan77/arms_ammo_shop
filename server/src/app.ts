@@ -13,6 +13,7 @@ import artworkRoutes from './routes/artwork.routes';
 import artistRoutes from './routes/artist.routes';
 import cartRoutes from './routes/cart.routes';
 import orderRoutes from './routes/order.routes';
+import paymentRoutes from './routes/payment.routes';
 
 const app: Application = express();
 
@@ -42,6 +43,7 @@ app.use('/api/artworks', artworkRoutes);
 app.use('/api/artists', artistRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {

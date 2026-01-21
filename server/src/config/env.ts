@@ -10,6 +10,10 @@ const envSchema = z.object({
     JWT_SECRET: z.string().min(12),
     JWT_EXPIRES_IN: z.string().default('7d'),
     CLIENT_URL: z.string().url().default('http://localhost:5173'),
+    // Stripe - optional in development, required in production
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart, useCurrency } from '../App';
 import { useCartContext } from '../context/CartContext';
 import { useGallery } from '../context/GalleryContext';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, CheckCircle, CreditCard, FileText, AlertCircle, Lock, Loader2 } from 'lucide-react';
-import { orderApi } from '../services/api';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Trash2, CheckCircle, FileText, AlertCircle, Lock, Loader2 } from 'lucide-react';
+import { orderApi, paymentApi } from '../services/api';
+import { StripeCheckout } from '../components/StripeCheckout';
 
 export const Cart: React.FC = () => {
   const { cart, removeFromCart, clearCart } = useCart();
@@ -14,6 +15,7 @@ export const Cart: React.FC = () => {
   const { addOrder, shippingConfig } = useGallery();
   const { token, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [step, setStep] = useState<'CART' | 'SHIPPING' | 'PAYMENT' | 'SUCCESS'>('CART');
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
@@ -30,13 +32,27 @@ export const Cart: React.FC = () => {
   // Payment Processing State
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState('');
+  const [stripeEnabled, setStripeEnabled] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
 
-  // Card Inputs
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    expiry: '',
-    cvc: ''
-  });
+  // Check for Stripe configuration and payment redirect
+  useEffect(() => {
+    const checkStripeConfig = async () => {
+      try {
+        const config = await paymentApi.getConfig();
+        setStripeEnabled(config.enabled);
+      } catch {
+        setStripeEnabled(false);
+      }
+    };
+    checkStripeConfig();
+
+    // Check for payment success redirect
+    const paymentStatus = searchParams.get('payment');
+    if (paymentStatus === 'success') {
+      setStep('SUCCESS');
+    }
+  }, [searchParams]);
 
   // Totals Calculation
   const subtotalPKR = cart.reduce((sum, item) => sum + item.finalPrice, 0);
@@ -57,95 +73,85 @@ export const Cart: React.FC = () => {
      }
   };
 
-  const handleCardInput = (field: keyof typeof cardDetails, value: string) => {
-    let formatted = value;
-    if (field === 'number') {
-      formatted = value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
-    } else if (field === 'expiry') {
-      formatted = value.replace(/\D/g, '').slice(0, 4).replace(/(.{2})/, '$1/').slice(0, 5);
-    } else if (field === 'cvc') {
-      formatted = value.replace(/\D/g, '').slice(0, 3);
+  // Create order and proceed to payment
+  const handleProceedToPayment = async () => {
+    if (!token) {
+      setPaymentError('Please log in to place an order');
+      return;
     }
-    setCardDetails(prev => ({ ...prev, [field]: formatted }));
+
+    if (!shippingDetails.firstName || !shippingDetails.address || !shippingDetails.city) {
+      setPaymentError('Please fill in all shipping details');
+      return;
+    }
+
+    setIsProcessing(true);
     setPaymentError('');
-  };
 
-  const validateCard = () => {
-    if (paymentMethod === 'BANK') return null;
+    try {
+      // Create order via API
+      const orderItems = cart.map(item => ({
+         artworkId: item.id,
+         quantity: item.quantity || 1,
+         type: (item.selectedPrintSize === 'ORIGINAL' ? 'ORIGINAL' : 'PRINT') as 'ORIGINAL' | 'PRINT',
+         printSize: item.selectedPrintSize !== 'ORIGINAL' ? item.selectedPrintSize : undefined,
+      }));
 
-    // Simple mock validation
-    const rawNum = cardDetails.number.replace(/\s/g, '');
-    if (rawNum.length < 16) return 'Invalid card number length.';
-    if (cardDetails.expiry.length < 5) return 'Invalid expiry date.';
-    if (cardDetails.cvc.length < 3) return 'Invalid CVC.';
+      const response = await orderApi.createOrder({
+         items: orderItems,
+         shippingAddress: shippingDetails.address,
+         shippingCity: shippingDetails.city,
+         shippingCountry: shippingDetails.country,
+         paymentMethod: paymentMethod,
+         currency: 'PKR',
+      });
 
-    // Simulate error for specific test card
-    if (rawNum.endsWith('0000')) return 'Your card was declined.';
+      // Also add to local state for invoice view compatibility
+      const newOrder = {
+         id: response.order.id,
+         customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
+         customerEmail: user?.email || 'customer@example.com',
+         items: [...cart],
+         totalAmount: totalPKR,
+         currency: 'PKR' as const,
+         status: 'PENDING' as const,
+         date: new Date(),
+         shippingAddress: `${shippingDetails.address}, ${shippingDetails.city}`,
+         shippingCountry: shippingDetails.country,
+         trackingNumber: undefined,
+         paymentMethod: paymentMethod,
+         transactionId: undefined,
+      };
 
-    return null;
-  };
+      addOrder(newOrder);
+      setCreatedOrderId(response.order.id);
+      setPendingOrderId(response.order.id);
 
-  const handlePlaceOrder = async () => {
-     const validationError = validateCard();
-     if (validationError) {
-       setPaymentError(validationError);
-       return;
-     }
-
-     if (!token) {
-       setPaymentError('Please log in to place an order');
-       return;
-     }
-
-     setIsProcessing(true);
-     setPaymentError('');
-
-     try {
-        // Create order via API
-        const orderItems = cart.map(item => ({
-           artworkId: item.id,
-           quantity: item.quantity || 1,
-           type: (item.selectedPrintSize === 'ORIGINAL' ? 'ORIGINAL' : 'PRINT') as 'ORIGINAL' | 'PRINT',
-           printSize: item.selectedPrintSize !== 'ORIGINAL' ? item.selectedPrintSize : undefined,
-        }));
-
-        const response = await orderApi.createOrder({
-           items: orderItems,
-           shippingAddress: shippingDetails.address,
-           shippingCity: shippingDetails.city,
-           shippingCountry: shippingDetails.country,
-           paymentMethod: paymentMethod,
-           currency: 'PKR',
-        });
-
-        // Also add to local state for invoice view compatibility
-        const newOrder = {
-           id: response.order.id,
-           customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
-           customerEmail: user?.email || 'customer@example.com',
-           items: [...cart],
-           totalAmount: totalPKR,
-           currency: 'PKR' as const,
-           status: 'PENDING' as const,
-           date: new Date(),
-           shippingAddress: `${shippingDetails.address}, ${shippingDetails.city}`,
-           shippingCountry: shippingDetails.country,
-           trackingNumber: undefined,
-           paymentMethod: paymentMethod,
-           transactionId: undefined,
-        };
-
-        addOrder(newOrder);
-        setCreatedOrderId(response.order.id);
+      if (paymentMethod === 'BANK') {
+        // For bank transfer, go directly to success with pending status
         setStep('SUCCESS');
-        // Cart is automatically cleared by the API
         await clearCart();
-     } catch (error: any) {
-        console.error('Order creation failed:', error);
-        setPaymentError(error.message || 'Failed to create order. Please try again.');
-     } finally {
-        setIsProcessing(false);
-     }
+      } else {
+        // For Stripe, show payment form
+        setStep('PAYMENT');
+      }
+    } catch (error: any) {
+      console.error('Order creation failed:', error);
+      setPaymentError(error.message || 'Failed to create order. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle Stripe payment success
+  const handlePaymentSuccess = async () => {
+    setStep('SUCCESS');
+    await clearCart();
+  };
+
+  // Handle Stripe payment error
+  const handlePaymentError = (error: string) => {
+    setPaymentError(error);
   };
 
   // Redirect to login if not authenticated and trying to checkout
@@ -190,8 +196,14 @@ export const Cart: React.FC = () => {
       {step === 'SUCCESS' ? (
          <div className="text-center max-w-lg mx-auto bg-stone-900 p-12 border border-stone-800 animate-fade-in">
             <CheckCircle size={64} className="text-green-500 mx-auto mb-6" />
-            <h2 className="font-serif text-4xl text-white mb-2">Order Confirmed</h2>
-            <p className="text-stone-400 mb-8">Thank you for collecting with Muraqqa. An invoice has been emailed to you.</p>
+            <h2 className="font-serif text-4xl text-white mb-2">
+              {paymentMethod === 'BANK' ? 'Order Placed' : 'Order Confirmed'}
+            </h2>
+            <p className="text-stone-400 mb-8">
+              {paymentMethod === 'BANK'
+                ? 'Thank you for your order. Please complete the bank transfer to process your order.'
+                : 'Thank you for collecting with Muraqqa. An invoice has been emailed to you.'}
+            </p>
             {whatsappNotify && <p className="text-green-400 text-sm mb-8">You will receive WhatsApp updates.</p>}
 
             <Link
@@ -256,6 +268,32 @@ export const Cart: React.FC = () => {
                            <option value="UAE">UAE</option>
                         </select>
                      </div>
+
+                     {/* Payment Method Selection */}
+                     <div className="pt-6 border-t border-stone-800">
+                        <h4 className="font-serif text-xl text-white mb-4">Payment Method</h4>
+                        <div className="flex gap-4">
+                           <button
+                              onClick={() => setPaymentMethod('STRIPE')}
+                              disabled={!stripeEnabled}
+                              className={`flex-1 py-4 border text-center transition-colors ${
+                                paymentMethod === 'STRIPE'
+                                  ? 'border-amber-500 bg-amber-900/10 text-white'
+                                  : 'border-stone-700 text-stone-400 hover:border-stone-500'
+                              } ${!stripeEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                           >
+                              Card Payment (Stripe)
+                              {!stripeEnabled && <span className="block text-xs mt-1">(Not configured)</span>}
+                           </button>
+                           <button
+                              onClick={() => setPaymentMethod('BANK')}
+                              className={`flex-1 py-4 border text-center transition-colors ${paymentMethod === 'BANK' ? 'border-amber-500 bg-amber-900/10 text-white' : 'border-stone-700 text-stone-400 hover:border-stone-500'}`}
+                           >
+                              Direct Bank Transfer
+                           </button>
+                        </div>
+                     </div>
+
                      <label className="flex items-center gap-2 text-stone-400 text-sm cursor-pointer mt-4">
                         <input
                            type="checkbox"
@@ -265,95 +303,37 @@ export const Cart: React.FC = () => {
                         />
                         Get real-time order updates via WhatsApp
                      </label>
+
+                     {paymentError && (
+                        <div className="flex items-center gap-2 text-red-500 text-sm bg-red-900/20 p-3 rounded border border-red-900/50">
+                           <AlertCircle size={16} />
+                           {paymentError}
+                        </div>
+                     )}
                   </div>
                )}
 
-               {step === 'PAYMENT' && (
+               {step === 'PAYMENT' && pendingOrderId && (
                   <div className="space-y-6 animate-fade-in">
                      <div className="bg-stone-900 p-8 border border-stone-800">
-                        <h3 className="font-serif text-2xl text-white mb-6">Payment Method</h3>
-                        <div className="flex gap-4 mb-6">
-                           <button
-                              onClick={() => { setPaymentMethod('STRIPE'); setPaymentError(''); }}
-                              className={`flex-1 py-4 border text-center transition-colors ${paymentMethod === 'STRIPE' ? 'border-amber-500 bg-amber-900/10 text-white' : 'border-stone-700 text-stone-400 hover:border-stone-500'}`}
-                           >
-                              Card Payment (Stripe)
-                           </button>
-                           <button
-                              onClick={() => { setPaymentMethod('BANK'); setPaymentError(''); }}
-                              className={`flex-1 py-4 border text-center transition-colors ${paymentMethod === 'BANK' ? 'border-amber-500 bg-amber-900/10 text-white' : 'border-stone-700 text-stone-400 hover:border-stone-500'}`}
-                           >
-                              Direct Bank Transfer
-                           </button>
-                        </div>
+                        <h3 className="font-serif text-2xl text-white mb-6">Complete Payment</h3>
 
                         {paymentMethod === 'STRIPE' ? (
-                           <div className="space-y-4 animate-fade-in relative">
-                              {isProcessing && (
-                                 <div className="absolute inset-0 z-10 bg-stone-900/80 backdrop-blur-sm flex flex-col items-center justify-center">
-                                    <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-                                    <span className="text-amber-500 text-sm font-bold uppercase tracking-widest">Processing Payment...</span>
-                                 </div>
-                              )}
+                           <div className="space-y-4">
+                              <StripeCheckout
+                                orderId={pendingOrderId}
+                                amount={totalPKR}
+                                currency="pkr"
+                                onSuccess={handlePaymentSuccess}
+                                onError={handlePaymentError}
+                              />
 
-                              <div className="bg-stone-950 border border-stone-700 p-6 rounded flex flex-col gap-5">
-                                 <div className="flex justify-between items-center">
-                                    <label className="text-xs text-stone-500 uppercase tracking-widest">Card Details</label>
-                                    <div className="flex gap-2 opacity-50">
-                                        <div className="w-8 h-5 bg-stone-700 rounded"></div>
-                                        <div className="w-8 h-5 bg-stone-700 rounded"></div>
-                                    </div>
-                                 </div>
-
-                                 <div className="space-y-4">
-                                    <div className="relative group">
-                                       <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={20} />
-                                       <input
-                                          type="text"
-                                          value={cardDetails.number}
-                                          onChange={(e) => handleCardInput('number', e.target.value)}
-                                          placeholder="0000 0000 0000 0000"
-                                          maxLength={19}
-                                          className="w-full bg-stone-900 border border-stone-700 rounded p-3 pl-10 text-white font-mono placeholder:text-stone-700 focus:border-amber-500 outline-none transition-colors"
-                                       />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                       <input
-                                          type="text"
-                                          value={cardDetails.expiry}
-                                          onChange={(e) => handleCardInput('expiry', e.target.value)}
-                                          placeholder="MM/YY"
-                                          maxLength={5}
-                                          className="bg-stone-900 border border-stone-700 rounded p-3 text-center text-white font-mono placeholder:text-stone-700 focus:border-amber-500 outline-none transition-colors"
-                                       />
-                                       <div className="relative group">
-                                          <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={16} />
-                                          <input
-                                             type="text"
-                                             value={cardDetails.cvc}
-                                             onChange={(e) => handleCardInput('cvc', e.target.value)}
-                                             placeholder="CVC"
-                                             maxLength={3}
-                                             className="w-full bg-stone-900 border border-stone-700 rounded p-3 text-center text-white font-mono placeholder:text-stone-700 focus:border-amber-500 outline-none transition-colors"
-                                          />
-                                       </div>
-                                    </div>
-                                 </div>
-                              </div>
-
-                              {paymentError && (
-                                 <div className="flex items-center gap-2 text-red-500 text-sm bg-red-900/20 p-3 rounded border border-red-900/50 animate-pulse">
-                                    <AlertCircle size={16} />
-                                    {paymentError}
-                                 </div>
-                              )}
-
-                              <p className="text-[10px] text-stone-500 text-center flex items-center justify-center gap-1 mt-2">
+                              <p className="text-[10px] text-stone-500 text-center flex items-center justify-center gap-1 mt-4">
                                  <Lock size={10}/> Payments are encrypted and secured by Stripe.
                               </p>
                            </div>
                         ) : (
-                           <div className="bg-stone-950 p-6 border border-stone-700 text-sm text-stone-300 rounded animate-fade-in">
+                           <div className="bg-stone-950 p-6 border border-stone-700 text-sm text-stone-300 rounded">
                               <p className="font-bold text-white mb-2 text-lg">Meezan Bank</p>
                               <div className="space-y-1 font-mono text-xs text-stone-400">
                                  <p>Account Title: <span className="text-white">Muraqqa Gallery</span></p>
@@ -363,13 +343,13 @@ export const Cart: React.FC = () => {
                               <p className="mt-4 italic text-stone-500 border-t border-stone-800 pt-3">
                                  Please upload proof of payment via email (orders@muraqqa.art) after checkout. Your order will be processed once funds are received.
                               </p>
+                           </div>
+                        )}
 
-                              {paymentError && (
-                                 <div className="flex items-center gap-2 text-red-500 text-sm bg-red-900/20 p-3 rounded border border-red-900/50 mt-4">
-                                    <AlertCircle size={16} />
-                                    {paymentError}
-                                 </div>
-                              )}
+                        {paymentError && (
+                           <div className="flex items-center gap-2 text-red-500 text-sm bg-red-900/20 p-3 rounded border border-red-900/50 mt-4">
+                              <AlertCircle size={16} />
+                              {paymentError}
                            </div>
                         )}
                      </div>
@@ -430,34 +410,27 @@ export const Cart: React.FC = () => {
                   )}
                   {step === 'SHIPPING' && (
                      <button
-                        onClick={() => {
-                           if(shippingDetails.firstName && shippingDetails.address) setStep('PAYMENT');
-                        }}
-                        className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 uppercase tracking-widest text-sm font-bold disabled:opacity-50 shadow-lg shadow-amber-900/20 transition-all"
-                        disabled={!shippingDetails.firstName || !shippingDetails.address}
-                     >
-                        Continue to Payment
-                     </button>
-                  )}
-                  {step === 'PAYMENT' && (
-                     <button
-                        onClick={handlePlaceOrder}
-                        disabled={isProcessing}
-                        className="w-full bg-white hover:bg-stone-200 text-black py-3 uppercase tracking-widest text-sm font-bold disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                        onClick={handleProceedToPayment}
+                        disabled={isProcessing || !shippingDetails.firstName || !shippingDetails.address || !shippingDetails.city}
+                        className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 uppercase tracking-widest text-sm font-bold disabled:opacity-50 shadow-lg shadow-amber-900/20 transition-all flex items-center justify-center gap-2"
                      >
                         {isProcessing ? (
                            <>
                               <Loader2 className="w-4 h-4 animate-spin" />
-                              Processing...
+                              Creating Order...
                            </>
                         ) : (
-                           `Pay ${convertPrice(totalPKR)}`
+                           `Continue to Payment`
                         )}
                      </button>
                   )}
 
-                  {step !== 'CART' && (
-                     <button onClick={() => setStep('CART')} disabled={isProcessing} className="w-full mt-2 text-stone-500 hover:text-stone-300 text-xs py-2 disabled:opacity-0 transition-opacity">
+                  {step !== 'CART' && step !== 'PAYMENT' && (
+                     <button
+                        onClick={() => setStep('CART')}
+                        disabled={isProcessing}
+                        className="w-full mt-2 text-stone-500 hover:text-stone-300 text-xs py-2 disabled:opacity-0 transition-opacity"
+                     >
                         Back to Cart
                      </button>
                   )}
