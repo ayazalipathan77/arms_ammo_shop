@@ -73,6 +73,45 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+// Helper to merge guest cart
+const mergeGuestCart = async (userId: string, guestCart: any[]) => {
+    if (!guestCart || guestCart.length === 0) return;
+
+    for (const item of guestCart) {
+        // Verify artwork exists
+        const artwork = await prisma.artwork.findUnique({ where: { id: item.artworkId } });
+        if (!artwork) continue;
+
+        const existingItem = await prisma.cartItem.findFirst({
+            where: {
+                userId,
+                artworkId: item.artworkId,
+                type: item.type,
+                printSize: item.printSize || null,
+            },
+        });
+
+        if (existingItem) {
+            // Update quantity
+            await prisma.cartItem.update({
+                where: { id: existingItem.id },
+                data: { quantity: existingItem.quantity + item.quantity },
+            });
+        } else {
+            // Create new item
+            await prisma.cartItem.create({
+                data: {
+                    userId,
+                    artworkId: item.artworkId,
+                    quantity: item.quantity,
+                    type: item.type,
+                    printSize: item.printSize || null,
+                },
+            });
+        }
+    }
+};
+
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         // Validate input
@@ -97,6 +136,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         if (!isPasswordValid) {
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid credentials' });
             return;
+        }
+
+        // Merge guest cart if provided
+        if (validatedData.guestCart && validatedData.guestCart.length > 0) {
+            await mergeGuestCart(user.id, validatedData.guestCart);
         }
 
         // Generate token

@@ -11,6 +11,12 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
     email: z.string().email('Invalid email format'),
     password: z.string().min(1, 'Password is required'),
+    guestCart: z.array(z.object({
+        artworkId: z.string().uuid(),
+        quantity: z.number().int().positive(),
+        type: z.enum(['ORIGINAL', 'PRINT']),
+        printSize: z.string().optional().nullable(),
+    })).optional(),
 });
 
 export const updateProfileSchema = z.object({
