@@ -260,6 +260,8 @@ export const artistApi = {
         return response.json();
     },
 
+
+
     // Get single artist by ID
     getById: async (id: string): Promise<{ artist: ApiArtist }> => {
         const response = await fetch(`${API_URL}/artists/${id}`);
@@ -331,7 +333,7 @@ export const transformArtwork = (apiArtwork: ApiArtwork): import('../types').Art
     return {
         id: apiArtwork.id,
         title: apiArtwork.title,
-        artistName: apiArtwork.artistName || apiArtwork.artist?.user.fullName || 'Unknown',
+        artistName: apiArtwork.artist ? apiArtwork.artist.user.fullName : (apiArtwork.artistName || 'Unknown'),
         artistId: apiArtwork.artistId || undefined,
         price: parseFloat(apiArtwork.price),
         imageUrl: apiArtwork.imageUrl,

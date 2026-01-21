@@ -244,7 +244,7 @@ export const updateArtwork = async (req: Request, res: Response): Promise<void> 
         }
 
         // Check if user is the artist owner or admin
-        if (existingArtwork.artist.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+        if (existingArtwork.artist?.userId !== req.user.userId && req.user.role !== 'ADMIN') {
             res.status(StatusCodes.FORBIDDEN).json({
                 message: 'You can only update your own artworks',
             });
@@ -318,7 +318,7 @@ export const deleteArtwork = async (req: Request, res: Response): Promise<void> 
         }
 
         // Check if user is the artist owner or admin
-        if (existingArtwork.artist.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+        if (existingArtwork.artist?.userId !== req.user.userId && req.user.role !== 'ADMIN') {
             res.status(StatusCodes.FORBIDDEN).json({
                 message: 'You can only delete your own artworks',
             });

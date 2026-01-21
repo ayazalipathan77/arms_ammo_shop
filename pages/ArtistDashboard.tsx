@@ -1,22 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Upload, DollarSign, Image as ImageIcon, X, Save, Eye, Edit2, Trash2, MoreHorizontal, CheckCircle } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
 import { useCurrency } from '../App';
 import { Artwork } from '../types';
-import { uploadApi } from '../services/api';
-
-// Mock current artist session
-const CURRENT_ARTIST_ID = 'a1';
-const CURRENT_ARTIST_NAME = 'Sadequain (Tribute)';
+import { uploadApi, artistApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export const ArtistDashboard: React.FC = () => {
    const { artworks, addArtwork, updateArtwork, deleteArtwork } = useGallery();
    const { convertPrice } = useCurrency();
+   const { user } = useAuth();
 
    // Local State
    const [isFormOpen, setIsFormOpen] = useState(false);
    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
    const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
+   const [artistProfile, setArtistProfile] = useState<{ id: string, name: string } | null>(null);
+
+   useEffect(() => {
+      const fetchProfile = async () => {
+         try {
+            const { artist } = await artistApi.getMyProfile();
+            setArtistProfile({ id: artist.id, name: artist.user.fullName });
+         } catch (error) {
+            console.error('Failed to fetch artist profile:', error);
+         }
+      };
+      fetchProfile();
+   }, []);
 
    // Form State
    const initialFormState: Partial<Artwork> = {
@@ -34,7 +45,7 @@ export const ArtistDashboard: React.FC = () => {
    const [isUploading, setIsUploading] = useState(false);
 
    // Derived Data
-   const artistArtworks = artworks.filter(a => a.artistId === CURRENT_ARTIST_ID);
+   const artistArtworks = artworks.filter(a => artistProfile && a.artistId === artistProfile.id);
    const totalEarnings = artistArtworks.reduce((sum, art) => sum + (art.inStock ? 0 : art.price), 0); // Mock logic: sold items calculated
    const totalViews = artistArtworks.length * 1243; // Mock views
 
@@ -74,8 +85,8 @@ export const ArtistDashboard: React.FC = () => {
          const newArtwork: Artwork = {
             ...formData as Artwork,
             id: Date.now().toString(),
-            artistId: CURRENT_ARTIST_ID,
-            artistName: CURRENT_ARTIST_NAME,
+            artistId: artistProfile?.id || '',
+            artistName: artistProfile?.name || '',
             imageUrl: formData.imageUrl || `https://picsum.photos/800/1000?random=${Date.now()}`,
             reviews: [],
             provenanceId: `BLK-${Date.now().toString().slice(-6)}`,
@@ -119,7 +130,7 @@ export const ArtistDashboard: React.FC = () => {
          <div className="flex justify-between items-center mb-12">
             <div>
                <h1 className="font-serif text-4xl text-white">Artist Studio</h1>
-               <p className="text-stone-500 mt-1">Welcome back, {CURRENT_ARTIST_NAME}</p>
+               <p className="text-stone-500 mt-1">Welcome back, {artistProfile?.name || 'Artist'}</p>
             </div>
             <button
                onClick={handleOpenUpload}
