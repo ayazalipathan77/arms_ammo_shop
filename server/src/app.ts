@@ -17,6 +17,7 @@ import paymentRoutes from './routes/payment.routes';
 import uploadRoutes from './routes/upload.routes';
 import conversationRoutes from './routes/conversation.routes';
 import settingRoutes from './routes/setting.routes';
+import exhibitionRoutes from './routes/exhibition.routes';
 
 const app: Application = express();
 
@@ -60,6 +61,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/exhibitions', exhibitionRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {

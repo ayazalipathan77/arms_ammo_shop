@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import {
    LayoutDashboard, Package, Users, DollarSign, Settings,
    Plus, Edit, Trash2, Truck, CreditCard, Check, X, Search,
-   Video, Globe, MessageSquare, Save, Facebook, Instagram, Image as ImageIcon
+   Video, Globe, MessageSquare, Save, Facebook, Instagram, Image as ImageIcon, Calendar
 } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
 import { useCurrency } from '../App';
@@ -12,12 +12,12 @@ import { uploadApi } from '../services/api';
 
 export const AdminDashboard: React.FC = () => {
    const {
-      artworks, orders, shippingConfig, totalRevenue, stripeConnected, conversations, siteContent,
+      artworks, orders, shippingConfig, totalRevenue, stripeConnected, conversations, siteContent, exhibitions,
       addArtwork, updateArtwork, deleteArtwork, updateOrderStatus, updateShippingConfig, connectStripe,
-      addConversation, deleteConversation, updateSiteContent
+      addConversation, deleteConversation, updateSiteContent, addExhibition, deleteExhibition
    } = useGallery();
    const { convertPrice } = useCurrency();
-   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT'>('OVERVIEW');
+   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS'>('OVERVIEW');
 
    // Local State for Artworks
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -30,6 +30,12 @@ export const AdminDashboard: React.FC = () => {
    const [isConvModalOpen, setIsConvModalOpen] = useState(false);
    const [newConv, setNewConv] = useState<Partial<Conversation>>({
       title: '', subtitle: '', category: 'WATCH', description: '', videoId: '', duration: '', location: ''
+   });
+
+   // Local State for Exhibitions
+   const [isExhModalOpen, setIsExhModalOpen] = useState(false);
+   const [newExh, setNewExh] = useState({
+      title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING'
    });
 
    // Local State for Order Tracking
@@ -98,6 +104,20 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
+   const handleAddExhibition = async () => {
+      if (!newExh.title || !newExh.startDate) return;
+      try {
+         await addExhibition({
+            ...newExh,
+            imageUrl: newExh.imageUrl || `https://picsum.photos/800/600?random=${Date.now()}`
+         });
+         setIsExhModalOpen(false);
+         setNewExh({ title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING' });
+      } catch (err) {
+         alert('Failed to add exhibition');
+      }
+   };
+
    const handleSaveContent = async () => {
       try {
          await updateSiteContent(heroForm);
@@ -117,7 +137,7 @@ export const AdminDashboard: React.FC = () => {
                <p className="text-stone-500 text-sm mt-1">Administrator Portal</p>
             </div>
             <div className="flex gap-2">
-               {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'FINANCE', 'CONTENT'].map(tab => (
+               {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'FINANCE', 'CONTENT', 'EXHIBITIONS'].map(tab => (
                   <button
                      key={tab}
                      onClick={() => setActiveTab(tab as any)}
@@ -617,6 +637,119 @@ export const AdminDashboard: React.FC = () => {
             </div>
          )}
 
+
+         {/* EXHIBITIONS TAB */}
+         {activeTab === 'EXHIBITIONS' && (
+            <div className="space-y-6 animate-fade-in">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-xl text-white font-serif">Exhibitions Management</h3>
+                  <button onClick={() => setIsExhModalOpen(true)} className="bg-amber-600 text-white px-4 py-2 text-sm flex items-center gap-2 hover:bg-amber-500">
+                     <Plus size={16} /> Add Exhibition
+                  </button>
+               </div>
+
+               {isExhModalOpen && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                     <div className="bg-stone-900 border border-stone-700 w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                           <h3 className="text-xl text-white font-serif">Add New Exhibition</h3>
+                           <button onClick={() => setIsExhModalOpen(false)}><X className="text-stone-500 hover:text-white" /></button>
+                        </div>
+                        <div className="space-y-4">
+                           <input
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                              placeholder="Exhibition Title"
+                              value={newExh.title}
+                              onChange={e => setNewExh({ ...newExh, title: e.target.value })}
+                           />
+                           <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                 <label className="text-xs text-stone-500 mb-1 block">Start Date</label>
+                                 <input
+                                    type="date"
+                                    className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                                    value={newExh.startDate}
+                                    onChange={e => setNewExh({ ...newExh, startDate: e.target.value })}
+                                 />
+                              </div>
+                              <div>
+                                 <label className="text-xs text-stone-500 mb-1 block">End Date (Optional)</label>
+                                 <input
+                                    type="date"
+                                    className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                                    value={newExh.endDate}
+                                    onChange={e => setNewExh({ ...newExh, endDate: e.target.value })}
+                                 />
+                              </div>
+                           </div>
+                           <input
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                              placeholder="Location"
+                              value={newExh.location}
+                              onChange={e => setNewExh({ ...newExh, location: e.target.value })}
+                           />
+                           <input
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                              placeholder="Image URL"
+                              value={newExh.imageUrl}
+                              onChange={e => setNewExh({ ...newExh, imageUrl: e.target.value })}
+                           />
+                           <div className="flex items-center gap-3">
+                              <input
+                                 type="checkbox"
+                                 id="isVirtual"
+                                 checked={newExh.isVirtual}
+                                 onChange={e => setNewExh({ ...newExh, isVirtual: e.target.checked })}
+                                 className="accent-amber-600 w-4 h-4"
+                              />
+                              <label htmlFor="isVirtual" className="text-stone-400">Virtual Tour Available</label>
+                           </div>
+                           <select
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                              value={newExh.status}
+                              onChange={e => setNewExh({ ...newExh, status: e.target.value })}
+                           >
+                              <option value="UPCOMING">Upcoming</option>
+                              <option value="CURRENT">Current</option>
+                              <option value="PAST">Past</option>
+                           </select>
+                           <textarea
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                              rows={4}
+                              placeholder="Description"
+                              value={newExh.description}
+                              onChange={e => setNewExh({ ...newExh, description: e.target.value })}
+                           />
+                           <button onClick={handleAddExhibition} className="w-full bg-amber-600 text-white py-3 hover:bg-amber-500 font-bold">
+                              Publish Exhibition
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               <div className="grid grid-cols-1 gap-6">
+                  {exhibitions.map((ex: any) => (
+                     <div key={ex.id} className="bg-stone-900 p-6 border border-stone-800 flex justify-between items-center group">
+                        <div className="flex gap-4">
+                           <div className="w-24 h-16 bg-stone-800 overflow-hidden">
+                              <img src={ex.imageUrl} alt={ex.title} className="w-full h-full object-cover" />
+                           </div>
+                           <div>
+                              <h4 className="text-white font-serif text-lg">{ex.title}</h4>
+                              <p className="text-stone-500 text-sm">{ex.location} • {new Date(ex.startDate).toLocaleDateString()}</p>
+                              <span className={`text-xs px-2 py-0.5 mt-1 inline-block border ${ex.status === 'CURRENT' ? 'border-green-500 text-green-500' : 'border-stone-600 text-stone-500'}`}>{ex.status}</span>
+                           </div>
+                        </div>
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button onClick={() => deleteExhibition(ex.id)} className="p-2 text-stone-500 hover:text-red-500 hover:bg-red-900/10 rounded"><Trash2 size={18} /></button>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            </div>
+         )}
       </div>
+
    );
 };

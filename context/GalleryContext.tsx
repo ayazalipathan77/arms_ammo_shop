@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Artwork, Order, ShippingConfig, OrderStatus, Conversation, SiteContent } from '../types';
 import { MOCK_CONVERSATIONS, DEFAULT_SITE_CONTENT } from '../constants';
-import { artworkApi, transformArtwork, ArtworkFilters, adminApi, settingsApi, conversationApi } from '../services/api';
+import { artworkApi, transformArtwork, ArtworkFilters, adminApi, settingsApi, conversationApi, exhibitionApi } from '../services/api';
 import { useAuth } from './AuthContext';
 
 interface GalleryContextType {
@@ -48,6 +48,13 @@ interface GalleryContextType {
   addConversation: (conv: any) => Promise<void>;
   deleteConversation: (id: string) => Promise<void>;
 
+  // Exhibition Actions
+  exhibitions: any[];
+  fetchExhibitions: () => Promise<void>;
+  addExhibition: (exh: any) => Promise<void>;
+  updateExhibition: (id: string, exh: any) => Promise<void>;
+  deleteExhibition: (id: string) => Promise<void>;
+
   // Financials (Mock)
   stripeConnected: boolean;
   connectStripe: () => void;
@@ -83,7 +90,9 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   // --- Order State (Mock Initial Data) ---
   const [orders, setOrders] = useState<Order[]>([]);
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [exhibitions, setExhibitions] = useState<any[]>([]);
   const [siteContent, setSiteContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
   const [shippingConfig, setShippingConfig] = useState<ShippingConfig>({
     domesticRate: 0,
@@ -142,6 +151,15 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   }, []);
 
+  const fetchExhibitions = useCallback(async () => {
+    try {
+      const response = await exhibitionApi.getAll();
+      setExhibitions(response.exhibitions);
+    } catch (err) {
+      console.error('Error fetching exhibitions:', err);
+    }
+  }, []);
+
   const fetchSettings = useCallback(async () => {
     try {
       const { settings } = await settingsApi.getSettings();
@@ -157,6 +175,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
     fetchArtworks();
     fetchFilters();
     fetchConversations();
+    fetchExhibitions();
     fetchSettings();
     if (user?.role === 'ADMIN') {
       fetchOrders();
@@ -248,6 +267,36 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const addExhibition = async (exhData: any) => {
+    try {
+      const response = await exhibitionApi.create(exhData);
+      setExhibitions(prev => [response.exhibition, ...prev]);
+    } catch (err) {
+      console.error('Error adding exhibition:', err);
+      throw err;
+    }
+  };
+
+  const updateExhibition = async (id: string, updates: any) => {
+    try {
+      const response = await exhibitionApi.update(id, updates);
+      setExhibitions(prev => prev.map(e => e.id === id ? response.exhibition : e));
+    } catch (err) {
+      console.error('Error updating exhibition:', err);
+      throw err;
+    }
+  };
+
+  const deleteExhibition = async (id: string) => {
+    try {
+      await exhibitionApi.delete(id);
+      setExhibitions(prev => prev.filter(e => e.id !== id));
+    } catch (err) {
+      console.error('Error deleting exhibition:', err);
+      throw err;
+    }
+  };
+
   const connectStripe = () => {
     setTimeout(() => setStripeConnected(true), 1500);
   };
@@ -277,6 +326,11 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       updateSiteContent,
       addConversation,
       deleteConversation,
+      exhibitions,
+      fetchExhibitions,
+      addExhibition,
+      updateExhibition,
+      deleteExhibition,
       stripeConnected,
       connectStripe,
       totalRevenue

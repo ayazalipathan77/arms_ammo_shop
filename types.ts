@@ -91,11 +91,13 @@ export interface ChatMessage {
 export interface Exhibition {
   id: string;
   title: string;
-  date: string;
-  imageUrl: string;
   description: string;
+  startDate: string;
+  endDate?: string;
   location: string;
+  imageUrl: string;
   isVirtual: boolean;
+  status: 'UPCOMING' | 'CURRENT' | 'PAST';
 }
 
 export interface Artist {

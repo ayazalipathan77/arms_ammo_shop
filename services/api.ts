@@ -867,3 +867,51 @@ export const conversationApi = {
         return response.json();
     }
 };
+
+// Exhibition API
+export const exhibitionApi = {
+    getAll: async (params?: { status?: string; isVirtual?: boolean }): Promise<{ exhibitions: any[] }> => {
+        const query = new URLSearchParams();
+        if (params?.status) query.append('status', params.status);
+        if (params?.isVirtual !== undefined) query.append('isVirtual', String(params.isVirtual));
+
+        const response = await fetch(`${API_URL}/exhibitions?${query}`);
+        if (!response.ok) throw new Error('Failed to fetch exhibitions');
+        return response.json();
+    },
+
+    getById: async (id: string): Promise<{ exhibition: any }> => {
+        const response = await fetch(`${API_URL}/exhibitions/${id}`);
+        if (!response.ok) throw new Error('Failed to fetch exhibition');
+        return response.json();
+    },
+
+    create: async (data: any): Promise<{ message: string; exhibition: any }> => {
+        const response = await authFetch(`${API_URL}/exhibitions`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create exhibition');
+        }
+        return response.json();
+    },
+
+    update: async (id: string, data: any): Promise<{ message: string; exhibition: any }> => {
+        const response = await authFetch(`${API_URL}/exhibitions/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update exhibition');
+        }
+        return response.json();
+    },
+
+    delete: async (id: string): Promise<void> => {
+        const response = await authFetch(`${API_URL}/exhibitions/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Failed to delete exhibition');
+    }
+};

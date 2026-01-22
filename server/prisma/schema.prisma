@@ -166,3 +166,17 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+
+model Exhibition {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  location    String
+  imageUrl    String
+  isVirtual   Boolean  @default(false)
+  status      String   @default("UPCOMING") // UPCOMING, CURRENT, PAST
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
