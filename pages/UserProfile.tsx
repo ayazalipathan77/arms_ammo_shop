@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, Package, LogOut, MapPin, Plus, Trash2, Edit } from 'lucide-react';
+import { Heart, Package, LogOut, MapPin, Plus, Trash2, Edit, User, Mail, Phone, Globe, Save, CheckCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { userApi, orderApi } from '../services/api';
@@ -9,13 +9,26 @@ export const UserProfile: React.FC = () => {
    const { user, logout } = useAuth();
    const navigate = useNavigate();
 
+   const [activeTab, setActiveTab] = useState<'SETTINGS' | 'ORDERS' | 'ADDRESSES'>('SETTINGS');
    const [profile, setProfile] = useState<any>(null);
    const [orders, setOrders] = useState<Order[]>([]);
    const [addresses, setAddresses] = useState<Address[]>([]);
    const [isLoading, setIsLoading] = useState(true);
-   const [error, setError] = useState<string | null>(null);
+   const [isSaving, setIsSaving] = useState(false);
+   const [successMsg, setSuccessMsg] = useState('');
 
-   // Address Form State
+   // Form State
+   const [phoneNumber, setPhoneNumber] = useState('');
+
+   // Default Address Form State (for Settings tab)
+   const [defaultAddress, setDefaultAddress] = useState({
+      address: '',
+      city: '',
+      country: 'Pakistan',
+      zipCode: ''
+   });
+
+   // Address Book Form State (for Addresses tab)
    const [showAddressForm, setShowAddressForm] = useState(false);
    const [newAddress, setNewAddress] = useState({
       address: '',
@@ -33,16 +46,28 @@ export const UserProfile: React.FC = () => {
             // Fetch Profile & Addresses
             const { user: profileData } = await userApi.getProfile();
             setProfile(profileData);
-            if (profileData.addresses) setAddresses(profileData.addresses);
+            setPhoneNumber(profileData.phoneNumber || '');
+
+            if (profileData.addresses) {
+               setAddresses(profileData.addresses);
+               const def = profileData.addresses.find((a: any) => a.isDefault);
+               if (def) {
+                  setDefaultAddress({
+                     address: def.address,
+                     city: def.city,
+                     country: def.country,
+                     zipCode: def.zipCode || ''
+                  });
+               }
+            }
 
             // Fetch Orders
             const { orders: orderData } = await orderApi.getUserOrders();
-            // @ts-ignore - API returns ApiOrder[], we can assume compatibility for display or would need transform
+            // @ts-ignore
             setOrders(orderData);
 
          } catch (err: any) {
             console.error('Failed to load profile:', err);
-            setError('Failed to load profile data');
          } finally {
             setIsLoading(false);
          }
@@ -55,6 +80,45 @@ export const UserProfile: React.FC = () => {
    const handleLogout = () => {
       logout();
       navigate('/');
+   };
+
+   // Update Profile (Phone) and Default Address
+   const handleUpdateProfile = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSaving(true);
+      setSuccessMsg('');
+
+      try {
+         // 1. Update Phone
+         if (phoneNumber !== profile.phoneNumber) {
+            await userApi.updateProfile({ phoneNumber });
+         }
+
+         // 2. Update Default Address (If changed)
+         // Logic: check if current form values differ from potentially existing default address
+         // For simplicity in this user request context: we will always add a new default address if the user clicks save on this form, 
+         // effectively "updating" it by creating a new current default.
+         // Optimization: Check if fields are not empty
+         if (defaultAddress.address && defaultAddress.city) {
+            await userApi.addAddress({
+               ...defaultAddress,
+               type: 'SHIPPING',
+               isDefault: true
+            });
+
+            // Refresh addresses locally
+            const { user: updatedProfile } = await userApi.getProfile();
+            setAddresses(updatedProfile.addresses);
+         }
+
+         setSuccessMsg('Profile updated successfully.');
+         setTimeout(() => setSuccessMsg(''), 3000);
+
+      } catch (err) {
+         console.error('Failed to update profile:', err);
+      } finally {
+         setIsSaving(false);
+      }
    };
 
    const handleAddAddress = async (e: React.FormEvent) => {
@@ -82,136 +146,305 @@ export const UserProfile: React.FC = () => {
    if (isLoading) return <div className="pt-32 text-center text-white">Loading profile...</div>;
 
    return (
-      <div className="pt-32 pb-12 max-w-6xl mx-auto px-4">
-         <div className="flex items-center justify-between mb-12 border-b border-stone-800 pb-8">
+      <div className="pt-32 pb-20 max-w-6xl mx-auto px-4 min-h-screen">
+
+         {/* Profile Header */}
+         <div className="flex flex-col md:flex-row items-center justify-between mb-12 border-b border-stone-800 pb-8 gap-6">
             <div className="flex items-center gap-6">
-               <div className="w-20 h-20 bg-stone-800 rounded-full flex items-center justify-center text-2xl font-serif text-amber-500">
+               <div className="w-24 h-24 bg-stone-900 rounded-full flex items-center justify-center text-3xl font-serif text-amber-500 border-2 border-stone-800">
                   {profile?.fullName?.substring(0, 2).toUpperCase() || 'US'}
                </div>
                <div>
-                  <h1 className="font-serif text-3xl text-white">{profile?.fullName}</h1>
-                  <p className="text-stone-500 uppercase tracking-widest text-xs mt-1">
-                     {profile?.email} • {profile?.role}
-                     {profile?.phoneNumber && <span> • {profile.phoneNumber}</span>}
+                  <h1 className="font-serif text-3xl md:text-4xl text-white">{profile?.fullName}</h1>
+                  <p className="text-stone-500 uppercase tracking-widest text-xs mt-2 flex gap-3">
+                     <span>{profile?.role}</span>
+                     <span>•</span>
+                     <span>{profile?.email}</span>
                   </p>
                </div>
             </div>
-            <button onClick={handleLogout} className="text-stone-500 hover:text-white flex items-center gap-2 text-sm"><LogOut size={16} /> Sign Out</button>
+            <button onClick={handleLogout} className="text-stone-500 hover:text-white flex items-center gap-2 text-sm border border-stone-800 px-4 py-2 hover:bg-stone-900 transition-colors">
+               <LogOut size={16} /> Sign Out
+            </button>
          </div>
 
-         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Left Column: Orders and Wishlist */}
-            <div className="lg:col-span-2 space-y-12">
+         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-               {/* Orders */}
-               <div className="space-y-6">
-                  <h2 className="font-serif text-2xl text-white flex items-center gap-2"><Package size={20} className="text-amber-500" /> Order History</h2>
-                  {orders.length === 0 ? (
-                     <p className="text-stone-500 italic">No orders placed yet.</p>
-                  ) : (
-                     <div className="space-y-4">
-                        {orders.map(order => (
-                           <div key={order.id} className="bg-stone-900 border border-stone-800 p-6 flex items-center justify-between rounded-sm">
-                              <div>
-                                 <p className="text-white font-bold">Order #{order.id.slice(0, 8)}</p>
-                                 <p className="text-stone-500 text-xs mt-1">Placed on {new Date(order.date || order.createdAt).toLocaleDateString()}</p>
-                                 <div className="flex gap-2 mt-2">
-                                    {order.items.map((item, idx) => (
-                                       <span key={idx} className="text-stone-400 text-xs bg-stone-800 px-2 py-1 rounded">
-                                          {item.artwork?.title || item.title} (x{item.quantity})
-                                       </span>
-                                    ))}
-                                 </div>
-                              </div>
-                              <div className="text-right">
-                                 <span className={`inline-block px-3 py-1 text-xs rounded-full border mb-2 ${order.status === 'DELIVERED' ? 'bg-green-900/30 text-green-500 border-green-900/50' :
-                                    order.status === 'PENDING' ? 'bg-yellow-900/30 text-yellow-500 border-yellow-900/50' :
-                                       'bg-stone-800 text-stone-400 border-stone-700'
-                                    }`}>
-                                    {order.status}
-                                 </span>
-                                 <p className="text-stone-300 text-sm">{order.currency || 'PKR'} {Number(order.totalAmount).toLocaleString()}</p>
-                              </div>
-                           </div>
-                        ))}
-                     </div>
-                  )}
-               </div>
-
+            {/* Sidebar Tabs */}
+            <div className="lg:col-span-1 space-y-1">
+               <button
+                  onClick={() => setActiveTab('SETTINGS')}
+                  className={`w-full text-left px-4 py-3 text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-3 ${activeTab === 'SETTINGS' ? 'bg-amber-600 text-white' : 'text-stone-500 hover:text-stone-300 hover:bg-stone-900'}`}
+               >
+                  <User size={16} /> Profile Settings
+               </button>
+               <button
+                  onClick={() => setActiveTab('ORDERS')}
+                  className={`w-full text-left px-4 py-3 text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-3 ${activeTab === 'ORDERS' ? 'bg-amber-600 text-white' : 'text-stone-500 hover:text-stone-300 hover:bg-stone-900'}`}
+               >
+                  <Package size={16} /> Order History
+               </button>
+               <button
+                  onClick={() => setActiveTab('ADDRESSES')}
+                  className={`w-full text-left px-4 py-3 text-sm font-bold uppercase tracking-wider transition-all flex items-center gap-3 ${activeTab === 'ADDRESSES' ? 'bg-amber-600 text-white' : 'text-stone-500 hover:text-stone-300 hover:bg-stone-900'}`}
+               >
+                  <MapPin size={16} /> Address Book
+               </button>
             </div>
 
-            {/* Right Column: Address Book */}
-            <div>
-               <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-serif text-2xl text-white flex items-center gap-2"><MapPin size={20} className="text-amber-500" /> Address Book</h2>
-                  <button
-                     onClick={() => setShowAddressForm(!showAddressForm)}
-                     className="text-amber-500 hover:text-amber-400 text-sm flex items-center gap-1"
-                  >
-                     <Plus size={16} /> Add New
-                  </button>
-               </div>
+            {/* Main Content Area */}
+            <div className="lg:col-span-3 bg-stone-900/30 border border-stone-800 min-h-[500px] p-8">
 
-               {showAddressForm && (
-                  <form onSubmit={handleAddAddress} className="bg-stone-900 p-4 rounded-sm border border-stone-800 mb-6 space-y-4">
-                     <input
-                        className="w-full bg-stone-950 border border-stone-800 p-2 text-white text-sm"
-                        placeholder="Full Address"
-                        value={newAddress.address}
-                        onChange={e => setNewAddress({ ...newAddress, address: e.target.value })}
-                        required
-                     />
-                     <div className="grid grid-cols-2 gap-4">
-                        <input
-                           className="w-full bg-stone-950 border border-stone-800 p-2 text-white text-sm"
-                           placeholder="City"
-                           value={newAddress.city}
-                           onChange={e => setNewAddress({ ...newAddress, city: e.target.value })}
-                           required
-                        />
-                        <input
-                           className="w-full bg-stone-950 border border-stone-800 p-2 text-white text-sm"
-                           placeholder="Zip Code"
-                           value={newAddress.zipCode}
-                           onChange={e => setNewAddress({ ...newAddress, zipCode: e.target.value })}
-                        />
-                     </div>
-                     <select
-                        className="w-full bg-stone-950 border border-stone-800 p-2 text-white text-sm"
-                        value={newAddress.country}
-                        onChange={e => setNewAddress({ ...newAddress, country: e.target.value })}
-                     >
-                        <option value="Pakistan">Pakistan</option>
-                        <option value="International">International (Other)</option>
-                     </select>
-                     <div className="flex justify-end gap-2">
-                        <button type="button" onClick={() => setShowAddressForm(false)} className="text-stone-500 text-xs hover:text-white px-3 py-2">Cancel</button>
-                        <button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-4 py-2 rounded-sm">Save Address</button>
-                     </div>
-                  </form>
+               {/* SETTINGS TAB */}
+               {activeTab === 'SETTINGS' && (
+                  <div className="animate-fade-in max-w-2xl">
+                     <h2 className="font-serif text-2xl text-white mb-8">Account Settings</h2>
+
+                     <form onSubmit={handleUpdateProfile} className="space-y-8">
+                        {/* Read-Only Info */}
+                        <div className="space-y-6 bg-stone-900/50 p-6 rounded border border-stone-800/50">
+                           <h3 className="text-amber-500 text-xs uppercase tracking-widest font-bold mb-4">Account Information (Read Only)</h3>
+                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-2">
+                                 <label className="flex items-center gap-2 text-stone-500 text-xs uppercase tracking-wider">
+                                    <User size={12} /> Full Name
+                                 </label>
+                                 <input
+                                    type="text"
+                                    value={profile?.fullName || ''}
+                                    disabled
+                                    className="w-full bg-stone-950 border border-stone-800 text-stone-400 p-3 cursor-not-allowed"
+                                 />
+                              </div>
+                              <div className="space-y-2">
+                                 <label className="flex items-center gap-2 text-stone-500 text-xs uppercase tracking-wider">
+                                    <Mail size={12} /> Email Address
+                                 </label>
+                                 <input
+                                    type="text"
+                                    value={profile?.email || ''}
+                                    disabled
+                                    className="w-full bg-stone-950 border border-stone-800 text-stone-400 p-3 cursor-not-allowed"
+                                 />
+                              </div>
+                           </div>
+                        </div>
+
+                        {/* Editable Personal Details */}
+                        <div className="space-y-6">
+                           <h3 className="text-white text-lg font-serif">Personal Details</h3>
+                           <div className="space-y-2">
+                              <label className="flex items-center gap-2 text-stone-400 text-xs uppercase tracking-wider">
+                                 <Phone size={12} /> Phone Number
+                              </label>
+                              <input
+                                 type="tel"
+                                 value={phoneNumber}
+                                 onChange={e => setPhoneNumber(e.target.value)}
+                                 placeholder="+92..."
+                                 className="w-full bg-stone-950 border border-stone-700 text-white p-3 focus:border-amber-500 outline-none transition-colors"
+                              />
+                           </div>
+                        </div>
+
+                        {/* Editable Default Address */}
+                        <div className="space-y-6 pt-6 border-t border-stone-800">
+                           <h3 className="text-white text-lg font-serif">Default Shipping Address</h3>
+                           <div className="space-y-4">
+                              <div className="space-y-2">
+                                 <label className="flex items-center gap-2 text-stone-400 text-xs uppercase tracking-wider">
+                                    <MapPin size={12} /> Address Line
+                                 </label>
+                                 <input
+                                    type="text"
+                                    value={defaultAddress.address}
+                                    onChange={e => setDefaultAddress({ ...defaultAddress, address: e.target.value })}
+                                    className="w-full bg-stone-950 border border-stone-700 text-white p-3 focus:border-amber-500 outline-none transition-colors"
+                                 />
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                 <div className="space-y-2">
+                                    <label className="text-stone-400 text-xs uppercase tracking-wider">
+                                       City
+                                    </label>
+                                    <input
+                                       type="text"
+                                       value={defaultAddress.city}
+                                       onChange={e => setDefaultAddress({ ...defaultAddress, city: e.target.value })}
+                                       className="w-full bg-stone-950 border border-stone-700 text-white p-3 focus:border-amber-500 outline-none transition-colors"
+                                    />
+                                 </div>
+                                 <div className="space-y-2">
+                                    <label className="text-stone-400 text-xs uppercase tracking-wider">
+                                       Zip Code
+                                    </label>
+                                    <input
+                                       type="text"
+                                       value={defaultAddress.zipCode}
+                                       onChange={e => setDefaultAddress({ ...defaultAddress, zipCode: e.target.value })}
+                                       className="w-full bg-stone-950 border border-stone-700 text-white p-3 focus:border-amber-500 outline-none transition-colors"
+                                    />
+                                 </div>
+                              </div>
+                              <div className="space-y-2">
+                                 <label className="flex items-center gap-2 text-stone-400 text-xs uppercase tracking-wider">
+                                    <Globe size={12} /> Country
+                                 </label>
+                                 <select
+                                    value={defaultAddress.country}
+                                    onChange={(e) => setDefaultAddress({ ...defaultAddress, country: e.target.value })}
+                                    className="w-full bg-stone-950 border border-stone-700 text-white p-3 focus:border-amber-500 outline-none transition-colors"
+                                 >
+                                    <option value="Pakistan">Pakistan</option>
+                                    <option value="UAE">UAE</option>
+                                    <option value="UK">UK</option>
+                                    <option value="USA">USA</option>
+                                 </select>
+                              </div>
+                           </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 pt-4">
+                           <button
+                              type="submit"
+                              disabled={isSaving}
+                              className="bg-amber-600 hover:bg-amber-500 disabled:bg-stone-700 text-white px-8 py-3 uppercase tracking-widest text-xs font-bold flex items-center gap-2 transition-all"
+                           >
+                              {isSaving ? 'Saving...' : <><Save size={16} /> Save Changes</>}
+                           </button>
+                           {successMsg && (
+                              <span className="text-green-500 text-sm flex items-center gap-2 animate-fade-in">
+                                 <CheckCircle size={16} /> {successMsg}
+                              </span>
+                           )}
+                        </div>
+                     </form>
+                  </div>
                )}
 
-               <div className="space-y-4">
-                  {addresses.length === 0 ? (
-                     <p className="text-stone-500 italic text-sm">No addresses saved.</p>
-                  ) : (
-                     addresses.map(addr => (
-                        <div key={addr.id} className="bg-stone-900 p-4 border border-stone-800 relative group">
-                           <p className="text-white text-sm font-medium">{addr.address}</p>
-                           <p className="text-stone-500 text-xs mt-1">{addr.city}, {addr.zipCode}</p>
-                           <p className="text-stone-500 text-xs">{addr.country}</p>
-                           {addr.isDefault && <span className="absolute top-4 right-4 text-[10px] bg-stone-800 text-stone-400 px-2 py-0.5 rounded">Default</span>}
-
-                           <button
-                              onClick={() => handleDeleteAddress(addr.id)}
-                              className="absolute bottom-4 right-4 text-stone-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                           >
-                              <Trash2 size={14} />
-                           </button>
+               {/* ORDERS TAB */}
+               {activeTab === 'ORDERS' && (
+                  <div className="animate-fade-in space-y-6">
+                     <h2 className="font-serif text-2xl text-white mb-6">Order History</h2>
+                     {orders.length === 0 ? (
+                        <p className="text-stone-500 italic">No orders placed yet.</p>
+                     ) : (
+                        <div className="space-y-4">
+                           {orders.map(order => (
+                              <div key={order.id} className="bg-stone-900 border border-stone-800 p-6 flex items-center justify-between rounded-sm hover:border-stone-700 transition-colors">
+                                 <div>
+                                    <p className="text-white font-bold">Order #{order.id.slice(0, 8)}</p>
+                                    <p className="text-stone-500 text-xs mt-1">Placed on {new Date(order.date || order.createdAt).toLocaleDateString()}</p>
+                                    <div className="flex gap-2 mt-2">
+                                       {order.items.map((item, idx) => (
+                                          <span key={idx} className="text-stone-400 text-xs bg-stone-950 px-2 py-1 rounded border border-stone-800">
+                                             {item.artwork?.title || item.title} (x{item.quantity})
+                                          </span>
+                                       ))}
+                                    </div>
+                                 </div>
+                                 <div className="text-right">
+                                    <span className={`inline-block px-3 py-1 text-xs rounded-full border mb-2 ${order.status === 'DELIVERED' ? 'bg-green-900/30 text-green-500 border-green-900/50' :
+                                       order.status === 'PENDING' ? 'bg-yellow-900/30 text-yellow-500 border-yellow-900/50' :
+                                          'bg-stone-800 text-stone-400 border-stone-700'
+                                       }`}>
+                                       {order.status}
+                                    </span>
+                                    <p className="text-stone-300 text-sm">{order.currency || 'PKR'} {Number(order.totalAmount).toLocaleString()}</p>
+                                    <Link to={`/invoice/${order.id}`} target="_blank" className="block text-[10px] text-amber-500 hover:text-white mt-1 uppercase tracking-wider">
+                                       View Invoice
+                                    </Link>
+                                 </div>
+                              </div>
+                           ))}
                         </div>
-                     ))
-                  )}
-               </div>
+                     )}
+                  </div>
+               )}
+
+               {/* ADDRESSES TAB */}
+               {activeTab === 'ADDRESSES' && (
+                  <div className="animate-fade-in">
+                     <div className="flex items-center justify-between mb-8">
+                        <h2 className="font-serif text-2xl text-white">Address Book</h2>
+                        <button
+                           onClick={() => setShowAddressForm(!showAddressForm)}
+                           className="text-amber-500 hover:text-amber-400 text-sm flex items-center gap-1 uppercase tracking-wider font-bold"
+                        >
+                           <Plus size={16} /> Add New Address
+                        </button>
+                     </div>
+
+                     {showAddressForm && (
+                        <form onSubmit={handleAddAddress} className="bg-stone-900 p-6 border border-stone-800 mb-8 space-y-4 animate-fade-in">
+                           <h3 className="text-white text-sm font-bold mb-2">New Address Details</h3>
+                           <input
+                              className="w-full bg-stone-950 border border-stone-800 p-3 text-white text-sm"
+                              placeholder="Full Address"
+                              value={newAddress.address}
+                              onChange={e => setNewAddress({ ...newAddress, address: e.target.value })}
+                              required
+                           />
+                           <div className="grid grid-cols-2 gap-4">
+                              <input
+                                 className="w-full bg-stone-950 border border-stone-800 p-3 text-white text-sm"
+                                 placeholder="City"
+                                 value={newAddress.city}
+                                 onChange={e => setNewAddress({ ...newAddress, city: e.target.value })}
+                                 required
+                              />
+                              <input
+                                 className="w-full bg-stone-950 border border-stone-800 p-3 text-white text-sm"
+                                 placeholder="Zip Code"
+                                 value={newAddress.zipCode}
+                                 onChange={e => setNewAddress({ ...newAddress, zipCode: e.target.value })}
+                              />
+                           </div>
+                           <select
+                              className="w-full bg-stone-950 border border-stone-800 p-3 text-white text-sm"
+                              value={newAddress.country}
+                              onChange={e => setNewAddress({ ...newAddress, country: e.target.value })}
+                           >
+                              <option value="Pakistan">Pakistan</option>
+                              <option value="International">International (Other)</option>
+                           </select>
+                           <div className="flex justify-end gap-3 pt-2">
+                              <button type="button" onClick={() => setShowAddressForm(false)} className="text-stone-500 text-xs hover:text-white px-4 py-2">Cancel</button>
+                              <button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white text-xs px-6 py-2 uppercase tracking-wide font-bold">Save Address</button>
+                           </div>
+                        </form>
+                     )}
+
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {addresses.length === 0 ? (
+                           <p className="text-stone-500 italic text-sm col-span-2">No addresses saved.</p>
+                        ) : (
+                           addresses.map(addr => (
+                              <div key={addr.id} className={`bg-stone-900 p-6 border relative group transition-colors ${addr.isDefault ? 'border-amber-500/50' : 'border-stone-800 hover:border-stone-700'}`}>
+                                 <div className="flex items-start justify-between mb-2">
+                                    <MapPin className="text-stone-600" size={20} />
+                                    {addr.isDefault && <span className="text-[10px] bg-amber-900/20 text-amber-500 px-2 py-1 uppercase tracking-widest border border-amber-900/30">Default</span>}
+                                 </div>
+                                 <p className="text-white text-sm font-medium leading-relaxed">{addr.address}</p>
+                                 <p className="text-stone-500 text-xs mt-2 uppercase tracking-wide">{addr.city}, {addr.zipCode}</p>
+                                 <p className="text-stone-500 text-xs">{addr.country}</p>
+
+                                 {!addr.isDefault && (
+                                    <button
+                                       onClick={() => handleDeleteAddress(addr.id)}
+                                       className="absolute bottom-4 right-4 text-stone-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                       title="Delete Address"
+                                    >
+                                       <Trash2 size={16} />
+                                    </button>
+                                 )}
+                              </div>
+                           ))
+                        )}
+                     </div>
+                  </div>
+               )}
+
             </div>
          </div>
       </div>

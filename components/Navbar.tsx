@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Menu, ShoppingBag, User as UserIcon, Search, Globe, X, ChevronDown } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart, useCurrency } from '../App';
 import { useAuth } from '../context/AuthContext';
 import { UI_TEXT } from '../constants';
@@ -13,6 +13,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ lang, setLang }) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { cart } = useCart();
   const { currency, setCurrency } = useCurrency();
@@ -129,7 +130,11 @@ export const Navbar: React.FC<NavbarProps> = ({ lang, setLang }) => {
                         profile settings
                       </Link>
                       <button
-                        onClick={() => { logout(); setUserMenuOpen(false); }}
+                        onClick={() => {
+                          logout();
+                          setUserMenuOpen(false);
+                          navigate('/');
+                        }}
                         className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-stone-800 hover:text-red-300 transition-colors mt-2 pt-2 border-t border-stone-800"
                       >
                         sign out

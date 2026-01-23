@@ -93,10 +93,6 @@ export const Gallery: React.FC = () => {
     }
   };
 
-  const clearArtistSelection = () => {
-    setSearchParams({});
-  };
-
   // Build category list from API + default "All"
   const categories = ['All', ...availableCategories];
   const mediums = ['All', ...availableMediums.map(m => {
@@ -112,68 +108,34 @@ export const Gallery: React.FC = () => {
   return (
     <div className="pt-32 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-      {/* Artist Profile Hero Section */}
-      {selectedArtist && (
-        <div className="mb-16 animate-fade-in border-b border-stone-800 pb-12">
-          <button onClick={clearArtistSelection} className="mb-6 text-stone-500 hover:text-white text-xs flex items-center gap-2">
-            <X size={16} /> Show All Artists
+      {/* Artist Profile Hero Section Removed - Redirects to /artists/:id now */}
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+        <div>
+          <h1 className="font-serif text-5xl text-stone-100 mb-2">The Collection</h1>
+          <p className="text-stone-500 text-sm tracking-wide uppercase">Authentic works from verified artists.</p>
+        </div>
+
+        <div className="flex gap-4 w-full md:w-auto items-center">
+          <div className="relative flex-1 md:w-80 border-b border-stone-700 focus-within:border-amber-500 transition-colors">
+            <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-stone-500" size={16} />
+            <input
+              type="text"
+              placeholder="SEARCH MASTERPIECES..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-transparent pl-8 pr-4 py-3 text-sm focus:outline-none text-white placeholder:text-stone-600 uppercase tracking-widest"
+            />
+          </div>
+          <button
+            onClick={() => setFilterOpen(!filterOpen)}
+            className={`p-3 border border-stone-700 hover:border-amber-500 transition-colors ${filterOpen ? 'bg-stone-800' : ''}`}
+          >
+            <Filter size={20} className={filterOpen ? 'text-amber-500' : 'text-stone-400'} />
           </button>
-
-          {loadingArtist ? (
-            <div className="flex gap-4 items-center">
-              <div className="w-32 h-32 bg-stone-800 rounded-full animate-pulse"></div>
-              <div className="space-y-2">
-                <div className="h-8 w-64 bg-stone-800 animate-pulse rounded"></div>
-                <div className="h-4 w-32 bg-stone-800 animate-pulse rounded"></div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col md:flex-row gap-8 items-start">
-              <div className="w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-amber-500/50 flex-shrink-0">
-                <img src={selectedArtist.imageUrl} alt={selectedArtist.name} className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-1">
-                <h1 className="font-serif text-4xl md:text-5xl text-white mb-2">{selectedArtist.name}</h1>
-                <p className="text-amber-500 text-sm uppercase tracking-widest mb-6">{selectedArtist.specialty}</p>
-                <div className="max-w-3xl text-stone-400 leading-relaxed text-lg space-y-4">
-                  {selectedArtist.bio.split('\n').map((paragraph, idx) => (
-                    <p key={idx}>{paragraph}</p>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
-      )}
-
-      {/* Default Header (Only show if no artist selected) */}
-      {!selectedArtist && (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-          <div>
-            <h1 className="font-serif text-5xl text-stone-100 mb-2">The Collection</h1>
-            <p className="text-stone-500 text-sm tracking-wide uppercase">Authentic works from verified artists.</p>
-          </div>
-
-          <div className="flex gap-4 w-full md:w-auto items-center">
-            <div className="relative flex-1 md:w-80 border-b border-stone-700 focus-within:border-amber-500 transition-colors">
-              <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-stone-500" size={16} />
-              <input
-                type="text"
-                placeholder="SEARCH MASTERPIECES..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-transparent pl-8 pr-4 py-3 text-sm focus:outline-none text-white placeholder:text-stone-600 uppercase tracking-widest"
-              />
-            </div>
-            <button
-              onClick={() => setFilterOpen(!filterOpen)}
-              className={`p-3 border border-stone-700 hover:border-amber-500 transition-colors ${filterOpen ? 'bg-stone-800' : ''}`}
-            >
-              <Filter size={20} className={filterOpen ? 'text-amber-500' : 'text-stone-400'} />
-            </button>
-          </div>
-        </div>
-      )}
+      </div>
 
       <div className="flex gap-12 relative">
         {/* Sidebar Filters */}
