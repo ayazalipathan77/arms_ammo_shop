@@ -29,6 +29,18 @@ export interface User {
   role: UserRole;
   avatar?: string;
   favorites: string[];
+  phoneNumber?: string;
+  addresses?: Address[];
+}
+
+export interface Address {
+  id: string;
+  type: 'SHIPPING' | 'BILLING';
+  address: string;
+  city: string;
+  country: string;
+  zipCode?: string;
+  isDefault: boolean;
 }
 
 export interface Review {

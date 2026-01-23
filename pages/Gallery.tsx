@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useGallery } from '../context/GalleryContext';
-import { Filter, Search, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Filter, Search, Loader2, X } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useCurrency } from '../App';
+import { artistApi } from '../services/api';
+import { Artist } from '../types';
 
 export const Gallery: React.FC = () => {
   const { convertPrice } = useCurrency();
@@ -15,10 +17,44 @@ export const Gallery: React.FC = () => {
     fetchArtworks
   } = useGallery();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const artistIdParam = searchParams.get('artistId');
+
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedMedium, setSelectedMedium] = useState<string>('All');
+
+  // Selected Artist State
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+  const [loadingArtist, setLoadingArtist] = useState(false);
+
+  // Fetch Artist Details if ID is present
+  useEffect(() => {
+    if (artistIdParam) {
+      const loadArtist = async () => {
+        setLoadingArtist(true);
+        try {
+          const { artist } = await artistApi.getById(artistIdParam);
+          // Transform to frontend type if needed, or stick to simple display
+          setSelectedArtist({
+            id: artist.id,
+            name: artist.user.fullName,
+            bio: artist.bio || '',
+            imageUrl: artist.imageUrl || '',
+            specialty: artist.originCity || ''
+          });
+        } catch (err) {
+          console.error('Failed to load artist:', err);
+        } finally {
+          setLoadingArtist(false);
+        }
+      };
+      loadArtist();
+    } else {
+      setSelectedArtist(null);
+    }
+  }, [artistIdParam]);
 
   // Fetch artworks when filters change
   useEffect(() => {
@@ -36,18 +72,29 @@ export const Gallery: React.FC = () => {
       filters.search = searchTerm;
     }
 
+    if (artistIdParam) {
+      filters.artistId = artistIdParam;
+    }
+
     // Debounce search
     const timeoutId = setTimeout(() => {
       fetchArtworks(filters);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [selectedCategory, selectedMedium, searchTerm, fetchArtworks]);
+  }, [selectedCategory, selectedMedium, searchTerm, fetchArtworks, artistIdParam]);
 
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('All');
     setSelectedMedium('All');
+    if (artistIdParam) {
+      setSearchParams({}); // Clear URL params
+    }
+  };
+
+  const clearArtistSelection = () => {
+    setSearchParams({});
   };
 
   // Build category list from API + default "All"
@@ -64,70 +111,108 @@ export const Gallery: React.FC = () => {
 
   return (
     <div className="pt-32 min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-        <div>
-           <h1 className="font-serif text-5xl text-stone-100 mb-2">The Collection</h1>
-           <p className="text-stone-500 text-sm tracking-wide uppercase">Authentic works from verified artists.</p>
-        </div>
 
-        <div className="flex gap-4 w-full md:w-auto items-center">
-          <div className="relative flex-1 md:w-80 border-b border-stone-700 focus-within:border-amber-500 transition-colors">
-            <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-stone-500" size={16} />
-            <input
-              type="text"
-              placeholder="SEARCH MASTERPIECES..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-transparent pl-8 pr-4 py-3 text-sm focus:outline-none text-white placeholder:text-stone-600 uppercase tracking-widest"
-            />
-          </div>
-          <button
-            onClick={() => setFilterOpen(!filterOpen)}
-            className={`p-3 border border-stone-700 hover:border-amber-500 transition-colors ${filterOpen ? 'bg-stone-800' : ''}`}
-          >
-            <Filter size={20} className={filterOpen ? 'text-amber-500' : 'text-stone-400'} />
+      {/* Artist Profile Hero Section */}
+      {selectedArtist && (
+        <div className="mb-16 animate-fade-in border-b border-stone-800 pb-12">
+          <button onClick={clearArtistSelection} className="mb-6 text-stone-500 hover:text-white text-xs flex items-center gap-2">
+            <X size={16} /> Show All Artists
           </button>
+
+          {loadingArtist ? (
+            <div className="flex gap-4 items-center">
+              <div className="w-32 h-32 bg-stone-800 rounded-full animate-pulse"></div>
+              <div className="space-y-2">
+                <div className="h-8 w-64 bg-stone-800 animate-pulse rounded"></div>
+                <div className="h-4 w-32 bg-stone-800 animate-pulse rounded"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-amber-500/50 flex-shrink-0">
+                <img src={selectedArtist.imageUrl} alt={selectedArtist.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1">
+                <h1 className="font-serif text-4xl md:text-5xl text-white mb-2">{selectedArtist.name}</h1>
+                <p className="text-amber-500 text-sm uppercase tracking-widest mb-6">{selectedArtist.specialty}</p>
+                <div className="max-w-3xl text-stone-400 leading-relaxed text-lg space-y-4">
+                  {selectedArtist.bio.split('\n').map((paragraph, idx) => (
+                    <p key={idx}>{paragraph}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {/* Default Header (Only show if no artist selected) */}
+      {!selectedArtist && (
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+          <div>
+            <h1 className="font-serif text-5xl text-stone-100 mb-2">The Collection</h1>
+            <p className="text-stone-500 text-sm tracking-wide uppercase">Authentic works from verified artists.</p>
+          </div>
+
+          <div className="flex gap-4 w-full md:w-auto items-center">
+            <div className="relative flex-1 md:w-80 border-b border-stone-700 focus-within:border-amber-500 transition-colors">
+              <Search className="absolute left-0 top-1/2 -translate-y-1/2 text-stone-500" size={16} />
+              <input
+                type="text"
+                placeholder="SEARCH MASTERPIECES..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-transparent pl-8 pr-4 py-3 text-sm focus:outline-none text-white placeholder:text-stone-600 uppercase tracking-widest"
+              />
+            </div>
+            <button
+              onClick={() => setFilterOpen(!filterOpen)}
+              className={`p-3 border border-stone-700 hover:border-amber-500 transition-colors ${filterOpen ? 'bg-stone-800' : ''}`}
+            >
+              <Filter size={20} className={filterOpen ? 'text-amber-500' : 'text-stone-400'} />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-12 relative">
         {/* Sidebar Filters */}
         <aside className={`w-64 flex-shrink-0 space-y-10 transition-all duration-300 ${filterOpen ? 'opacity-100 translate-x-0' : 'absolute -translate-x-full opacity-0 pointer-events-none'}`}>
-            <div>
-              <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Category</h3>
-              <div className="space-y-3">
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`block w-full text-left text-xs uppercase tracking-widest transition-colors ${selectedCategory === cat ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'}`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+          <div>
+            <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Category</h3>
+            <div className="space-y-3">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`block w-full text-left text-xs uppercase tracking-widest transition-colors ${selectedCategory === cat ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'}`}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <div>
-              <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Medium</h3>
-              <div className="space-y-3">
-                {mediums.map(med => (
-                  <button
-                    key={med}
-                    onClick={() => setSelectedMedium(med)}
-                    className={`block w-full text-left text-xs uppercase tracking-widest transition-colors ${selectedMedium === med ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'}`}
-                  >
-                    {med}
-                  </button>
-                ))}
-              </div>
+          <div>
+            <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Medium</h3>
+            <div className="space-y-3">
+              {mediums.map(med => (
+                <button
+                  key={med}
+                  onClick={() => setSelectedMedium(med)}
+                  className={`block w-full text-left text-xs uppercase tracking-widest transition-colors ${selectedMedium === med ? 'text-amber-500 font-bold' : 'text-stone-500 hover:text-stone-300'}`}
+                >
+                  {med}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <div>
-               <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Price</h3>
-               {/* Simple Range Slider Placeholder */}
-               <input type="range" className="w-full h-1 bg-stone-800 appearance-none cursor-pointer" />
-            </div>
+          <div>
+            <h3 className="text-stone-200 font-serif text-xl mb-6 italic">Price</h3>
+            {/* Simple Range Slider Placeholder */}
+            <input type="range" className="w-full h-1 bg-stone-800 appearance-none cursor-pointer" />
+          </div>
         </aside>
 
         {/* Grid */}
@@ -139,14 +224,14 @@ export const Gallery: React.FC = () => {
             </div>
           ) : error ? (
             <div className="text-center py-20 text-red-500 border border-dashed border-red-800">
-               <p className="font-serif text-2xl mb-2">Error loading artworks</p>
-               <p className="text-sm text-stone-500 mb-4">{error}</p>
-               <button onClick={() => fetchArtworks()} className="text-amber-500 text-sm hover:underline">Try Again</button>
+              <p className="font-serif text-2xl mb-2">Error loading artworks</p>
+              <p className="text-sm text-stone-500 mb-4">{error}</p>
+              <button onClick={() => fetchArtworks()} className="text-amber-500 text-sm hover:underline">Try Again</button>
             </div>
           ) : artworks.length === 0 ? (
             <div className="text-center py-20 text-stone-500 border border-dashed border-stone-800">
-               <p className="font-serif text-2xl mb-2">No artworks found</p>
-               <button onClick={clearFilters} className="text-amber-500 text-sm hover:underline">Clear Filters</button>
+              <p className="font-serif text-2xl mb-2">No artworks found</p>
+              <button onClick={clearFilters} className="text-amber-500 text-sm hover:underline">Clear Filters</button>
             </div>
           ) : (
             <div className={`grid grid-cols-1 md:grid-cols-2 ${!filterOpen ? 'lg:grid-cols-3' : 'lg:grid-cols-2'} gap-8`}>
@@ -159,9 +244,9 @@ export const Gallery: React.FC = () => {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                     {art.inStock ? null : (
-                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                          <span className="text-white border border-white px-4 py-2 uppercase tracking-widest text-xs">Sold Out</span>
-                       </div>
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <span className="text-white border border-white px-4 py-2 uppercase tracking-widest text-xs">Sold Out</span>
+                      </div>
                     )}
                   </div>
                   <div className="p-6">

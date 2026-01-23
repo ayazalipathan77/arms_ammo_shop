@@ -18,6 +18,9 @@ import uploadRoutes from './routes/upload.routes';
 import conversationRoutes from './routes/conversation.routes';
 import settingRoutes from './routes/setting.routes';
 import exhibitionRoutes from './routes/exhibition.routes';
+import userRoutes from './routes/user.routes';
+import shippingRoutes from './routes/shipping.routes';
+import adminRoutes from './routes/admin.routes';
 
 const app: Application = express();
 
@@ -62,6 +65,9 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/settings', settingRoutes);
 app.use('/api/exhibitions', exhibitionRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/shipping', shippingRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 Handler
 app.use((req: Request, res: Response) => {

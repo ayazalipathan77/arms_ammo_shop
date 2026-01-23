@@ -1,0 +1,42 @@
+export const userApi = {
+    getProfile: async (): Promise<{ user: any }> => {
+        const response = await authFetch(`${API_URL}/users/profile`);
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        return response.json();
+    },
+    updateProfile: async (data: any): Promise<{ user: any; message: string }> => {
+        const response = await authFetch(`${API_URL}/users/profile`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Failed to update profile');
+        return response.json();
+    },
+    addAddress: async (data: any): Promise<{ address: any; message: string }> => {
+        const response = await authFetch(`${API_URL}/users/addresses`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Failed to add address');
+        return response.json();
+    },
+    deleteAddress: async (id: string): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/users/addresses/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete address');
+        return response.json();
+    }
+};
+
+export const shippingApi = {
+    getRates: async (data: { country: string; items?: any[] }): Promise<{ rates: any[] }> => {
+        const response = await fetch(`${API_URL}/shipping/rates`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to fetch shipping rates');
+        return response.json();
+    }
+};

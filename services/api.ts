@@ -773,6 +773,34 @@ export const uploadApi = {
 
 // Admin API
 export const adminApi = {
+    // Get Dashboard Stats
+    getDashboardStats: async (): Promise<{ stats: any; recentOrders: any[] }> => {
+        const response = await authFetch(`${API_URL}/admin/stats`);
+        if (!response.ok) throw new Error('Failed to fetch dashboard stats');
+        return response.json();
+    },
+
+    // Get All Users
+    getUsers: async (filters: { role?: string; search?: string } = {}): Promise<{ users: any[] }> => {
+        const params = new URLSearchParams();
+        if (filters.role) params.append('role', filters.role);
+        if (filters.search) params.append('search', filters.search);
+
+        const response = await authFetch(`${API_URL}/admin/users?${params}`);
+        if (!response.ok) throw new Error('Failed to fetch users');
+        return response.json();
+    },
+
+    // Update User Role
+    updateUserRole: async (id: string, role: string): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/admin/users/${id}/role`, {
+            method: 'PUT',
+            body: JSON.stringify({ role }),
+        });
+        if (!response.ok) throw new Error('Failed to update user role');
+        return response.json();
+    },
+
     // Get all orders (Admin only)
     getAllOrders: async (filters: any = {}): Promise<{
         orders: ApiOrder[];
@@ -803,6 +831,51 @@ export const adminApi = {
             const error = await response.json();
             throw new Error(error.message || 'Failed to update order status');
         }
+        return response.json();
+    },
+};
+
+// User API
+export const userApi = {
+    getProfile: async (): Promise<{ user: any }> => {
+        const response = await authFetch(`${API_URL}/users/profile`);
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        return response.json();
+    },
+    updateProfile: async (data: any): Promise<{ user: any; message: string }> => {
+        const response = await authFetch(`${API_URL}/users/profile`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Failed to update profile');
+        return response.json();
+    },
+    addAddress: async (data: any): Promise<{ address: any; message: string }> => {
+        const response = await authFetch(`${API_URL}/users/addresses`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) throw new Error('Failed to add address');
+        return response.json();
+    },
+    deleteAddress: async (id: string): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/users/addresses/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) throw new Error('Failed to delete address');
+        return response.json();
+    }
+};
+
+// Shipping API
+export const shippingApi = {
+    getRates: async (data: { country: string; items?: any[] }): Promise<{ rates: any[] }> => {
+        const response = await fetch(`${API_URL}/shipping/rates`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to fetch shipping rates');
         return response.json();
     }
 };

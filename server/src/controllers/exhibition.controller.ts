@@ -36,7 +36,7 @@ export const getExhibitionById = async (req: Request, res: Response): Promise<vo
     try {
         const { id } = req.params;
         const exhibition = await prisma.exhibition.findUnique({
-            where: { id },
+            where: { id: id as string },
         });
 
         if (!exhibition) {
@@ -98,7 +98,7 @@ export const updateExhibition = async (req: Request, res: Response): Promise<voi
         const validatedData = updateExhibitionSchema.parse(req.body);
 
         const exhibition = await prisma.exhibition.update({
-            where: { id },
+            where: { id: id as string },
             data: validatedData,
         });
 
@@ -131,7 +131,7 @@ export const deleteExhibition = async (req: Request, res: Response): Promise<voi
 
         const { id } = req.params;
         await prisma.exhibition.delete({
-            where: { id },
+            where: { id: id as string },
         });
 
         res.status(StatusCodes.OK).json({ message: 'Exhibition deleted successfully' });

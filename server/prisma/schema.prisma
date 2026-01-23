@@ -40,6 +40,20 @@ model User {
   orders        Order[]
   reviews       Review[]
   cartItems     CartItem[]
+  addresses     Address[]
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   @default("SHIPPING") // BILLING, SHIPPING
+  address   String
+  city      String
+  country   String
+  zipCode   String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
 }
 
 model Artist {

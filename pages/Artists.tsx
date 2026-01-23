@@ -67,8 +67,10 @@ export const Artists: React.FC = () => {
               </div>
               <h2 className="font-serif text-2xl text-white mb-2">{artist.name}</h2>
               <p className="text-amber-500 text-xs uppercase tracking-widest mb-3">{artist.specialty}</p>
-              <p className="text-stone-400 text-sm mb-6 max-w-xs mx-auto">{artist.bio}</p>
-              <Link to={`/gallery?artistId=${artist.id}`} className="text-stone-500 hover:text-white text-xs border-b border-transparent hover:border-white pb-1 transition-all">View Collection</Link>
+              <p className="text-stone-400 text-sm mb-4 max-w-xs mx-auto line-clamp-5 leading-relaxed">{artist.bio}</p>
+              <Link to={`/gallery?artistId=${artist.id}`} className="text-amber-500 hover:text-white text-xs uppercase tracking-widest border-b border-transparent hover:border-white pb-1 transition-all">
+                Read Full Bio & View Collection
+              </Link>
             </div>
           ))}
         </div>

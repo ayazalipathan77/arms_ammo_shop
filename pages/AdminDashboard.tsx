@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
    LayoutDashboard, Package, Users, DollarSign, Settings,
    Plus, Edit, Trash2, Truck, CreditCard, Check, X, Search,
@@ -8,16 +7,24 @@ import {
 import { useGallery } from '../context/GalleryContext';
 import { useCurrency } from '../App';
 import { OrderStatus, Artwork, Conversation } from '../types';
-import { uploadApi } from '../services/api';
+import { uploadApi, adminApi } from '../services/api';
 
 export const AdminDashboard: React.FC = () => {
    const {
-      artworks, orders, shippingConfig, totalRevenue, stripeConnected, conversations, siteContent, exhibitions,
+      artworks, orders, shippingConfig, stripeConnected, conversations, siteContent, exhibitions,
       addArtwork, updateArtwork, deleteArtwork, updateOrderStatus, updateShippingConfig, connectStripe,
       addConversation, deleteConversation, updateSiteContent, addExhibition, deleteExhibition
    } = useGallery();
    const { convertPrice } = useCurrency();
-   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS'>('OVERVIEW');
+   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS'>('OVERVIEW');
+
+   // Dashboard Stats
+   const [stats, setStats] = useState<any>(null);
+   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+
+   // Users State
+   const [users, setUsers] = useState<any[]>([]);
+   const [userSearch, setUserSearch] = useState('');
 
    // Local State for Artworks
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -44,6 +51,46 @@ export const AdminDashboard: React.FC = () => {
    // Content form states
    const [heroForm, setHeroForm] = useState(siteContent);
    const [isUploading, setIsUploading] = useState(false);
+
+   useEffect(() => {
+      loadStats();
+   }, [activeTab]); // Reload stats when tab changes to refresh data
+
+   const loadStats = async () => {
+      try {
+         const data = await adminApi.getDashboardStats();
+         setStats(data.stats);
+         setRecentOrders(data.recentOrders);
+      } catch (err) {
+         console.error('Failed to load stats', err);
+      }
+   };
+
+   const loadUsers = async () => {
+      try {
+         const data = await adminApi.getUsers({ search: userSearch });
+         setUsers(data.users);
+      } catch (err) {
+         console.error('Failed to load users', err);
+      }
+   };
+
+   useEffect(() => {
+      if (activeTab === 'USERS') {
+         loadUsers();
+      }
+   }, [activeTab, userSearch]);
+
+
+   const handleUpdateUserRole = async (userId: string, newRole: string) => {
+      if (!confirm(`Are you sure you want to promote this user to ${newRole}?`)) return;
+      try {
+         await adminApi.updateUserRole(userId, newRole);
+         loadUsers(); // Refresh list
+      } catch (err) {
+         alert('Failed to update user role');
+      }
+   };
 
    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -137,7 +184,7 @@ export const AdminDashboard: React.FC = () => {
                <p className="text-stone-500 text-sm mt-1">Administrator Portal</p>
             </div>
             <div className="flex gap-2">
-               {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'FINANCE', 'CONTENT', 'EXHIBITIONS'].map(tab => (
+               {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'FINANCE', 'CONTENT', 'EXHIBITIONS'].map(tab => (
                   <button
                      key={tab}
                      onClick={() => setActiveTab(tab as any)}
@@ -153,30 +200,44 @@ export const AdminDashboard: React.FC = () => {
          {activeTab === 'OVERVIEW' && (
             <div className="space-y-8 animate-fade-in">
                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  {[
-                     { icon: DollarSign, label: 'Total Revenue', val: convertPrice(totalRevenue) },
-                     { icon: Users, label: 'Active Collectors', val: '143' },
-                     { icon: Package, label: 'Artworks in Stock', val: artworks.filter(a => a.inStock).length.toString() },
-                     { icon: Truck, label: 'Pending Shipments', val: orders.filter(o => o.status === 'PAID' || o.status === 'PROCESSING').length.toString() },
-                  ].map((stat, i) => (
-                     <div key={i} className="bg-stone-900 p-6 rounded-lg border border-stone-800">
-                        <div className="flex items-center justify-between mb-4">
-                           <span className="text-stone-400 text-sm uppercase tracking-wider">{stat.label}</span>
-                           <stat.icon className="text-amber-500" size={20} />
-                        </div>
-                        <div className="text-2xl text-white font-serif">{stat.val}</div>
+                  <div className="bg-stone-900 p-6 rounded-lg border border-stone-800">
+                     <div className="flex items-center justify-between mb-4">
+                        <span className="text-stone-400 text-sm uppercase tracking-wider">Total Revenue</span>
+                        <DollarSign className="text-amber-500" size={20} />
                      </div>
-                  ))}
+                     <div className="text-2xl text-white font-serif">{convertPrice(stats?.totalRevenue || 0)}</div>
+                  </div>
+                  <div className="bg-stone-900 p-6 rounded-lg border border-stone-800">
+                     <div className="flex items-center justify-between mb-4">
+                        <span className="text-stone-400 text-sm uppercase tracking-wider">Active Users</span>
+                        <Users className="text-amber-500" size={20} />
+                     </div>
+                     <div className="text-2xl text-white font-serif">{stats?.totalUsers || 0}</div>
+                  </div>
+                  <div className="bg-stone-900 p-6 rounded-lg border border-stone-800">
+                     <div className="flex items-center justify-between mb-4">
+                        <span className="text-stone-400 text-sm uppercase tracking-wider">Artworks</span>
+                        <Package className="text-amber-500" size={20} />
+                     </div>
+                     <div className="text-2xl text-white font-serif">{stats?.totalArtworks || 0}</div>
+                  </div>
+                  <div className="bg-stone-900 p-6 rounded-lg border border-stone-800">
+                     <div className="flex items-center justify-between mb-4">
+                        <span className="text-stone-400 text-sm uppercase tracking-wider">Orders</span>
+                        <Truck className="text-amber-500" size={20} />
+                     </div>
+                     <div className="text-2xl text-white font-serif">{stats?.totalOrders || 0} ({(stats?.pendingOrders || 0)} New)</div>
+                  </div>
                </div>
 
                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="bg-stone-900 p-6 border border-stone-800">
                      <h3 className="text-white font-serif text-xl mb-4">Recent Activity</h3>
                      <ul className="space-y-4 text-sm text-stone-400">
-                        {orders.slice(0, 5).map(o => (
+                        {recentOrders.map((o: any) => (
                            <li key={o.id} className="flex justify-between items-center border-b border-stone-800 pb-2">
-                              <span>New order from <strong className="text-white">{o.customerName}</strong></span>
-                              <span className="text-xs">{new Date(o.date).toLocaleDateString()}</span>
+                              <span>New order from <strong className="text-white">{o.user?.fullName || o.customerName}</strong></span>
+                              <span className="text-xs">{new Date(o.createdAt).toLocaleDateString()}</span>
                            </li>
                         ))}
                      </ul>
@@ -196,6 +257,64 @@ export const AdminDashboard: React.FC = () => {
                </div>
             </div>
          )}
+
+         {/* USERS TAB */}
+         {activeTab === 'USERS' && (
+            <div className="space-y-6 animate-fade-in">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-xl text-white font-serif">User Management</h3>
+                  <div className="relative">
+                     <input
+                        className="bg-stone-900 border border-stone-700 text-white pl-8 pr-4 py-2 text-sm rounded-full w-64"
+                        placeholder="Search users..."
+                        value={userSearch}
+                        onChange={e => setUserSearch(e.target.value)}
+                     />
+                     <Search size={14} className="absolute left-3 top-3 text-stone-500" />
+                  </div>
+               </div>
+
+               <div className="bg-stone-900 border border-stone-800 overflow-x-auto">
+                  <table className="w-full text-left text-sm text-stone-400">
+                     <thead className="bg-stone-950 text-stone-500 uppercase text-xs border-b border-stone-800">
+                        <tr>
+                           <th className="p-4">Name</th>
+                           <th className="p-4">Email</th>
+                           <th className="p-4">Role</th>
+                           <th className="p-4">Joined</th>
+                           <th className="p-4">Actions</th>
+                        </tr>
+                     </thead>
+                     <tbody className="divide-y divide-stone-800">
+                        {users.map(u => (
+                           <tr key={u.id} className="hover:bg-stone-800/30">
+                              <td className="p-4 text-white font-medium">{u.fullName}</td>
+                              <td className="p-4">{u.email}</td>
+                              <td className="p-4">
+                                 <span className={`px-2 py-1 text-xs rounded ${u.role === 'ADMIN' ? 'bg-amber-900/30 text-amber-500' :
+                                       u.role === 'ARTIST' ? 'bg-purple-900/30 text-purple-400' :
+                                          'bg-stone-800 text-stone-500'
+                                    }`}>
+                                    {u.role}
+                                 </span>
+                              </td>
+                              <td className="p-4">{new Date(u.createdAt).toLocaleDateString()}</td>
+                              <td className="p-4 flex gap-2">
+                                 {u.role === 'USER' && (
+                                    <button onClick={() => handleUpdateUserRole(u.id, 'ARTIST')} className="text-xs text-purple-400 hover:underline">Promote to Artist</button>
+                                 )}
+                                 {u.role !== 'ADMIN' && (
+                                    <button onClick={() => handleUpdateUserRole(u.id, 'ADMIN')} className="text-xs text-amber-500 hover:underline">Make Admin</button>
+                                 )}
+                              </td>
+                           </tr>
+                        ))}
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+         )}
+
 
          {/* CONTENT TAB */}
          {activeTab === 'CONTENT' && (
