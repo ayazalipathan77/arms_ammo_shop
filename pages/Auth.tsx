@@ -106,181 +106,174 @@ export const Auth: React.FC = () => {
    };
 
    return (
-      <div className="min-h-screen pt-32 pb-12 flex items-center justify-center px-4 bg-[url('https://picsum.photos/1920/1080?blur=10')] bg-cover bg-fixed">
-         <div className="absolute inset-0 bg-stone-950/90"></div>
+      <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative overflow-hidden">
+         {/* Background with Gradient Overlay */}
+         <div className="absolute inset-0 bg-[url('/header_bg.jpg')] bg-cover bg-center"></div>
+         <div className="absolute inset-0 bg-stone-950/70 backdrop-blur-sm"></div>
+         <div className="absolute inset-0 bg-gradient-to-b from-stone-950/50 via-transparent to-stone-950"></div>
 
-         <div className="relative z-10 w-full max-w-md bg-stone-900 border border-stone-800 p-8 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
-            <h2 className="font-serif text-3xl text-white text-center mb-2">MURAQQA</h2>
-            <p className="text-stone-500 text-center text-xs uppercase tracking-widest mb-8">{isLogin ? 'Sign In to your account' : 'Join the Collective'}</p>
-
-            <div className="flex gap-2 mb-8 p-1 bg-stone-950 rounded border border-stone-800">
-               <button onClick={() => setIsLogin(true)} className={`flex-1 py-2 text-xs uppercase font-bold rounded transition-all ${isLogin ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:text-stone-300'}`}>Login</button>
-               <button onClick={() => setIsLogin(false)} className={`flex-1 py-2 text-xs uppercase font-bold rounded transition-all ${!isLogin ? 'bg-stone-800 text-white shadow-lg' : 'text-stone-500 hover:text-stone-300'}`}>Register</button>
+         <div className="relative z-10 w-full max-w-md">
+            {/* Header */}
+            <div className="text-center mb-10">
+               <h1 className="font-serif text-5xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-yellow-400 to-amber-600 drop-shadow-sm filter mb-2">
+                  MURAQQA
+               </h1>
+               <p className="text-amber-500/80 text-xs uppercase tracking-[0.3em] font-medium">The Imperial Collection</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-               {!isLogin && (
-                  <div className="space-y-4 mb-6 border-b border-stone-800 pb-6 animate-fade-in">
-                     <p className="text-stone-400 text-xs uppercase tracking-wider">I am joining as a:</p>
-                     <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer group">
-                           <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${role === 'USER' ? 'border-amber-500' : 'border-stone-600'}`}>
-                              {role === 'USER' && <div className="w-2 h-2 bg-amber-500 rounded-full"></div>}
-                           </div>
-                           <input type="radio" name="role" checked={role === 'USER'} onChange={() => setRole('USER')} className="hidden" />
-                           <span className={`text-sm transition-colors ${role === 'USER' ? 'text-white' : 'text-stone-500 group-hover:text-stone-300'}`}>Collector</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer group">
-                           <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${role === 'ARTIST' ? 'border-amber-500' : 'border-stone-600'}`}>
-                              {role === 'ARTIST' && <div className="w-2 h-2 bg-amber-500 rounded-full"></div>}
-                           </div>
-                           <input type="radio" name="role" checked={role === 'ARTIST'} onChange={() => setRole('ARTIST')} className="hidden" />
-                           <span className={`text-sm transition-colors ${role === 'ARTIST' ? 'text-white' : 'text-stone-500 group-hover:text-stone-300'}`}>Artist</span>
-                        </label>
-                     </div>
-                  </div>
-               )}
+            {/* Glass Container */}
+            <div className="bg-stone-950/60 backdrop-blur-xl border border-white/10 p-8 md:p-10 shadow-2xl rounded-sm">
 
-               <div className="space-y-4">
+               {/* Toggle Tabs */}
+               <div className="flex mb-10 border-b border-white/10 relative">
+                  <button
+                     onClick={() => setIsLogin(true)}
+                     className={`flex-1 py-4 text-xs uppercase tracking-widest transition-colors relative ${isLogin ? 'text-white' : 'text-stone-500 hover:text-stone-300'}`}
+                  >
+                     Sign In
+                     {isLogin && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>}
+                  </button>
+                  <button
+                     onClick={() => setIsLogin(false)}
+                     className={`flex-1 py-4 text-xs uppercase tracking-widest transition-colors relative ${!isLogin ? 'text-white' : 'text-stone-500 hover:text-stone-300'}`}
+                  >
+                     Register
+                     {!isLogin && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>}
+                  </button>
+               </div>
+
+               <form onSubmit={handleSubmit} className="space-y-6">
                   {!isLogin && (
-                     <>
-                        <div className="relative group">
-                           <User className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={18} />
-                           <input
-                              type="text"
-                              placeholder="Full Name"
-                              value={fullName}
-                              onChange={(e) => setFullName(e.target.value)}
-                              className="w-full bg-stone-950 border border-stone-700 p-3 pl-10 text-white focus:border-amber-500 outline-none transition-colors"
-                              required
-                           />
+                     <div className="animate-fade-in space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                           <label className={`cursor-pointer border ${role === 'USER' ? 'border-amber-500 bg-amber-500/10' : 'border-stone-800 hover:border-stone-700 bg-stone-900/50'} p-3 text-center transition-all duration-300`}>
+                              <input type="radio" name="role" checked={role === 'USER'} onChange={() => setRole('USER')} className="hidden" />
+                              <span className={`text-xs uppercase tracking-widest ${role === 'USER' ? 'text-amber-500' : 'text-stone-500'}`}>Collector</span>
+                           </label>
+                           <label className={`cursor-pointer border ${role === 'ARTIST' ? 'border-amber-500 bg-amber-500/10' : 'border-stone-800 hover:border-stone-700 bg-stone-900/50'} p-3 text-center transition-all duration-300`}>
+                              <input type="radio" name="role" checked={role === 'ARTIST'} onChange={() => setRole('ARTIST')} className="hidden" />
+                              <span className={`text-xs uppercase tracking-widest ${role === 'ARTIST' ? 'text-amber-500' : 'text-stone-500'}`}>Artist</span>
+                           </label>
                         </div>
-                        <div className="relative group">
-                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={18} />
-                           <input
-                              type="tel"
-                              placeholder="Phone Number"
-                              value={phoneNumber}
-                              onChange={(e) => setPhoneNumber(e.target.value)}
-                              className="w-full bg-stone-950 border border-stone-700 p-3 pl-10 text-white focus:border-amber-500 outline-none transition-colors"
-                           />
-                        </div>
-                        {/* Address Section */}
-                        <div className="space-y-2">
+
+                        <div className="space-y-6">
                            <div className="relative group">
-                              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={18} />
                               <input
                                  type="text"
-                                 placeholder="Address"
-                                 value={address}
-                                 onChange={(e) => setAddress(e.target.value)}
-                                 className="w-full bg-stone-950 border border-stone-700 p-3 pl-10 text-white focus:border-amber-500 outline-none transition-colors"
+                                 value={fullName}
+                                 onChange={(e) => setFullName(e.target.value)}
+                                 className="w-full bg-transparent border-b border-stone-800 text-white py-3 pl-8 focus:outline-none focus:border-amber-500 transition-colors placeholder:text-transparent peer"
+                                 placeholder="Full Name"
+                                 required
                               />
+                              <label className="absolute left-8 top-3 text-stone-500 text-sm transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-amber-500 peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-stone-400">Full Name</label>
+                              <User className="absolute left-0 top-3 text-stone-600 peer-focus:text-amber-500 transition-colors" size={18} />
                            </div>
-                           <div className="grid grid-cols-2 gap-2">
-                              <input
-                                 type="text"
-                                 placeholder="City"
-                                 value={city}
-                                 onChange={(e) => setCity(e.target.value)}
-                                 className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none transition-colors"
-                              />
-                              <input
-                                 type="text"
-                                 placeholder="Zip Code"
-                                 value={zipCode}
-                                 onChange={(e) => setZipCode(e.target.value)}
-                                 className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none transition-colors"
-                              />
-                           </div>
+
                            <div className="relative group">
-                              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={18} />
-                              <select
-                                 value={country}
-                                 onChange={(e) => setCountry(e.target.value)}
-                                 className="w-full bg-stone-950 border border-stone-700 p-3 pl-10 text-white focus:border-amber-500 outline-none transition-colors appearance-none"
-                              >
-                                 <option value="Pakistan">Pakistan</option>
-                                 <option value="UAE">UAE</option>
-                                 <option value="UK">UK</option>
-                                 <option value="USA">USA</option>
-                              </select>
+                              <input
+                                 type="tel"
+                                 value={phoneNumber}
+                                 onChange={(e) => setPhoneNumber(e.target.value)}
+                                 className="w-full bg-transparent border-b border-stone-800 text-white py-3 pl-8 focus:outline-none focus:border-amber-500 transition-colors placeholder:text-transparent peer"
+                                 placeholder="Phone"
+                              />
+                              <label className="absolute left-8 top-3 text-stone-500 text-sm transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-amber-500 peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-stone-400">Phone</label>
+                              <Phone className="absolute left-0 top-3 text-stone-600 peer-focus:text-amber-500 transition-colors" size={18} />
+                           </div>
+
+                           <div className="grid grid-cols-2 gap-4">
+                              <div className="relative group">
+                                 <input
+                                    type="text"
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    className="w-full bg-transparent border-b border-stone-800 text-white py-3 pl-8 focus:outline-none focus:border-amber-500 transition-colors placeholder:text-transparent peer"
+                                    placeholder="City"
+                                 />
+                                 <label className="absolute left-8 top-3 text-stone-500 text-sm transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-amber-500 peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-stone-400">City</label>
+                                 <MapPin className="absolute left-0 top-3 text-stone-600 peer-focus:text-amber-500 transition-colors" size={18} />
+                              </div>
+                              <div className="relative group">
+                                 <select
+                                    value={country}
+                                    onChange={(e) => setCountry(e.target.value)}
+                                    className="w-full bg-transparent border-b border-stone-800 text-white py-3 pl-8 focus:outline-none focus:border-amber-500 transition-colors appearance-none text-sm"
+                                 >
+                                    <option value="Pakistan" className="bg-stone-900">Pakistan</option>
+                                    <option value="UAE" className="bg-stone-900">UAE</option>
+                                    <option value="UK" className="bg-stone-900">UK</option>
+                                    <option value="USA" className="bg-stone-900">USA</option>
+                                 </select>
+                                 <Globe className="absolute left-0 top-3 text-stone-600 peer-focus:text-amber-500 transition-colors" size={18} />
+                              </div>
                            </div>
                         </div>
-                     </>
+                     </div>
                   )}
 
-                  <div className="relative group">
-                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={18} />
-                     <input
-                        type="email"
-                        placeholder="Email Address"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full bg-stone-950 border border-stone-700 p-3 pl-10 text-white focus:border-amber-500 outline-none transition-colors"
-                        required
-                     />
-                  </div>
+                  <div className="space-y-6">
+                     <div className="relative group">
+                        <input
+                           type="email"
+                           value={email}
+                           onChange={(e) => setEmail(e.target.value)}
+                           className="w-full bg-transparent border-b border-stone-800 text-white py-3 pl-8 focus:outline-none focus:border-amber-500 transition-colors placeholder:text-transparent peer"
+                           placeholder="Email"
+                           required
+                        />
+                        <label className="absolute left-8 top-3 text-stone-500 text-sm transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-amber-500 peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-stone-400">Email Address</label>
+                        <Mail className="absolute left-0 top-3 text-stone-600 peer-focus:text-amber-500 transition-colors" size={18} />
+                     </div>
 
-                  <div className="relative group">
-                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={18} />
-                     <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full bg-stone-950 border border-stone-700 p-3 pl-10 text-white focus:border-amber-500 outline-none transition-colors"
-                        required
-                     />
+                     <div className="relative group">
+                        <input
+                           type="password"
+                           value={password}
+                           onChange={(e) => setPassword(e.target.value)}
+                           className="w-full bg-transparent border-b border-stone-800 text-white py-3 pl-8 focus:outline-none focus:border-amber-500 transition-colors placeholder:text-transparent peer"
+                           placeholder="Password"
+                           required
+                        />
+                        <label className="absolute left-8 top-3 text-stone-500 text-sm transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-amber-500 peer-not-placeholder-shown:-top-4 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:text-stone-400">Password</label>
+                        <Lock className="absolute left-0 top-3 text-stone-600 peer-focus:text-amber-500 transition-colors" size={18} />
+                     </div>
                   </div>
 
                   {error && (
-                     <div className="bg-red-950 border border-red-700 text-red-200 p-3 rounded text-xs">
+                     <div className="bg-red-500/10 border-l-2 border-red-500 text-red-200 p-3 text-xs animate-fade-in">
                         {error}
                      </div>
                   )}
-               </div>
 
-               <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-amber-600 hover:bg-amber-500 disabled:bg-amber-800 text-white py-3 mt-2 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 group transition-all"
-               >
-                  {loading ? 'Processing...' : (isLogin ? 'Enter Gallery' : 'Create Account')}
-                  <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-               </button>
-            </form>
+                  <div className="pt-4">
+                     <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-stone-950 py-4 font-bold uppercase tracking-[0.2em] text-xs transition-all duration-300 shadow-lg hover:shadow-amber-900/20 active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
+                     >
+                        {loading ? 'Processing...' : (isLogin ? 'Enter Gallery' : 'Create Account')}
+                     </button>
+                  </div>
 
-            {/* Social Login Section */}
-            <div className="relative my-8">
-               <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-stone-800"></div>
-               </div>
-               <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                  <span className="bg-stone-900 px-4 text-stone-500">Or continue with</span>
-               </div>
+                  {/* Social Login */}
+                  <div className="pt-6 border-t border-white/10">
+                     <p className="text-center text-stone-500 text-[10px] uppercase tracking-widest mb-4">Or continue via</p>
+                     <div className="flex gap-4 justify-center">
+                        <button type="button" onClick={() => handleSocialLogin('Google')} className="p-3 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/5 hover:border-white/20">
+                           <Chrome size={18} />
+                        </button>
+                        <button type="button" onClick={() => handleSocialLogin('Facebook')} className="p-3 rounded-full bg-white/5 hover:bg-[#1877F2]/20 text-white hover:text-[#1877F2] transition-colors border border-white/5 hover:border-[#1877F2]/30">
+                           <Facebook size={18} />
+                        </button>
+                     </div>
+                  </div>
+               </form>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-               <button
-                  onClick={() => handleSocialLogin('Google')}
-                  className="flex items-center justify-center gap-2 bg-stone-950 border border-stone-700 text-stone-300 py-3 text-xs font-bold uppercase hover:bg-stone-800 hover:text-white hover:border-stone-600 transition-all"
-               >
-                  <Chrome size={16} />
-                  Google
-               </button>
-               <button
-                  onClick={() => handleSocialLogin('Facebook')}
-                  className="flex items-center justify-center gap-2 bg-[#1877F2]/10 border border-[#1877F2]/30 text-[#1877F2] py-3 text-xs font-bold uppercase hover:bg-[#1877F2] hover:text-white transition-all"
-               >
-                  <Facebook size={16} />
-                  Facebook
-               </button>
-            </div>
-
-            <div className="mt-8 text-center pt-6 border-t border-stone-800">
-               <Link to="/admin" className="text-stone-600 text-[10px] uppercase tracking-widest hover:text-amber-500 transition-colors">Admin Portal Access</Link>
-            </div>
+            <p className="text-center mt-8 text-stone-600 text-xs">
+               Protected by Muraqqa Imperial Security
+            </p>
          </div>
       </div>
    );
