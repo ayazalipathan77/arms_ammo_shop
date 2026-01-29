@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { User, Lock, Mail, Facebook, Chrome, ArrowRight, Phone, MapPin, Globe } from 'lucide-react';
+import { User, Lock, Mail, Facebook, Chrome, ArrowRight, Phone, MapPin, Globe, Eye, EyeOff, Check, X, Loader2, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -11,6 +12,7 @@ export const Auth: React.FC = () => {
    const [email, setEmail] = useState('');
    const [password, setPassword] = useState('');
    const [fullName, setFullName] = useState('');
+   const [showPassword, setShowPassword] = useState(false);
 
    // New Fields
    const [phoneNumber, setPhoneNumber] = useState('');
@@ -23,6 +25,21 @@ export const Auth: React.FC = () => {
    const [loading, setLoading] = useState(false);
    const navigate = useNavigate();
    const { login, register: authRegister } = useAuth();
+
+   // Password strength calculator
+   const getPasswordStrength = () => {
+      if (!password || isLogin) return 0;
+      let strength = 0;
+      if (password.length >= 8) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+      return strength;
+   };
+
+   const passwordStrength = getPasswordStrength();
+   const passwordStrengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
+   const passwordStrengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
 
    const handleAuthSuccess = (token: string, userRole: string) => {
       login(token);

@@ -149,3 +149,54 @@ export interface SiteContent {
     instagramClientId?: string;
   };
 }
+
+export interface LandingPageHero {
+  enabled: boolean;
+  title: string;
+  subtitle: string;
+  accentWord: string;
+  backgroundImage: string;
+}
+
+export interface LandingPageFeaturedExhibition {
+  enabled: boolean;
+  exhibitionId: string | null;
+  manualOverride?: {
+    title: string;
+    artistName: string;
+    description: string;
+    date: string;
+    imageUrl: string;
+  };
+}
+
+export interface LandingPageCollection {
+  id: string;
+  title: string;
+  artworkIds: string[];
+  imageUrl?: string;
+  layout: 'large' | 'tall' | 'normal';
+}
+
+export interface LandingPageCuratedCollections {
+  enabled: boolean;
+  collections: LandingPageCollection[];
+}
+
+export interface LandingPageTopPaintings {
+  enabled: boolean;
+  artworkIds: string[];
+}
+
+export interface LandingPageJournal {
+  enabled: boolean;
+  featuredConversationIds: string[];
+}
+
+export interface LandingPageContent {
+  hero: LandingPageHero;
+  featuredExhibition: LandingPageFeaturedExhibition;
+  curatedCollections: LandingPageCuratedCollections;
+  topPaintings: LandingPageTopPaintings;
+  muraqQaJournal: LandingPageJournal;
+}

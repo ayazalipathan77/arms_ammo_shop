@@ -8,7 +8,8 @@
         "dev": "nodemon src/server.ts",
         "build": "tsc",
         "lint": "eslint . --ext .ts",
-        "seed": "ts-node prisma/seed.ts"
+        "seed": "ts-node prisma/seed.ts",
+        "seed:landing": "ts-node seed-landing-page.ts"
     },
     "keywords": [],
     "author": "",

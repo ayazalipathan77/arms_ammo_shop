@@ -13,10 +13,11 @@ export const AdminDashboard: React.FC = () => {
    const {
       artworks, orders, shippingConfig, stripeConnected, conversations, siteContent, exhibitions,
       addArtwork, updateArtwork, deleteArtwork, updateOrderStatus, updateShippingConfig, connectStripe,
-      addConversation, deleteConversation, updateSiteContent, addExhibition, deleteExhibition
+      addConversation, deleteConversation, updateSiteContent, addExhibition, deleteExhibition,
+      landingPageContent, updateLandingPageContent
    } = useGallery();
    const { convertPrice } = useCurrency();
-   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS'>('OVERVIEW');
+   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'LANDING PAGE'>('OVERVIEW');
 
    // Dashboard Stats
    const [stats, setStats] = useState<any>(null);
@@ -51,6 +52,17 @@ export const AdminDashboard: React.FC = () => {
    // Content form states
    const [heroForm, setHeroForm] = useState(siteContent);
    const [isUploading, setIsUploading] = useState(false);
+
+   // Landing Page state
+   const [landingForm, setLandingForm] = useState(landingPageContent || {
+      hero: { enabled: true, title: 'Elevation of Perspective', subtitle: 'Contemporary Pakistani Art', accentWord: 'Perspective', backgroundImage: '/header_bg.jpg' },
+      featuredExhibition: { enabled: true, exhibitionId: null, manualOverride: { title: '', artistName: '', description: '', date: '', imageUrl: '' } },
+      curatedCollections: { enabled: true, collections: [] },
+      topPaintings: { enabled: false, artworkIds: [] },
+      muraqQaJournal: { enabled: true, featuredConversationIds: [] }
+   });
+   const [exhibitionMode, setExhibitionMode] = useState<'auto' | 'manual'>('manual');
+   const [isUploadingHero, setIsUploadingHero] = useState(false);
 
    useEffect(() => {
       loadStats();
@@ -174,6 +186,38 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
+   const handleSaveLandingPage = async () => {
+      try {
+         await updateLandingPageContent(landingForm);
+         alert('Landing page updated successfully!');
+      } catch (err) {
+         alert('Failed to update landing page content');
+      }
+   };
+
+   const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+         alert('Please upload an image file');
+         return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+         alert('File size must be less than 5MB');
+         return;
+      }
+      try {
+         setIsUploadingHero(true);
+         const url = await uploadApi.uploadImage(file);
+         setLandingForm(prev => ({ ...prev, hero: { ...prev.hero, backgroundImage: url } }));
+      } catch (error) {
+         console.error('Upload failed:', error);
+         alert('Failed to upload image. Please try again.');
+      } finally {
+         setIsUploadingHero(false);
+      }
+   };
+
    return (
       <div className="pt-24 px-4 sm:px-8 max-w-7xl mx-auto min-h-screen pb-12">
 
@@ -184,7 +228,7 @@ export const AdminDashboard: React.FC = () => {
                <p className="text-stone-500 text-sm mt-1">Administrator Portal</p>
             </div>
             <div className="flex gap-2">
-               {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'FINANCE', 'CONTENT', 'EXHIBITIONS'].map(tab => (
+               {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'FINANCE', 'CONTENT', 'EXHIBITIONS', 'LANDING PAGE'].map(tab => (
                   <button
                      key={tab}
                      onClick={() => setActiveTab(tab as any)}
@@ -865,6 +909,348 @@ export const AdminDashboard: React.FC = () => {
                         </div>
                      </div>
                   ))}
+               </div>
+            </div>
+         )}
+
+         {/* LANDING PAGE TAB */}
+         {activeTab === 'LANDING PAGE' && (
+            <div className="space-y-8">
+               <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-serif text-white">Landing Page Management</h2>
+                  <button onClick={handleSaveLandingPage} className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 font-bold flex items-center gap-2 transition-colors">
+                     <Save size={18} /> Save All Changes
+                  </button>
+               </div>
+
+               {/* Section Toggles */}
+               <div className="bg-stone-900 p-6 border border-stone-800">
+                  <h3 className="text-white font-serif text-xl mb-4">Section Visibility</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     {Object.keys(landingForm).map(sectionKey => (
+                        <label key={sectionKey} className="flex items-center gap-3 p-3 bg-stone-950 border border-stone-700 cursor-pointer hover:border-amber-600 transition-colors">
+                           <input
+                              type="checkbox"
+                              checked={landingForm[sectionKey].enabled}
+                              onChange={(e) => setLandingForm(prev => ({
+                                 ...prev,
+                                 [sectionKey]: { ...prev[sectionKey], enabled: e.target.checked }
+                              }))}
+                              className="accent-amber-600 w-5 h-5"
+                           />
+                           <span className="text-white uppercase tracking-wide text-sm">{sectionKey.replace(/([A-Z])/g, ' $1').trim()}</span>
+                        </label>
+                     ))}
+                  </div>
+               </div>
+
+               {/* Hero Section Editor */}
+               <div className="bg-stone-900 p-6 border border-stone-800">
+                  <h3 className="text-white font-serif text-xl mb-4 flex items-center gap-2">
+                     <ImageIcon size={20} className="text-amber-600" /> Hero Section
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div className="space-y-4">
+                        <div>
+                           <label className="text-stone-400 text-sm uppercase tracking-wide block mb-2">Title</label>
+                           <input
+                              type="text"
+                              value={landingForm.hero.title}
+                              onChange={(e) => setLandingForm(prev => ({ ...prev, hero: { ...prev.hero, title: e.target.value } }))}
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                              maxLength={100}
+                           />
+                        </div>
+                        <div>
+                           <label className="text-stone-400 text-sm uppercase tracking-wide block mb-2">Subtitle</label>
+                           <input
+                              type="text"
+                              value={landingForm.hero.subtitle}
+                              onChange={(e) => setLandingForm(prev => ({ ...prev, hero: { ...prev.hero, subtitle: e.target.value } }))}
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                              maxLength={100}
+                           />
+                        </div>
+                        <div>
+                           <label className="text-stone-400 text-sm uppercase tracking-wide block mb-2">Accent Word (for italic styling)</label>
+                           <input
+                              type="text"
+                              value={landingForm.hero.accentWord}
+                              onChange={(e) => setLandingForm(prev => ({ ...prev, hero: { ...prev.hero, accentWord: e.target.value } }))}
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                              maxLength={30}
+                           />
+                        </div>
+                     </div>
+                     <div>
+                        <label className="text-stone-400 text-sm uppercase tracking-wide block mb-2">Background Image</label>
+                        <div className="relative h-64 bg-stone-950 border border-stone-700 flex items-center justify-center group">
+                           {landingForm.hero.backgroundImage ? (
+                              <>
+                                 <img src={landingForm.hero.backgroundImage} alt="Hero" className="w-full h-full object-cover" />
+                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <label className="cursor-pointer text-white flex flex-col items-center gap-2">
+                                       {isUploadingHero ? <span>Uploading...</span> : <><ImageIcon size={32} /><span>Change Image</span></>}
+                                       <input type="file" accept="image/*" className="hidden" onChange={handleHeroImageUpload} disabled={isUploadingHero} />
+                                    </label>
+                                 </div>
+                              </>
+                           ) : (
+                              <label className="cursor-pointer text-stone-500 flex flex-col items-center gap-2">
+                                 {isUploadingHero ? <span>Uploading...</span> : <><ImageIcon size={48} /><span>Upload Image</span></>}
+                                 <input type="file" accept="image/*" className="hidden" onChange={handleHeroImageUpload} disabled={isUploadingHero} />
+                              </label>
+                           )}
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               {/* Featured Exhibition Selector */}
+               <div className="bg-stone-900 p-6 border border-stone-800">
+                  <h3 className="text-white font-serif text-xl mb-4">Featured Exhibition</h3>
+                  <div className="flex gap-4 mb-4">
+                     <button
+                        onClick={() => setExhibitionMode('auto')}
+                        className={`px-4 py-2 border ${exhibitionMode === 'auto' ? 'border-amber-600 bg-amber-600/10 text-amber-600' : 'border-stone-700 text-stone-400'}`}
+                     >
+                        Auto (Select from Exhibitions)
+                     </button>
+                     <button
+                        onClick={() => setExhibitionMode('manual')}
+                        className={`px-4 py-2 border ${exhibitionMode === 'manual' ? 'border-amber-600 bg-amber-600/10 text-amber-600' : 'border-stone-700 text-stone-400'}`}
+                     >
+                        Manual Override
+                     </button>
+                  </div>
+                  {exhibitionMode === 'auto' ? (
+                     <div>
+                        <label className="text-stone-400 text-sm uppercase tracking-wide block mb-2">Select Exhibition</label>
+                        <select
+                           value={landingForm.featuredExhibition.exhibitionId || ''}
+                           onChange={(e) => setLandingForm(prev => ({ ...prev, featuredExhibition: { ...prev.featuredExhibition, exhibitionId: e.target.value || null } }))}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                        >
+                           <option value="">-- Select Exhibition --</option>
+                           {exhibitions.filter(ex => ex.status === 'CURRENT').map(ex => (
+                              <option key={ex.id} value={ex.id}>{ex.title} ({new Date(ex.startDate).toLocaleDateString()})</option>
+                           ))}
+                        </select>
+                     </div>
+                  ) : (
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input
+                           type="text"
+                           placeholder="Title"
+                           value={landingForm.featuredExhibition.manualOverride?.title || ''}
+                           onChange={(e) => setLandingForm(prev => ({ ...prev, featuredExhibition: { ...prev.featuredExhibition, manualOverride: { ...prev.featuredExhibition.manualOverride, title: e.target.value } as any } }))}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                        />
+                        <input
+                           type="text"
+                           placeholder="Artist Name"
+                           value={landingForm.featuredExhibition.manualOverride?.artistName || ''}
+                           onChange={(e) => setLandingForm(prev => ({ ...prev, featuredExhibition: { ...prev.featuredExhibition, manualOverride: { ...prev.featuredExhibition.manualOverride, artistName: e.target.value } as any } }))}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                        />
+                        <input
+                           type="text"
+                           placeholder="Date (e.g., OCT 12 — DEC 24)"
+                           value={landingForm.featuredExhibition.manualOverride?.date || ''}
+                           onChange={(e) => setLandingForm(prev => ({ ...prev, featuredExhibition: { ...prev.featuredExhibition, manualOverride: { ...prev.featuredExhibition.manualOverride, date: e.target.value } as any } }))}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                        />
+                        <input
+                           type="text"
+                           placeholder="Image URL"
+                           value={landingForm.featuredExhibition.manualOverride?.imageUrl || ''}
+                           onChange={(e) => setLandingForm(prev => ({ ...prev, featuredExhibition: { ...prev.featuredExhibition, manualOverride: { ...prev.featuredExhibition.manualOverride, imageUrl: e.target.value } as any } }))}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                        />
+                        <textarea
+                           placeholder="Description"
+                           value={landingForm.featuredExhibition.manualOverride?.description || ''}
+                           onChange={(e) => setLandingForm(prev => ({ ...prev, featuredExhibition: { ...prev.featuredExhibition, manualOverride: { ...prev.featuredExhibition.manualOverride, description: e.target.value } as any } }))}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none md:col-span-2"
+                           rows={3}
+                        />
+                     </div>
+                  )}
+               </div>
+
+               {/* Top Paintings Selector */}
+               <div className="bg-stone-900 p-6 border border-stone-800">
+                  <h3 className="text-white font-serif text-xl mb-4">Top 5 Paintings</h3>
+                  <div className="space-y-3">
+                     <div className="text-stone-400 text-sm mb-2">Selected: {landingForm.topPaintings.artworkIds.length} / 5</div>
+                     {landingForm.topPaintings.artworkIds.map((artworkId, idx) => {
+                        const artwork = artworks.find(a => a.id === artworkId);
+                        return (
+                           <div key={idx} className="flex items-center gap-3 bg-stone-950 p-3 border border-stone-700">
+                              {artwork && <img src={artwork.imageUrl} alt={artwork.title} className="w-16 h-16 object-cover" />}
+                              <span className="text-white flex-1">{artwork?.title || 'Unknown'}</span>
+                              <button
+                                 onClick={() => setLandingForm(prev => ({ ...prev, topPaintings: { ...prev.topPaintings, artworkIds: prev.topPaintings.artworkIds.filter((_, i) => i !== idx) } }))}
+                                 className="text-red-500 hover:text-red-400"
+                              >
+                                 <Trash2 size={18} />
+                              </button>
+                           </div>
+                        );
+                     })}
+                     {landingForm.topPaintings.artworkIds.length < 5 && (
+                        <select
+                           onChange={(e) => {
+                              if (e.target.value && !landingForm.topPaintings.artworkIds.includes(e.target.value)) {
+                                 setLandingForm(prev => ({ ...prev, topPaintings: { ...prev.topPaintings, artworkIds: [...prev.topPaintings.artworkIds, e.target.value] } }));
+                              }
+                              e.target.value = '';
+                           }}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                        >
+                           <option value="">+ Add Artwork</option>
+                           {artworks.filter(a => !landingForm.topPaintings.artworkIds.includes(a.id)).map(art => (
+                              <option key={art.id} value={art.id}>{art.title} by {art.artistName}</option>
+                           ))}
+                        </select>
+                     )}
+                  </div>
+               </div>
+
+               {/* Curated Collections Builder */}
+               <div className="bg-stone-900 p-6 border border-stone-800">
+                  <h3 className="text-white font-serif text-xl mb-4">Curated Collections</h3>
+                  <div className="space-y-4">
+                     {landingForm.curatedCollections.collections.map((collection, idx) => (
+                        <div key={collection.id} className="bg-stone-950 p-4 border border-stone-700">
+                           <div className="flex justify-between items-center mb-3">
+                              <input
+                                 type="text"
+                                 placeholder="Collection Title"
+                                 value={collection.title}
+                                 onChange={(e) => {
+                                    const updated = [...landingForm.curatedCollections.collections];
+                                    updated[idx] = { ...updated[idx], title: e.target.value };
+                                    setLandingForm(prev => ({ ...prev, curatedCollections: { ...prev.curatedCollections, collections: updated } }));
+                                 }}
+                                 className="flex-1 bg-stone-900 border border-stone-700 p-2 text-white mr-2"
+                              />
+                              <select
+                                 value={collection.layout}
+                                 onChange={(e) => {
+                                    const updated = [...landingForm.curatedCollections.collections];
+                                    updated[idx] = { ...updated[idx], layout: e.target.value as any };
+                                    setLandingForm(prev => ({ ...prev, curatedCollections: { ...prev.curatedCollections, collections: updated } }));
+                                 }}
+                                 className="bg-stone-900 border border-stone-700 p-2 text-white mr-2"
+                              >
+                                 <option value="normal">Normal</option>
+                                 <option value="large">Large (2 cols)</option>
+                                 <option value="tall">Tall</option>
+                              </select>
+                              <button
+                                 onClick={() => setLandingForm(prev => ({ ...prev, curatedCollections: { ...prev.curatedCollections, collections: prev.curatedCollections.collections.filter((_, i) => i !== idx) } }))}
+                                 className="text-red-500 hover:text-red-400"
+                              >
+                                 <Trash2 size={18} />
+                              </button>
+                           </div>
+                           <div className="text-stone-400 text-sm mb-2">Artworks in collection: {collection.artworkIds.length}</div>
+                           <select
+                              onChange={(e) => {
+                                 if (e.target.value && !collection.artworkIds.includes(e.target.value)) {
+                                    const updated = [...landingForm.curatedCollections.collections];
+                                    updated[idx] = { ...updated[idx], artworkIds: [...updated[idx].artworkIds, e.target.value] };
+                                    setLandingForm(prev => ({ ...prev, curatedCollections: { ...prev.curatedCollections, collections: updated } }));
+                                 }
+                                 e.target.value = '';
+                              }}
+                              className="w-full bg-stone-900 border border-stone-700 p-2 text-white"
+                           >
+                              <option value="">+ Add Artwork to Collection</option>
+                              {artworks.filter(a => !collection.artworkIds.includes(a.id)).map(art => (
+                                 <option key={art.id} value={art.id}>{art.title}</option>
+                              ))}
+                           </select>
+                           <div className="flex flex-wrap gap-2 mt-2">
+                              {collection.artworkIds.map(artId => {
+                                 const artwork = artworks.find(a => a.id === artId);
+                                 return (
+                                    <div key={artId} className="bg-stone-900 px-2 py-1 text-xs text-white flex items-center gap-2">
+                                       {artwork?.title}
+                                       <button
+                                          onClick={() => {
+                                             const updated = [...landingForm.curatedCollections.collections];
+                                             updated[idx] = { ...updated[idx], artworkIds: updated[idx].artworkIds.filter(id => id !== artId) };
+                                             setLandingForm(prev => ({ ...prev, curatedCollections: { ...prev.curatedCollections, collections: updated } }));
+                                          }}
+                                          className="text-red-500"
+                                       >
+                                          <X size={14} />
+                                       </button>
+                                    </div>
+                                 );
+                              })}
+                           </div>
+                        </div>
+                     ))}
+                     {landingForm.curatedCollections.collections.length < 3 && (
+                        <button
+                           onClick={() => setLandingForm(prev => ({ ...prev, curatedCollections: { ...prev.curatedCollections, collections: [...prev.curatedCollections.collections, { id: Date.now().toString(), title: '', artworkIds: [], layout: 'normal' }] } }))}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-stone-400 hover:text-white hover:border-amber-600 transition-colors flex items-center justify-center gap-2"
+                        >
+                           <Plus size={18} /> Add Collection (Max 3)
+                        </button>
+                     )}
+                  </div>
+               </div>
+
+               {/* Muraqqa Journal Selector */}
+               <div className="bg-stone-900 p-6 border border-stone-800">
+                  <h3 className="text-white font-serif text-xl mb-4">Muraqqa Journal (Featured Conversations)</h3>
+                  <div className="space-y-3">
+                     <div className="text-stone-400 text-sm mb-2">Selected: {landingForm.muraqQaJournal.featuredConversationIds.length} / 3</div>
+                     {landingForm.muraqQaJournal.featuredConversationIds.map((convId, idx) => {
+                        const conversation = conversations.find(c => c.id === convId);
+                        return (
+                           <div key={idx} className="flex items-center gap-3 bg-stone-950 p-3 border border-stone-700">
+                              <span className={`px-2 py-1 text-xs ${conversation?.category === 'WATCH' ? 'bg-blue-900/30 text-blue-400' : conversation?.category === 'LISTEN' ? 'bg-purple-900/30 text-purple-400' : 'bg-green-900/30 text-green-400'}`}>
+                                 {conversation?.category}
+                              </span>
+                              <span className="text-white flex-1">{conversation?.title || 'Unknown'}</span>
+                              <button
+                                 onClick={() => setLandingForm(prev => ({ ...prev, muraqQaJournal: { ...prev.muraqQaJournal, featuredConversationIds: prev.muraqQaJournal.featuredConversationIds.filter((_, i) => i !== idx) } }))}
+                                 className="text-red-500 hover:text-red-400"
+                              >
+                                 <Trash2 size={18} />
+                              </button>
+                           </div>
+                        );
+                     })}
+                     {landingForm.muraqQaJournal.featuredConversationIds.length < 3 && (
+                        <select
+                           onChange={(e) => {
+                              if (e.target.value && !landingForm.muraqQaJournal.featuredConversationIds.includes(e.target.value)) {
+                                 setLandingForm(prev => ({ ...prev, muraqQaJournal: { ...prev.muraqQaJournal, featuredConversationIds: [...prev.muraqQaJournal.featuredConversationIds, e.target.value] } }));
+                              }
+                              e.target.value = '';
+                           }}
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
+                        >
+                           <option value="">+ Add Conversation</option>
+                           {conversations.filter(c => !landingForm.muraqQaJournal.featuredConversationIds.includes(c.id)).map(conv => (
+                              <option key={conv.id} value={conv.id}>[{conv.category}] {conv.title}</option>
+                           ))}
+                        </select>
+                     )}
+                  </div>
+               </div>
+
+               {/* Save Button at Bottom */}
+               <div className="flex justify-end">
+                  <button onClick={handleSaveLandingPage} className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 font-bold flex items-center gap-2 transition-colors">
+                     <Save size={18} /> Save Landing Page
+                  </button>
                </div>
             </div>
          )}

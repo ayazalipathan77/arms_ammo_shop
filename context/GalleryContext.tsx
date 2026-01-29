@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { Artwork, Order, ShippingConfig, OrderStatus, Conversation, SiteContent } from '../types';
+import { Artwork, Order, ShippingConfig, OrderStatus, Conversation, SiteContent, LandingPageContent } from '../types';
 import { MOCK_CONVERSATIONS, DEFAULT_SITE_CONTENT } from '../constants';
 import { artworkApi, transformArtwork, ArtworkFilters, adminApi, settingsApi, conversationApi, exhibitionApi } from '../services/api';
 import { useAuth } from './AuthContext';
@@ -10,6 +10,7 @@ interface GalleryContextType {
   shippingConfig: ShippingConfig;
   conversations: Conversation[];
   siteContent: SiteContent;
+  landingPageContent: LandingPageContent | null;
 
   // Loading states
   isLoading: boolean;
@@ -43,6 +44,7 @@ interface GalleryContextType {
   // Settings Actions
   updateShippingConfig: (config: ShippingConfig) => Promise<void>;
   updateSiteContent: (content: SiteContent) => Promise<void>;
+  updateLandingPageContent: (content: LandingPageContent) => Promise<void>;
 
   // Conversation Actions
   addConversation: (conv: any) => Promise<void>;
@@ -101,6 +103,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
     dhlApiKey: '',
     freeShippingThreshold: 0
   });
+  const [landingPageContent, setLandingPageContent] = useState<LandingPageContent | null>(null);
 
   const [stripeConnected, setStripeConnected] = useState(false);
 
@@ -165,6 +168,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       const { settings } = await settingsApi.getSettings();
       if (settings.shippingConfig) setShippingConfig(settings.shippingConfig);
       if (settings.siteContent) setSiteContent(settings.siteContent);
+      if (settings.landingPageContent) setLandingPageContent(settings.landingPageContent);
     } catch (err) {
       console.error('Error fetching settings:', err);
     }
@@ -247,6 +251,16 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const updateLandingPageContent = async (content: LandingPageContent) => {
+    try {
+      await settingsApi.updateSetting('landingPageContent', content);
+      setLandingPageContent(content);
+    } catch (err) {
+      console.error('Error updating landing page content:', err);
+      throw err;
+    }
+  };
+
   const addConversation = async (convData: any) => {
     try {
       const response = await conversationApi.create(convData);
@@ -310,6 +324,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       shippingConfig,
       conversations,
       siteContent,
+      landingPageContent,
       isLoading,
       error,
       availableCategories,
@@ -324,6 +339,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       updateOrderStatus,
       updateShippingConfig,
       updateSiteContent,
+      updateLandingPageContent,
       addConversation,
       deleteConversation,
       exhibitions,
