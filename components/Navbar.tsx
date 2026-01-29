@@ -103,9 +103,15 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
-                  className="text-stone-400 hover:text-white transition-colors focus:outline-none"
+                  className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors focus:outline-none group"
                 >
                   <User size={18} />
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs text-white">{user.fullName}</span>
+                    {user.role === 'ADMIN' && (
+                      <span className="text-[10px] uppercase tracking-wider text-amber-500 font-bold">Admin</span>
+                    )}
+                  </div>
                 </button>
 
                 {/* Dropdown Menu */}
@@ -172,6 +178,12 @@ export const Navbar: React.FC<NavbarProps> = () => {
           <div className="w-12 h-px bg-stone-800 my-4"></div>
           {user ? (
             <div className="flex flex-col items-center gap-6">
+              <div className="text-center">
+                <div className="text-white text-lg mb-1">{user.fullName}</div>
+                {user.role === 'ADMIN' && (
+                  <div className="text-[10px] uppercase tracking-wider text-amber-500 font-bold bg-amber-500/10 px-3 py-1 rounded-full inline-block">Admin</div>
+                )}
+              </div>
               {user.role === 'ADMIN' && (
                 <Link to="/admin" className="text-sm uppercase tracking-widest text-amber-500 hover:text-amber-400 font-bold">Admin Dashboard</Link>
               )}

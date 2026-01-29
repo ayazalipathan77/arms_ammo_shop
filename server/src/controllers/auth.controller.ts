@@ -10,8 +10,10 @@ import { env } from '../config/env';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
+        console.log('Registration request body:', req.body);
         // Validate input
         const validatedData = registerSchema.parse(req.body);
+        console.log('Validated data:', validatedData);
 
         // Check if user already exists
         const existingUser = await prisma.user.findUnique({
@@ -133,6 +135,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         // Validate input
         const validatedData = loginSchema.parse(req.body);
+        console.log('Login attempt for email:', validatedData.email);
 
         // Find user
         const user = await prisma.user.findUnique({
@@ -143,14 +146,19 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         });
 
         if (!user) {
+            console.log('User not found for email:', validatedData.email);
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid credentials' });
             return;
         }
 
+        console.log('User found:', user.email, 'Role:', user.role);
+
         // Verify password
         const isPasswordValid = await bcrypt.compare(validatedData.password, user.passwordHash);
+        console.log('Password valid:', isPasswordValid);
 
         if (!isPasswordValid) {
+            console.log('Invalid password for user:', user.email);
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Invalid credentials' });
             return;
         }

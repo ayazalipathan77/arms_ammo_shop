@@ -65,7 +65,16 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
-  const { token, user } = useAuth();
+  const { token, user, isLoading } = useAuth();
+
+  // Wait for authentication check to complete
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-950">
+        <div className="text-amber-500 text-sm uppercase tracking-widest animate-pulse">Loading...</div>
+      </div>
+    );
+  }
 
   if (!token) {
     return <Navigate to="/auth" replace />;

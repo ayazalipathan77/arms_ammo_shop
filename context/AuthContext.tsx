@@ -19,6 +19,7 @@ interface AuthContextType {
     user: User | null;
     token: string | null;
     isAuthenticated: boolean;
+    isLoading: boolean;
     login: (token: string, role?: string) => void;
     logout: () => void;
     register: (token: string, user: User) => void;
@@ -52,6 +53,7 @@ const decodeToken = (token: string): User | null => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         // Check for stored token on mount
@@ -65,6 +67,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 localStorage.removeItem('authToken');
             }
         }
+        setIsLoading(false);
     }, []);
 
     const login = (newToken: string, role?: string) => {
@@ -95,6 +98,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 user,
                 token,
                 isAuthenticated: !!token,
+                isLoading,
                 login,
                 logout,
                 register,

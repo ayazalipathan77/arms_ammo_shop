@@ -169,6 +169,13 @@ export const createArtwork = async (req: Request, res: Response): Promise<void> 
         // Get artist profile for this user
         const artist = await prisma.artist.findUnique({
             where: { userId: req.user.userId },
+            include: {
+                user: {
+                    select: {
+                        fullName: true,
+                    },
+                },
+            },
         });
 
         if (!artist && req.user.role !== 'ADMIN') {
@@ -178,12 +185,15 @@ export const createArtwork = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
+        // Determine artist name: use provided name, or artist's full name, or fallback
+        const artistName = validatedData.artistName || artist?.user.fullName || 'Unknown Artist';
+
         const artwork = await prisma.artwork.create({
             data: {
                 ...validatedData,
                 price: new Prisma.Decimal(validatedData.price),
                 artistId: artist?.id || null,
-                artistName: validatedData.artistName || (artist ? undefined : 'Unknown Artist'),
+                artistName,
             },
             include: {
                 artist: {

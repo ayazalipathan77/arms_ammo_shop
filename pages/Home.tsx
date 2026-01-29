@@ -61,9 +61,18 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
   // Get curated collections with artwork data
   const curatedCollections = (landingPageContent?.curatedCollections?.collections || []).map(collection => {
     const firstArtwork = collection.artworkIds.length > 0 ? artworks.find(a => a.id === collection.artworkIds[0]) : null;
+
+    // Prioritize actual artwork images over external placeholders
+    let imageUrl = firstArtwork?.imageUrl || collection.imageUrl;
+
+    // If no image at all, use a fallback
+    if (!imageUrl) {
+      imageUrl = '/placeholder-art.jpg';
+    }
+
     return {
       title: collection.title,
-      image: collection.imageUrl || firstArtwork?.imageUrl || `https://images.unsplash.com/photo-${Date.now()}?q=80&w=800&auto=format&fit=crop`,
+      image: imageUrl,
       layout: collection.layout,
       artworkIds: collection.artworkIds
     };
@@ -77,7 +86,11 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
   // Get top paintings
   const topPaintings = (landingPageContent?.topPaintings?.artworkIds || [])
     .map(id => artworks.find(a => a.id === id))
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(artwork => ({
+      ...artwork,
+      artistName: artwork.artistName || 'Artist Name Not Available'
+    }));
 
   return (
     <div className="bg-stone-950 min-h-screen">

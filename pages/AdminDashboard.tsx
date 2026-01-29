@@ -7,14 +7,14 @@ import {
 import { useGallery } from '../context/GalleryContext';
 import { useCurrency } from '../App';
 import { OrderStatus, Artwork, Conversation } from '../types';
-import { uploadApi, adminApi } from '../services/api';
+import { uploadApi, adminApi, artistApi } from '../services/api';
 
 export const AdminDashboard: React.FC = () => {
    const {
       artworks, orders, shippingConfig, stripeConnected, conversations, siteContent, exhibitions,
       addArtwork, updateArtwork, deleteArtwork, updateOrderStatus, updateShippingConfig, connectStripe,
       addConversation, deleteConversation, updateSiteContent, addExhibition, deleteExhibition,
-      landingPageContent, updateLandingPageContent
+      landingPageContent, updateLandingPageContent, fetchArtworks
    } = useGallery();
    const { convertPrice } = useCurrency();
    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'LANDING PAGE'>('OVERVIEW');
@@ -27,11 +27,14 @@ export const AdminDashboard: React.FC = () => {
    const [users, setUsers] = useState<any[]>([]);
    const [userSearch, setUserSearch] = useState('');
 
+   // Artists State
+   const [artists, setArtists] = useState<any[]>([]);
+
    // Local State for Artworks
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-   const [newArtwork, setNewArtwork] = useState<Partial<Artwork>>({
-      title: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
-      year: new Date().getFullYear(), dimensions: '', description: ''
+   const [newArtwork, setNewArtwork] = useState<any>({
+      title: '', artistId: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
+      year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: ''
    });
 
    // Local State for Conversations
@@ -87,11 +90,39 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
+   const loadArtists = async () => {
+      try {
+         const data = await artistApi.getAll();
+         setArtists(data.artists);
+      } catch (err) {
+         console.error('Failed to load artists', err);
+      }
+   };
+
    useEffect(() => {
       if (activeTab === 'USERS') {
          loadUsers();
       }
    }, [activeTab, userSearch]);
+
+   useEffect(() => {
+      if (activeTab === 'INVENTORY') {
+         loadArtists();
+      }
+   }, [activeTab]);
+
+   useEffect(() => {
+      if (activeTab === 'LANDING PAGE') {
+         fetchArtworks(); // Ensure artworks are loaded for the landing page selectors
+      }
+   }, [activeTab, fetchArtworks]);
+
+   // Sync landingForm with landingPageContent when it loads
+   useEffect(() => {
+      if (landingPageContent) {
+         setLandingForm(landingPageContent);
+      }
+   }, [landingPageContent]);
 
 
    const handleUpdateUserRole = async (userId: string, newRole: string) => {
@@ -131,21 +162,29 @@ export const AdminDashboard: React.FC = () => {
    };
 
    const handleAddArtwork = async () => {
-      if (!newArtwork.title || !newArtwork.price) return;
+      if (!newArtwork.title || !newArtwork.price) {
+         alert('Please fill in Title and Price');
+         return;
+      }
+      if (!newArtwork.artistId) {
+         alert('Please select an artist');
+         return;
+      }
       try {
          await addArtwork({
             ...newArtwork,
             imageUrl: newArtwork.imageUrl || `https://picsum.photos/800/800?random=${Date.now()}`,
-            year: new Date().getFullYear(),
-            dimensions: '24x24'
+            year: newArtwork.year || new Date().getFullYear(),
+            dimensions: newArtwork.dimensions || '24x24'
          } as any);
          setIsAddModalOpen(false);
          setNewArtwork({
-            title: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
+            title: '', artistId: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
             year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: ''
          });
       } catch (err) {
          alert('Failed to add artwork');
+         console.error('Add artwork error:', err);
       }
    };
 
@@ -188,10 +227,31 @@ export const AdminDashboard: React.FC = () => {
 
    const handleSaveLandingPage = async () => {
       try {
-         await updateLandingPageContent(landingForm);
-         alert('Landing page updated successfully!');
+         // Clean the data: filter out empty strings from artwork IDs
+         const cleanedForm = {
+            ...landingForm,
+            topPaintings: {
+               ...landingForm.topPaintings,
+               artworkIds: landingForm.topPaintings.artworkIds.filter(id => id && id.trim() !== '')
+            },
+            curatedCollections: {
+               ...landingForm.curatedCollections,
+               collections: landingForm.curatedCollections.collections.map(col => ({
+                  ...col,
+                  artworkIds: col.artworkIds.filter(id => id && id.trim() !== '')
+               }))
+            },
+            muraqQaJournal: {
+               ...landingForm.muraqQaJournal,
+               featuredConversationIds: landingForm.muraqQaJournal.featuredConversationIds.filter(id => id && id.trim() !== '')
+            }
+         };
+
+         await updateLandingPageContent(cleanedForm);
+         alert('Landing page updated successfully!\n\nPlease refresh the home page to see your changes.');
       } catch (err) {
          alert('Failed to update landing page content');
+         console.error('Landing page update error:', err);
       }
    };
 
@@ -547,7 +607,27 @@ export const AdminDashboard: React.FC = () => {
                            {/* Left Column: Form Fields */}
                            <div className="space-y-4">
                               <input className="w-full bg-stone-950 border border-stone-700 p-2 text-white text-sm" placeholder="Title" value={newArtwork.title} onChange={e => setNewArtwork({ ...newArtwork, title: e.target.value })} />
-                              <input className="w-full bg-stone-950 border border-stone-700 p-2 text-white text-sm" placeholder="Artist Name" value={newArtwork.artistName} onChange={e => setNewArtwork({ ...newArtwork, artistName: e.target.value })} />
+
+                              {/* Artist Dropdown */}
+                              <select
+                                 className="w-full bg-stone-950 border border-stone-700 p-2 text-white text-sm"
+                                 value={newArtwork.artistId || ''}
+                                 onChange={e => {
+                                    const selectedArtist = artists.find(a => a.id === e.target.value);
+                                    setNewArtwork({
+                                       ...newArtwork,
+                                       artistId: e.target.value,
+                                       artistName: selectedArtist?.user?.fullName || ''
+                                    });
+                                 }}
+                              >
+                                 <option value="">Select Artist</option>
+                                 {artists.map(artist => (
+                                    <option key={artist.id} value={artist.id}>
+                                       {artist.user?.fullName || 'Unknown Artist'} {artist.originCity ? `(${artist.originCity})` : ''}
+                                    </option>
+                                 ))}
+                              </select>
 
                               <div className="grid grid-cols-2 gap-4">
                                  <input className="w-full bg-stone-950 border border-stone-700 p-2 text-white text-sm" type="number" placeholder="Price (PKR)" value={newArtwork.price || ''} onChange={e => setNewArtwork({ ...newArtwork, price: Number(e.target.value) })} />
@@ -1082,13 +1162,19 @@ export const AdminDashboard: React.FC = () => {
                <div className="bg-stone-900 p-6 border border-stone-800">
                   <h3 className="text-white font-serif text-xl mb-4">Top 5 Paintings</h3>
                   <div className="space-y-3">
-                     <div className="text-stone-400 text-sm mb-2">Selected: {landingForm.topPaintings.artworkIds.length} / 5</div>
-                     {landingForm.topPaintings.artworkIds.map((artworkId, idx) => {
+                     <div className="text-stone-400 text-sm mb-2">
+                        Selected: {landingForm.topPaintings.artworkIds.filter(id => id && id.trim()).length} / 5
+                        {artworks.length === 0 && <span className="text-amber-500 ml-2">(Loading artworks...)</span>}
+                     </div>
+                     {landingForm.topPaintings.artworkIds.filter(id => id && id.trim()).map((artworkId, idx) => {
                         const artwork = artworks.find(a => a.id === artworkId);
                         return (
                            <div key={idx} className="flex items-center gap-3 bg-stone-950 p-3 border border-stone-700">
                               {artwork && <img src={artwork.imageUrl} alt={artwork.title} className="w-16 h-16 object-cover" />}
-                              <span className="text-white flex-1">{artwork?.title || 'Unknown'}</span>
+                              <div className="flex-1">
+                                 <span className="text-white block">{artwork?.title || 'Loading...'}</span>
+                                 {artwork && <span className="text-stone-500 text-xs">by {artwork.artistName || 'Unknown Artist'}</span>}
+                              </div>
                               <button
                                  onClick={() => setLandingForm(prev => ({ ...prev, topPaintings: { ...prev.topPaintings, artworkIds: prev.topPaintings.artworkIds.filter((_, i) => i !== idx) } }))}
                                  className="text-red-500 hover:text-red-400"
@@ -1098,19 +1184,26 @@ export const AdminDashboard: React.FC = () => {
                            </div>
                         );
                      })}
-                     {landingForm.topPaintings.artworkIds.length < 5 && (
+                     {landingForm.topPaintings.artworkIds.filter(id => id && id.trim()).length < 5 && (
                         <select
+                           value=""
                            onChange={(e) => {
-                              if (e.target.value && !landingForm.topPaintings.artworkIds.includes(e.target.value)) {
-                                 setLandingForm(prev => ({ ...prev, topPaintings: { ...prev.topPaintings, artworkIds: [...prev.topPaintings.artworkIds, e.target.value] } }));
+                              const selectedId = e.target.value;
+                              if (selectedId && !landingForm.topPaintings.artworkIds.includes(selectedId)) {
+                                 setLandingForm(prev => ({
+                                    ...prev,
+                                    topPaintings: {
+                                       ...prev.topPaintings,
+                                       artworkIds: [...prev.topPaintings.artworkIds.filter(id => id && id.trim()), selectedId]
+                                    }
+                                 }));
                               }
-                              e.target.value = '';
                            }}
                            className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-600 outline-none"
                         >
                            <option value="">+ Add Artwork</option>
                            {artworks.filter(a => !landingForm.topPaintings.artworkIds.includes(a.id)).map(art => (
-                              <option key={art.id} value={art.id}>{art.title} by {art.artistName}</option>
+                              <option key={art.id} value={art.id}>{art.title} - {art.artistName || 'Unknown'}</option>
                            ))}
                         </select>
                      )}
@@ -1155,29 +1248,36 @@ export const AdminDashboard: React.FC = () => {
                                  <Trash2 size={18} />
                               </button>
                            </div>
-                           <div className="text-stone-400 text-sm mb-2">Artworks in collection: {collection.artworkIds.length}</div>
+                           <div className="text-stone-400 text-sm mb-2">
+                              Artworks in collection: {collection.artworkIds.filter(id => id && id.trim()).length}
+                              {artworks.length === 0 && <span className="text-amber-500 ml-2">(Loading artworks...)</span>}
+                           </div>
                            <select
+                              value=""
                               onChange={(e) => {
-                                 if (e.target.value && !collection.artworkIds.includes(e.target.value)) {
+                                 const selectedId = e.target.value;
+                                 if (selectedId && !collection.artworkIds.includes(selectedId)) {
                                     const updated = [...landingForm.curatedCollections.collections];
-                                    updated[idx] = { ...updated[idx], artworkIds: [...updated[idx].artworkIds, e.target.value] };
+                                    updated[idx] = {
+                                       ...updated[idx],
+                                       artworkIds: [...updated[idx].artworkIds.filter(id => id && id.trim()), selectedId]
+                                    };
                                     setLandingForm(prev => ({ ...prev, curatedCollections: { ...prev.curatedCollections, collections: updated } }));
                                  }
-                                 e.target.value = '';
                               }}
                               className="w-full bg-stone-900 border border-stone-700 p-2 text-white"
                            >
                               <option value="">+ Add Artwork to Collection</option>
                               {artworks.filter(a => !collection.artworkIds.includes(a.id)).map(art => (
-                                 <option key={art.id} value={art.id}>{art.title}</option>
+                                 <option key={art.id} value={art.id}>{art.title} - {art.artistName || 'Unknown'}</option>
                               ))}
                            </select>
                            <div className="flex flex-wrap gap-2 mt-2">
-                              {collection.artworkIds.map(artId => {
+                              {collection.artworkIds.filter(id => id && id.trim()).map(artId => {
                                  const artwork = artworks.find(a => a.id === artId);
                                  return (
                                     <div key={artId} className="bg-stone-900 px-2 py-1 text-xs text-white flex items-center gap-2">
-                                       {artwork?.title}
+                                       {artwork?.title || 'Loading...'}
                                        <button
                                           onClick={() => {
                                              const updated = [...landingForm.curatedCollections.collections];

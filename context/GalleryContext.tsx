@@ -45,6 +45,7 @@ interface GalleryContextType {
   updateShippingConfig: (config: ShippingConfig) => Promise<void>;
   updateSiteContent: (content: SiteContent) => Promise<void>;
   updateLandingPageContent: (content: LandingPageContent) => Promise<void>;
+  refreshLandingPageContent: () => Promise<void>;
 
   // Conversation Actions
   addConversation: (conv: any) => Promise<void>;
@@ -261,6 +262,18 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
+  const refreshLandingPageContent = async () => {
+    try {
+      const { settings } = await settingsApi.getSettings();
+      if (settings.landingPageContent) {
+        setLandingPageContent(settings.landingPageContent);
+      }
+    } catch (err) {
+      console.error('Error refreshing landing page content:', err);
+      throw err;
+    }
+  };
+
   const addConversation = async (convData: any) => {
     try {
       const response = await conversationApi.create(convData);
@@ -340,6 +353,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       updateShippingConfig,
       updateSiteContent,
       updateLandingPageContent,
+      refreshLandingPageContent,
       addConversation,
       deleteConversation,
       exhibitions,
