@@ -46,6 +46,7 @@ export const AdminDashboard: React.FC = () => {
    // Local State for Exhibitions
    const [isExhModalOpen, setIsExhModalOpen] = useState(false);
    const [editingExhId, setEditingExhId] = useState<string | null>(null);
+   const [isUploadingExhImage, setIsUploadingExhImage] = useState(false);
    const [newExh, setNewExh] = useState({
       title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING'
    });
@@ -204,20 +205,21 @@ export const AdminDashboard: React.FC = () => {
    };
 
    const handleAddExhibition = async () => {
-      if (!newExh.title || !newExh.startDate) return;
+      if (!newExh.title || !newExh.startDate) {
+         alert('Please fill in the title and start date');
+         return;
+      }
+      if (!newExh.imageUrl) {
+         alert('Please upload an exhibition image');
+         return;
+      }
       try {
          if (editingExhId) {
             // Update existing exhibition
-            await updateExhibition(editingExhId, {
-               ...newExh,
-               imageUrl: newExh.imageUrl || `https://picsum.photos/800/600?random=${Date.now()}`
-            });
+            await updateExhibition(editingExhId, newExh);
          } else {
             // Add new exhibition
-            await addExhibition({
-               ...newExh,
-               imageUrl: newExh.imageUrl || `https://picsum.photos/800/600?random=${Date.now()}`
-            });
+            await addExhibition(newExh);
          }
          setIsExhModalOpen(false);
          setEditingExhId(null);
@@ -301,6 +303,29 @@ export const AdminDashboard: React.FC = () => {
          alert('Failed to upload image. Please try again.');
       } finally {
          setIsUploadingHero(false);
+      }
+   };
+
+   const handleExhibitionImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) {
+         alert('Please upload an image file');
+         return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+         alert('File size must be less than 5MB');
+         return;
+      }
+      try {
+         setIsUploadingExhImage(true);
+         const url = await uploadApi.uploadImage(file);
+         setNewExh(prev => ({ ...prev, imageUrl: url }));
+      } catch (error) {
+         console.error('Upload failed:', error);
+         alert('Failed to upload image. Please try again.');
+      } finally {
+         setIsUploadingExhImage(false);
       }
    };
 
@@ -957,12 +982,61 @@ export const AdminDashboard: React.FC = () => {
                               value={newExh.location}
                               onChange={e => setNewExh({ ...newExh, location: e.target.value })}
                            />
-                           <input
-                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
-                              placeholder="Image URL"
-                              value={newExh.imageUrl}
-                              onChange={e => setNewExh({ ...newExh, imageUrl: e.target.value })}
-                           />
+
+                           {/* Image Upload */}
+                           <div className="space-y-2">
+                              <label className="text-xs text-stone-500 block">Exhibition Image</label>
+                              <div className="bg-stone-950 border border-stone-700 p-4 min-h-[200px] flex items-center justify-center">
+                                 {newExh.imageUrl ? (
+                                    <div className="relative w-full">
+                                       <img src={newExh.imageUrl} alt="Preview" className="w-full h-48 object-cover rounded" />
+                                       <div className="mt-3 flex gap-2">
+                                          <label className="flex-1 cursor-pointer bg-stone-800 hover:bg-stone-700 text-white text-center py-2 text-sm transition-colors">
+                                             {isUploadingExhImage ? 'Uploading...' : 'Change Image'}
+                                             <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={handleExhibitionImageUpload}
+                                                disabled={isUploadingExhImage}
+                                             />
+                                          </label>
+                                          <button
+                                             type="button"
+                                             onClick={() => setNewExh({ ...newExh, imageUrl: '' })}
+                                             className="px-4 py-2 bg-red-900/20 hover:bg-red-900/40 text-red-500 text-sm transition-colors"
+                                          >
+                                             Remove
+                                          </button>
+                                       </div>
+                                    </div>
+                                 ) : (
+                                    <label className="cursor-pointer text-stone-500 flex flex-col items-center gap-3 w-full h-full min-h-[180px] justify-center hover:text-stone-400 transition-colors">
+                                       {isUploadingExhImage ? (
+                                          <div className="flex flex-col items-center gap-2">
+                                             <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                                             <span className="text-sm">Uploading...</span>
+                                          </div>
+                                       ) : (
+                                          <>
+                                             <ImageIcon size={48} />
+                                             <div className="text-center">
+                                                <span className="block text-sm">Click to upload exhibition image</span>
+                                                <span className="text-xs text-stone-600">Max 5MB • JPG, PNG, GIF</span>
+                                             </div>
+                                          </>
+                                       )}
+                                       <input
+                                          type="file"
+                                          accept="image/*"
+                                          className="hidden"
+                                          onChange={handleExhibitionImageUpload}
+                                          disabled={isUploadingExhImage}
+                                       />
+                                    </label>
+                                 )}
+                              </div>
+                           </div>
                            <div className="flex items-center gap-3">
                               <input
                                  type="checkbox"

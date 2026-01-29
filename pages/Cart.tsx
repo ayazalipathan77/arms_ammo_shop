@@ -131,8 +131,24 @@ export const Cart: React.FC = () => {
          return;
       }
 
+      // Enhanced validation to match backend requirements
       if (!shippingDetails.firstName || !shippingDetails.address || !shippingDetails.city) {
          setPaymentError('Please fill in all shipping details');
+         return;
+      }
+
+      if (shippingDetails.address.length < 10) {
+         setPaymentError('Shipping address must be at least 10 characters');
+         return;
+      }
+
+      if (shippingDetails.city.length < 2) {
+         setPaymentError('City name must be at least 2 characters');
+         return;
+      }
+
+      if (shippingDetails.country.length < 2) {
+         setPaymentError('Please select a valid country');
          return;
       }
 
@@ -147,6 +163,16 @@ export const Cart: React.FC = () => {
             type: (item.selectedPrintSize === 'ORIGINAL' ? 'ORIGINAL' : 'PRINT') as 'ORIGINAL' | 'PRINT',
             printSize: item.selectedPrintSize !== 'ORIGINAL' ? item.selectedPrintSize : undefined,
          }));
+
+         // Debug logging
+         console.log('Creating order with payload:', {
+            items: orderItems,
+            shippingAddress: shippingDetails.address,
+            shippingCity: shippingDetails.city,
+            shippingCountry: shippingDetails.country,
+            paymentMethod: paymentMethod,
+            currency: 'PKR',
+         });
 
          const response = await orderApi.createOrder({
             items: orderItems,
@@ -258,16 +284,28 @@ export const Cart: React.FC = () => {
                </p>
                {whatsappNotify && <p className="text-green-400 text-sm mb-8">You will receive WhatsApp updates.</p>}
 
-               <Link
-                  to={createdOrderId ? `/invoice/${createdOrderId}` : '#'}
-                  target="_blank"
-                  className="flex items-center justify-center gap-2 mx-auto border border-stone-600 px-6 py-3 text-sm hover:bg-stone-800 text-white transition-colors"
-               >
-                  <FileText size={16} /> View & Print Invoice
-               </Link>
+               <div className="space-y-3">
+                  <Link
+                     to={createdOrderId ? `/invoice/${createdOrderId}` : '#'}
+                     target="_blank"
+                     className="flex items-center justify-center gap-2 w-full bg-amber-600 hover:bg-amber-500 px-6 py-3 text-sm text-white transition-colors uppercase tracking-wider font-bold"
+                  >
+                     <FileText size={16} /> View & Print Invoice
+                  </Link>
 
-               <div className="mt-8 pt-8 border-t border-stone-800">
-                  <Link to="/gallery" className="text-amber-500 hover:underline text-sm">Continue Shopping</Link>
+                  <Link
+                     to="/gallery"
+                     className="flex items-center justify-center gap-2 w-full bg-stone-800 hover:bg-stone-700 px-6 py-3 text-sm text-stone-300 hover:text-white transition-colors uppercase tracking-wider"
+                  >
+                     Continue Shopping
+                  </Link>
+
+                  <Link
+                     to="/"
+                     className="flex items-center justify-center gap-2 w-full border border-stone-700 hover:border-stone-600 px-6 py-3 text-sm text-stone-400 hover:text-stone-300 transition-colors uppercase tracking-wider"
+                  >
+                     Back to Home
+                  </Link>
                </div>
             </div>
          ) : (
@@ -306,19 +344,31 @@ export const Cart: React.FC = () => {
                            <input type="text" placeholder="First Name" value={shippingDetails.firstName} onChange={e => setShippingDetails({ ...shippingDetails, firstName: e.target.value })} className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
                            <input type="text" placeholder="Last Name" value={shippingDetails.lastName} onChange={e => setShippingDetails({ ...shippingDetails, lastName: e.target.value })} className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
                         </div>
-                        <input type="text" placeholder="Address Line 1" value={shippingDetails.address} onChange={e => setShippingDetails({ ...shippingDetails, address: e.target.value })} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                        <div>
+                           <input type="text" placeholder="Address Line 1 (minimum 10 characters)" value={shippingDetails.address} onChange={e => setShippingDetails({ ...shippingDetails, address: e.target.value })} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                           {shippingDetails.address && shippingDetails.address.length < 10 && (
+                              <p className="text-red-400 text-xs mt-1">Address must be at least 10 characters ({shippingDetails.address.length}/10)</p>
+                           )}
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
-                           <input type="text" placeholder="City" value={shippingDetails.city} onChange={e => setShippingDetails({ ...shippingDetails, city: e.target.value })} className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
-                           <select
-                              value={shippingDetails.country}
-                              onChange={(e) => setShippingDetails({ ...shippingDetails, country: e.target.value })}
-                              className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none"
-                           >
-                              <option value="Pakistan">Pakistan</option>
-                              <option value="USA">United States</option>
-                              <option value="UK">United Kingdom</option>
-                              <option value="UAE">UAE</option>
-                           </select>
+                           <div>
+                              <input type="text" placeholder="City (minimum 2 characters)" value={shippingDetails.city} onChange={e => setShippingDetails({ ...shippingDetails, city: e.target.value })} className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                              {shippingDetails.city && shippingDetails.city.length < 2 && (
+                                 <p className="text-red-400 text-xs mt-1">City must be at least 2 characters</p>
+                              )}
+                           </div>
+                           <div>
+                              <select
+                                 value={shippingDetails.country}
+                                 onChange={(e) => setShippingDetails({ ...shippingDetails, country: e.target.value })}
+                                 className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none w-full"
+                              >
+                                 <option value="Pakistan">Pakistan</option>
+                                 <option value="USA">United States</option>
+                                 <option value="UK">United Kingdom</option>
+                                 <option value="UAE">UAE</option>
+                              </select>
+                           </div>
                         </div>
 
                         {/* Shipping Method Selection */}
@@ -477,37 +527,79 @@ export const Cart: React.FC = () => {
                      </div>
 
                      {step === 'CART' && (
-                        <button
-                           onClick={handleProceedToShipping}
-                           className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 uppercase tracking-widest text-sm font-bold shadow-lg shadow-amber-900/20"
-                        >
-                           {token ? 'Proceed to Details' : 'Login to Checkout'}
-                        </button>
+                        <>
+                           <button
+                              onClick={handleProceedToShipping}
+                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 uppercase tracking-widest text-sm font-bold shadow-lg shadow-amber-900/20"
+                           >
+                              {token ? 'Proceed to Details' : 'Login to Checkout'}
+                           </button>
+                           <Link
+                              to="/gallery"
+                              className="block w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors text-center"
+                           >
+                              ← Continue Shopping
+                           </Link>
+                        </>
                      )}
                      {step === 'SHIPPING' && (
-                        <button
-                           onClick={handleProceedToPayment}
-                           disabled={isProcessing || !shippingDetails.firstName || !shippingDetails.address || !shippingDetails.city}
-                           className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 uppercase tracking-widest text-sm font-bold disabled:opacity-50 shadow-lg shadow-amber-900/20 transition-all flex items-center justify-center gap-2"
-                        >
-                           {isProcessing ? (
-                              <>
-                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                 Creating Order...
-                              </>
-                           ) : (
-                              `Continue to Payment`
+                        <>
+                           <button
+                              onClick={handleProceedToPayment}
+                              disabled={
+                                 isProcessing ||
+                                 !shippingDetails.firstName ||
+                                 !shippingDetails.address ||
+                                 !shippingDetails.city ||
+                                 shippingDetails.address.length < 10 ||
+                                 shippingDetails.city.length < 2 ||
+                                 !selectedRateId
+                              }
+                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 uppercase tracking-widest text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-900/20 transition-all flex items-center justify-center gap-2"
+                           >
+                              {isProcessing ? (
+                                 <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Creating Order...
+                                 </>
+                              ) : (
+                                 `Continue to Payment`
+                              )}
+                           </button>
+
+                           {/* Validation Helper */}
+                           {(!shippingDetails.firstName || !shippingDetails.address || !shippingDetails.city ||
+                             shippingDetails.address.length < 10 || shippingDetails.city.length < 2 || !selectedRateId) && (
+                              <div className="mt-3 text-stone-400 text-xs space-y-1">
+                                 <p className="font-semibold text-stone-300">Please complete the following:</p>
+                                 {!shippingDetails.firstName && <p>• Enter first name</p>}
+                                 {!shippingDetails.address && <p>• Enter shipping address</p>}
+                                 {shippingDetails.address && shippingDetails.address.length < 10 && <p>• Address must be at least 10 characters ({shippingDetails.address.length}/10)</p>}
+                                 {!shippingDetails.city && <p>• Enter city</p>}
+                                 {shippingDetails.city && shippingDetails.city.length < 2 && <p>• City must be at least 2 characters</p>}
+                                 {!selectedRateId && <p>• Select a shipping method</p>}
+                              </div>
                            )}
-                        </button>
+                        </>
                      )}
 
-                     {step !== 'CART' && step !== 'PAYMENT' && (
+                     {/* Back buttons for each step */}
+                     {step === 'SHIPPING' && (
                         <button
                            onClick={() => setStep('CART')}
                            disabled={isProcessing}
-                           className="w-full mt-2 text-stone-500 hover:text-stone-300 text-xs py-2 disabled:opacity-0 transition-opacity"
+                           className="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors disabled:opacity-50"
                         >
-                           Back to Cart
+                           ← Back to Cart
+                        </button>
+                     )}
+                     {step === 'PAYMENT' && (
+                        <button
+                           onClick={() => setStep('SHIPPING')}
+                           disabled={isProcessing}
+                           className="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors disabled:opacity-50"
+                        >
+                           ← Back to Shipping Details
                         </button>
                      )}
                   </div>

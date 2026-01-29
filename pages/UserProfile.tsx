@@ -325,35 +325,79 @@ export const UserProfile: React.FC = () => {
                {/* ORDERS TAB */}
                {activeTab === 'ORDERS' && (
                   <div className="animate-fade-in space-y-6">
-                     <h2 className="font-serif text-2xl text-white mb-6">Order History</h2>
+                     <div className="flex items-center justify-between mb-8">
+                        <h2 className="font-serif text-2xl text-white">Order History</h2>
+                        <p className="text-stone-500 text-xs uppercase tracking-widest">{orders.length} {orders.length === 1 ? 'Order' : 'Orders'}</p>
+                     </div>
                      {orders.length === 0 ? (
-                        <p className="text-stone-500 italic">No orders placed yet.</p>
+                        <div className="text-center py-16 border border-stone-800 bg-stone-900/30">
+                           <Package className="w-16 h-16 text-stone-700 mx-auto mb-4" />
+                           <p className="text-stone-500 text-lg mb-2">No orders yet</p>
+                           <p className="text-stone-600 text-sm mb-6">Start collecting art to see your order history here.</p>
+                           <Link to="/gallery" className="inline-block bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 text-xs uppercase tracking-wider font-bold transition-colors">
+                              Browse Gallery
+                           </Link>
+                        </div>
                      ) : (
                         <div className="space-y-4">
-                           {orders.map(order => (
-                              <div key={order.id} className="bg-stone-900 border border-stone-800 p-6 flex items-center justify-between rounded-sm hover:border-stone-700 transition-colors">
-                                 <div>
-                                    <p className="text-white font-bold">Order #{order.id.slice(0, 8)}</p>
-                                    <p className="text-stone-500 text-xs mt-1">Placed on {new Date(order.date || order.createdAt).toLocaleDateString()}</p>
-                                    <div className="flex gap-2 mt-2">
-                                       {order.items.map((item, idx) => (
-                                          <span key={idx} className="text-stone-400 text-xs bg-stone-950 px-2 py-1 rounded border border-stone-800">
-                                             {item.artwork?.title || item.title} (x{item.quantity})
+                           {orders.map((order: any) => (
+                              <div key={order.id} className="bg-stone-900/50 border border-stone-800 hover:border-stone-700 transition-all group">
+                                 <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                       <div className="flex items-center gap-3 mb-2">
+                                          <h3 className="text-white font-mono text-sm">#{order.id.slice(0, 12).toUpperCase()}</h3>
+                                          <span className={`inline-block px-2 py-1 text-[10px] rounded-sm uppercase tracking-widest font-bold border ${
+                                             order.status === 'DELIVERED' ? 'bg-green-900/20 text-green-400 border-green-900/30' :
+                                             order.status === 'PENDING' ? 'bg-yellow-900/20 text-yellow-400 border-yellow-900/30' :
+                                             order.status === 'PROCESSING' ? 'bg-blue-900/20 text-blue-400 border-blue-900/30' :
+                                             order.status === 'SHIPPED' ? 'bg-purple-900/20 text-purple-400 border-purple-900/30' :
+                                             order.status === 'CANCELLED' ? 'bg-red-900/20 text-red-400 border-red-900/30' :
+                                             'bg-stone-800 text-stone-400 border-stone-700'
+                                          }`}>
+                                             {order.status}
                                           </span>
-                                       ))}
+                                       </div>
+                                       <p className="text-stone-500 text-xs mb-3">
+                                          Placed on {new Date(order.createdAt || order.date).toLocaleDateString('en-US', {
+                                             year: 'numeric',
+                                             month: 'long',
+                                             day: 'numeric'
+                                          })}
+                                       </p>
+                                       <div className="flex flex-wrap gap-2">
+                                          {order.items.slice(0, 3).map((item: any, idx: number) => (
+                                             <div key={idx} className="flex items-center gap-2 bg-stone-950 px-3 py-2 border border-stone-800 group-hover:border-stone-700 transition-colors">
+                                                {item.artwork?.imageUrl && (
+                                                   <img src={item.artwork.imageUrl} alt={item.artwork.title} className="w-8 h-8 object-cover border border-stone-700" />
+                                                )}
+                                                <span className="text-stone-400 text-xs font-medium">
+                                                   {item.artwork?.title || item.title}
+                                                </span>
+                                                <span className="text-stone-600 text-xs">×{item.quantity}</span>
+                                             </div>
+                                          ))}
+                                          {order.items.length > 3 && (
+                                             <div className="flex items-center px-3 py-2 text-stone-500 text-xs">
+                                                +{order.items.length - 3} more
+                                             </div>
+                                          )}
+                                       </div>
                                     </div>
-                                 </div>
-                                 <div className="text-right">
-                                    <span className={`inline-block px-3 py-1 text-xs rounded-full border mb-2 ${order.status === 'DELIVERED' ? 'bg-green-900/30 text-green-500 border-green-900/50' :
-                                       order.status === 'PENDING' ? 'bg-yellow-900/30 text-yellow-500 border-yellow-900/50' :
-                                          'bg-stone-800 text-stone-400 border-stone-700'
-                                       }`}>
-                                       {order.status}
-                                    </span>
-                                    <p className="text-stone-300 text-sm">{order.currency || 'PKR'} {Number(order.totalAmount).toLocaleString()}</p>
-                                    <Link to={`/invoice/${order.id}`} target="_blank" className="block text-[10px] text-amber-500 hover:text-white mt-1 uppercase tracking-wider">
-                                       View Invoice
-                                    </Link>
+                                    <div className="text-right flex-shrink-0 space-y-3">
+                                       <div>
+                                          <p className="text-stone-500 text-xs uppercase tracking-wider mb-1">Total Amount</p>
+                                          <p className="text-white text-xl font-mono font-bold">
+                                             {order.currency || 'PKR'} {Number(order.totalAmount).toLocaleString()}
+                                          </p>
+                                       </div>
+                                       <Link
+                                          to={`/invoice/${order.id}`}
+                                          target="_blank"
+                                          className="inline-block bg-amber-600 hover:bg-amber-500 text-white px-6 py-2 text-[10px] uppercase tracking-widest font-bold transition-colors"
+                                       >
+                                          View Invoice →
+                                       </Link>
+                                    </div>
                                  </div>
                               </div>
                            ))}

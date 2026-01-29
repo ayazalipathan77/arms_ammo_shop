@@ -1,21 +1,95 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGallery } from '../context/GalleryContext';
 import { useCurrency } from '../App';
-import { Printer, ArrowLeft, Mail, MapPin, Globe } from 'lucide-react';
+import { Printer, ArrowLeft, Mail, MapPin, Globe, Loader2 } from 'lucide-react';
+import { orderApi } from '../services/api';
+import type { Order } from '../types';
 
 export const InvoiceView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { orders } = useGallery();
   const { convertPrice } = useCurrency();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const order = orders.find(o => o.id === id);
+  useEffect(() => {
+    const fetchOrder = async () => {
+      if (!id) {
+        setError('No order ID provided');
+        setLoading(false);
+        return;
+      }
 
-  if (!order) {
+      // First try to find in context
+      const contextOrder = orders.find(o => o.id === id);
+      if (contextOrder) {
+        setOrder(contextOrder);
+        setLoading(false);
+        return;
+      }
+
+      // If not in context, fetch from backend
+      try {
+        const { order: apiOrder } = await orderApi.getOrderById(id);
+
+        // Transform API order to match Order type
+        const transformedOrder: Order = {
+          id: apiOrder.id,
+          customerName: apiOrder.user?.fullName || 'Customer',
+          customerEmail: apiOrder.user?.email || '',
+          items: apiOrder.items.map(item => ({
+            id: item.artwork.id,
+            title: item.artwork.title,
+            artistName: item.artwork.artistName || 'Unknown Artist',
+            imageUrl: item.artwork.imageUrl,
+            finalPrice: item.price,
+            selectedPrintSize: item.type === 'ORIGINAL' ? 'ORIGINAL' : item.printSize || 'A4',
+            dimensions: item.artwork.dimensions || '',
+            medium: item.artwork.medium || '',
+            quantity: item.quantity
+          })),
+          totalAmount: apiOrder.totalAmount,
+          currency: apiOrder.currency as any,
+          status: apiOrder.status as any,
+          date: new Date(apiOrder.createdAt),
+          shippingAddress: `${apiOrder.shippingAddress}, ${apiOrder.shippingCity}`,
+          shippingCountry: apiOrder.shippingCountry,
+          trackingNumber: apiOrder.trackingNumber || undefined,
+          paymentMethod: apiOrder.paymentMethod as any,
+          transactionId: apiOrder.transactionId || undefined,
+        };
+
+        setOrder(transformedOrder);
+      } catch (err: any) {
+        console.error('Failed to fetch order:', err);
+        setError(err.message || 'Failed to load invoice');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrder();
+  }, [id, orders]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-amber-500 animate-spin mx-auto mb-4" />
+          <p className="text-stone-400">Loading invoice...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !order) {
     return (
       <div className="min-h-screen bg-stone-950 flex items-center justify-center">
          <div className="text-center">
             <h2 className="text-2xl text-white font-serif mb-4">Invoice Not Found</h2>
+            <p className="text-stone-400 mb-6">{error || 'The requested invoice could not be found.'}</p>
             <Link to="/" className="text-amber-500 hover:underline">Return Home</Link>
          </div>
       </div>
@@ -58,8 +132,7 @@ export const InvoiceView: React.FC = () => {
       <div className="max-w-[210mm] mx-auto bg-white text-stone-900 min-h-[297mm] shadow-2xl print:shadow-none print:w-full print:min-h-0 relative overflow-hidden">
         
         {/* Decorative Top Border */}
-        <div className="h-2 bg-stone-900 w-full"></div>
-        <div className="h-1 bg-amber-500 w-full"></div>
+        <div className="h-1 bg-gradient-to-r from-stone-900 via-amber-500 to-stone-900 w-full"></div>
 
         <div className="p-12">
            {/* Header */}
@@ -74,13 +147,16 @@ export const InvoiceView: React.FC = () => {
                  </div>
               </div>
               <div className="text-right">
-                 <h2 className="font-serif text-3xl text-amber-600 font-bold tracking-wider mb-2">MURAQQA</h2>
-                 <p className="text-xs uppercase tracking-widest text-stone-900 font-bold">Contemporary Art Gallery</p>
+                 <h2 className="font-serif text-3xl md:text-4xl font-bold tracking-[0.15em] bg-gradient-to-b from-amber-500 via-yellow-600 to-amber-700 bg-clip-text text-transparent drop-shadow-sm mb-2">
+                    MURAQQA
+                 </h2>
+                 <div className="h-px w-full bg-gradient-to-l from-transparent via-amber-500 to-transparent opacity-50 mb-4"></div>
+                 <p className="text-xs uppercase tracking-widest text-stone-700 font-bold">Contemporary Art Gallery</p>
                  <div className="mt-4 text-sm text-stone-500 space-y-1">
-                    <p>123 Art District, DHA Phase 6</p>
-                    <p>Lahore, Pakistan</p>
-                    <p>contact@muraqqa.art</p>
-                    <p>+92 42 111 222 333</p>
+                    <p>DHA Phase 6, Lahore</p>
+                    <p>Pakistan</p>
+                    <p>support@muraqqa.art</p>
+                    <p>+92 300 123 4567</p>
                  </div>
               </div>
            </div>
