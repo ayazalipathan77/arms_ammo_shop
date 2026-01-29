@@ -154,37 +154,142 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
 
       {/* Featured Exhibition (Editorial Layout) */}
       {landingPageContent?.featuredExhibition?.enabled && (
-        <section className="py-32 px-6 md:px-12 max-w-screen-2xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div className="order-2 md:order-1 space-y-8">
-              <span className="inline-block w-12 h-px bg-amber-500 mb-4"></span>
-              <h2 className="text-4xl md:text-6xl font-serif text-white leading-tight">
+        <section className="py-32 px-6 md:px-12 max-w-screen-2xl mx-auto relative">
+          {/* Subtle Background Accent */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 0.05, scale: 1 }}
+            transition={{ duration: 1.5 }}
+            viewport={{ once: true }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/20 rounded-full blur-3xl pointer-events-none"
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center relative z-10">
+            {/* Content Section */}
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+              viewport={{ once: true }}
+              className="order-2 md:order-1 space-y-8"
+            >
+              {/* Decorative Line */}
+              <motion.span
+                initial={{ width: 0 }}
+                whileInView={{ width: "48px" }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="inline-block h-px bg-gradient-to-r from-amber-500 to-transparent mb-4"
+              />
+
+              {/* Badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center gap-2 text-amber-500/80 text-xs uppercase tracking-[0.3em] border border-amber-500/30 bg-amber-500/5 px-3 py-1.5 rounded-full backdrop-blur-sm"
+              >
+                Featured Exhibition
+              </motion.div>
+
+              {/* Title */}
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                viewport={{ once: true }}
+                className="text-4xl md:text-6xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-white leading-tight"
+              >
                 {featuredExhibition.title}
-              </h2>
-              <p className="text-xl text-stone-400">
-                A solo exhibition by <span className="text-white">{featuredExhibition.artist || featuredExhibition.artistName}</span>
-              </p>
+              </motion.h2>
+
+              {/* Artist */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                viewport={{ once: true }}
+                className="text-xl text-stone-400"
+              >
+                A solo exhibition by{' '}
+                <span className="text-white font-medium">
+                  {featuredExhibition.artist || featuredExhibition.artistName}
+                </span>
+              </motion.p>
+
+              {/* Date */}
               {featuredExhibition.date && (
-                <p className="text-stone-400 text-sm uppercase tracking-widest">{featuredExhibition.date}</p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                  viewport={{ once: true }}
+                  className="text-amber-500/70 text-sm uppercase tracking-widest font-medium"
+                >
+                  {featuredExhibition.date}
+                </motion.p>
               )}
-              <p className="text-stone-500 max-w-md leading-relaxed">
-                {featuredExhibition.description || 'Explore the ethereal boundaries between memory and reality in this groundbreaking collection.'}
-              </p>
-              <div className="pt-8">
-                <Link to="/exhibitions" className="group inline-flex items-center gap-4 text-white uppercase tracking-widest text-xs">
+
+              {/* Description */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+                viewport={{ once: true }}
+                className="text-stone-500 max-w-md leading-relaxed"
+              >
+                {featuredExhibition.description ||
+                  'Explore the ethereal boundaries between memory and reality in this groundbreaking collection.'}
+              </motion.p>
+
+              {/* CTA */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                viewport={{ once: true }}
+                className="pt-8"
+              >
+                <Link
+                  to="/exhibitions"
+                  className="group inline-flex items-center gap-4 text-white hover:text-amber-500 uppercase tracking-widest text-xs font-bold transition-colors"
+                >
                   Explore Exhibition
-                  <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+                  <ArrowRight
+                    size={16}
+                    className="group-hover:translate-x-2 transition-transform"
+                  />
                 </Link>
-              </div>
-            </div>
-            <div className="order-1 md:order-2 relative aspect-[3/4] md:aspect-square overflow-hidden group">
+              </motion.div>
+            </motion.div>
+
+            {/* Image Section */}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+              viewport={{ once: true }}
+              className="order-1 md:order-2 relative aspect-[3/4] md:aspect-square overflow-hidden group rounded-2xl"
+            >
+              {/* Glow Effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 via-amber-500/10 to-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10"></div>
+
+              {/* Image */}
               <img
                 src={featuredExhibition.image}
                 alt={featuredExhibition.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 border border-white/10 m-4 pointer-events-none"></div>
-            </div>
+
+              {/* Decorative Borders */}
+              <div className="absolute inset-0 border-2 border-white/5 m-6 pointer-events-none rounded-xl group-hover:border-amber-500/30 transition-colors duration-700"></div>
+              <div className="absolute inset-0 border border-white/5 pointer-events-none rounded-2xl"></div>
+
+              {/* Corner Accents */}
+              <div className="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-amber-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-tr-2xl"></div>
+              <div className="absolute bottom-0 left-0 w-20 h-20 border-b-2 border-l-2 border-amber-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-bl-2xl"></div>
+            </motion.div>
           </div>
         </section>
       )}

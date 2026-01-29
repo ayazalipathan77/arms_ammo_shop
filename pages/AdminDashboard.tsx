@@ -13,7 +13,7 @@ export const AdminDashboard: React.FC = () => {
    const {
       artworks, orders, shippingConfig, stripeConnected, conversations, siteContent, exhibitions,
       addArtwork, updateArtwork, deleteArtwork, updateOrderStatus, updateShippingConfig, connectStripe,
-      addConversation, deleteConversation, updateSiteContent, addExhibition, deleteExhibition,
+      addConversation, deleteConversation, updateSiteContent, addExhibition, updateExhibition, deleteExhibition,
       landingPageContent, updateLandingPageContent, fetchArtworks
    } = useGallery();
    const { convertPrice } = useCurrency();
@@ -45,6 +45,7 @@ export const AdminDashboard: React.FC = () => {
 
    // Local State for Exhibitions
    const [isExhModalOpen, setIsExhModalOpen] = useState(false);
+   const [editingExhId, setEditingExhId] = useState<string | null>(null);
    const [newExh, setNewExh] = useState({
       title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING'
    });
@@ -205,15 +206,40 @@ export const AdminDashboard: React.FC = () => {
    const handleAddExhibition = async () => {
       if (!newExh.title || !newExh.startDate) return;
       try {
-         await addExhibition({
-            ...newExh,
-            imageUrl: newExh.imageUrl || `https://picsum.photos/800/600?random=${Date.now()}`
-         });
+         if (editingExhId) {
+            // Update existing exhibition
+            await updateExhibition(editingExhId, {
+               ...newExh,
+               imageUrl: newExh.imageUrl || `https://picsum.photos/800/600?random=${Date.now()}`
+            });
+         } else {
+            // Add new exhibition
+            await addExhibition({
+               ...newExh,
+               imageUrl: newExh.imageUrl || `https://picsum.photos/800/600?random=${Date.now()}`
+            });
+         }
          setIsExhModalOpen(false);
+         setEditingExhId(null);
          setNewExh({ title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING' });
       } catch (err) {
-         alert('Failed to add exhibition');
+         alert(`Failed to ${editingExhId ? 'update' : 'add'} exhibition`);
       }
+   };
+
+   const handleEditExhibition = (ex: any) => {
+      setEditingExhId(ex.id);
+      setNewExh({
+         title: ex.title,
+         description: ex.description,
+         startDate: ex.startDate.split('T')[0],
+         endDate: ex.endDate ? ex.endDate.split('T')[0] : '',
+         location: ex.location,
+         imageUrl: ex.imageUrl,
+         isVirtual: ex.isVirtual,
+         status: ex.status
+      });
+      setIsExhModalOpen(true);
    };
 
    const handleSaveContent = async () => {
@@ -895,8 +921,8 @@ export const AdminDashboard: React.FC = () => {
                   <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
                      <div className="bg-stone-900 border border-stone-700 w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-6">
-                           <h3 className="text-xl text-white font-serif">Add New Exhibition</h3>
-                           <button onClick={() => setIsExhModalOpen(false)}><X className="text-stone-500 hover:text-white" /></button>
+                           <h3 className="text-xl text-white font-serif">{editingExhId ? 'Edit Exhibition' : 'Add New Exhibition'}</h3>
+                           <button onClick={() => { setIsExhModalOpen(false); setEditingExhId(null); setNewExh({ title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING' }); }}><X className="text-stone-500 hover:text-white" /></button>
                         </div>
                         <div className="space-y-4">
                            <input
@@ -964,7 +990,7 @@ export const AdminDashboard: React.FC = () => {
                               onChange={e => setNewExh({ ...newExh, description: e.target.value })}
                            />
                            <button onClick={handleAddExhibition} className="w-full bg-amber-600 text-white py-3 hover:bg-amber-500 font-bold">
-                              Publish Exhibition
+                              {editingExhId ? 'Update Exhibition' : 'Publish Exhibition'}
                            </button>
                         </div>
                      </div>
@@ -985,6 +1011,7 @@ export const AdminDashboard: React.FC = () => {
                            </div>
                         </div>
                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <button onClick={() => handleEditExhibition(ex)} className="p-2 text-stone-500 hover:text-amber-500 hover:bg-amber-900/10 rounded"><Edit size={18} /></button>
                            <button onClick={() => deleteExhibition(ex.id)} className="p-2 text-stone-500 hover:text-red-500 hover:bg-red-900/10 rounded"><Trash2 size={18} /></button>
                         </div>
                      </div>
