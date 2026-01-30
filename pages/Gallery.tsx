@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useGallery } from '../context/GalleryContext';
-import { Filter, Search, Loader2, X, ChevronDown, Check, Sparkles, Palette } from 'lucide-react';
+import { Filter, Search, Loader2, X, ChevronDown, Check, Sparkles, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { useCurrency } from '../App';
 import { artistApi } from '../services/api';
 import { Artist } from '../types';
 import { motion } from 'framer-motion';
+
+const ITEMS_PER_PAGE = 20;
 
 export const Gallery: React.FC = () => {
   const { convertPrice } = useCurrency();
@@ -15,7 +17,8 @@ export const Gallery: React.FC = () => {
     error,
     availableCategories,
     availableMediums,
-    fetchArtworks
+    fetchArtworks,
+    pagination
   } = useGallery();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -31,6 +34,9 @@ export const Gallery: React.FC = () => {
   const [selectedStock, setSelectedStock] = useState<'All' | 'Available' | 'Sold'>(
     (searchParams.get('stock') as 'All' | 'Available' | 'Sold') || 'All'
   );
+  const [currentPage, setCurrentPage] = useState<number>(
+    parseInt(searchParams.get('page') || '1', 10)
+  );
   const artistIdParam = searchParams.get('artistId');
 
   // Sync state from URL params when navigating back (browser back button)
@@ -40,12 +46,14 @@ export const Gallery: React.FC = () => {
     const urlCategory = searchParams.get('category') || 'All';
     const urlMedium = searchParams.get('medium') || 'All';
     const urlStock = (searchParams.get('stock') as 'All' | 'Available' | 'Sold') || 'All';
+    const urlPage = parseInt(searchParams.get('page') || '1', 10);
 
     // Update state if URL params differ from current state (handles back navigation)
     if (urlSearch !== searchTerm) setSearchTerm(urlSearch);
     if (urlCategory !== selectedCategory) setSelectedCategory(urlCategory);
     if (urlMedium !== selectedMedium) setSelectedMedium(urlMedium);
     if (urlStock !== selectedStock) setSelectedStock(urlStock);
+    if (urlPage !== currentPage) setCurrentPage(urlPage);
   }, [searchParams]); // Only run when URL params change
 
   // Clean filter arrays
@@ -57,7 +65,7 @@ export const Gallery: React.FC = () => {
   const hasActiveFilters = searchTerm !== '' || selectedCategory !== 'All' || selectedMedium !== 'All' || selectedStock !== 'All' || artistIdParam;
 
   // Update URL params when filters change (skip initial mount)
-  const updateUrlParams = useCallback(() => {
+  const updateUrlParams = useCallback((page: number = currentPage) => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
@@ -68,8 +76,9 @@ export const Gallery: React.FC = () => {
     if (selectedMedium !== 'All') params.set('medium', selectedMedium);
     if (selectedStock !== 'All') params.set('stock', selectedStock);
     if (artistIdParam) params.set('artistId', artistIdParam);
+    if (page > 1) params.set('page', String(page));
     setSearchParams(params, { replace: true });
-  }, [searchTerm, selectedCategory, selectedMedium, selectedStock, artistIdParam, setSearchParams]);
+  }, [searchTerm, selectedCategory, selectedMedium, selectedStock, artistIdParam, currentPage, setSearchParams]);
 
   // Client-side filter for stock availability
   const filteredArtworks = artworks.filter(art => {
@@ -81,7 +90,10 @@ export const Gallery: React.FC = () => {
 
   // Fetch artworks when filters change and update URL
   useEffect(() => {
-    const filters: any = {};
+    const filters: any = {
+      page: currentPage,
+      limit: ITEMS_PER_PAGE
+    };
     if (selectedCategory !== 'All') filters.category = selectedCategory;
     if (selectedMedium !== 'All') filters.medium = selectedMedium;
     if (searchTerm) filters.search = searchTerm;
@@ -89,18 +101,64 @@ export const Gallery: React.FC = () => {
 
     const timeoutId = setTimeout(() => {
       fetchArtworks(filters);
-      updateUrlParams();
+      updateUrlParams(currentPage);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [selectedCategory, selectedMedium, searchTerm, artistIdParam, fetchArtworks, updateUrlParams]);
+  }, [selectedCategory, selectedMedium, searchTerm, artistIdParam, currentPage, fetchArtworks, updateUrlParams]);
+
+  // Reset to page 1 when filters change (not when page changes)
+  const prevFiltersRef = useRef({ searchTerm, selectedCategory, selectedMedium, artistIdParam });
+  useEffect(() => {
+    const prev = prevFiltersRef.current;
+    if (
+      prev.searchTerm !== searchTerm ||
+      prev.selectedCategory !== selectedCategory ||
+      prev.selectedMedium !== selectedMedium ||
+      prev.artistIdParam !== artistIdParam
+    ) {
+      setCurrentPage(1);
+    }
+    prevFiltersRef.current = { searchTerm, selectedCategory, selectedMedium, artistIdParam };
+  }, [searchTerm, selectedCategory, selectedMedium, artistIdParam]);
 
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('All');
     setSelectedMedium('All');
     setSelectedStock('All');
+    setCurrentPage(1);
     setSearchParams({});
+  };
+
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= pagination.totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const total = pagination.totalPages;
+    const current = currentPage;
+
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (current > 3) pages.push('...');
+
+      const start = Math.max(2, current - 1);
+      const end = Math.min(total - 1, current + 1);
+
+      for (let i = start; i <= end; i++) pages.push(i);
+
+      if (current < total - 2) pages.push('...');
+      pages.push(total);
+    }
+    return pages;
   };
 
   // Remove individual filter
@@ -302,6 +360,7 @@ export const Gallery: React.FC = () => {
             <button onClick={clearFilters} className="text-amber-500 hover:text-amber-400 text-xs uppercase tracking-widest border-b border-amber-500/50 pb-1">Clear All Filters</button>
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredArtworks.map((art) => (
               <Link key={art.id} to={`/artwork/${art.id}`} className="group block">
@@ -332,6 +391,71 @@ export const Gallery: React.FC = () => {
               </Link>
             ))}
           </div>
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center justify-center gap-2 mt-16 pb-8"
+            >
+              {/* Previous Button */}
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`flex items-center gap-1 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${
+                  currentPage === 1
+                    ? 'text-stone-600 cursor-not-allowed'
+                    : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                }`}
+              >
+                <ChevronLeft size={14} />
+                Prev
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {getPageNumbers().map((page, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => typeof page === 'number' && goToPage(page)}
+                    disabled={page === '...'}
+                    className={`w-10 h-10 rounded-full text-sm font-medium transition-all ${
+                      page === currentPage
+                        ? 'bg-amber-500 text-stone-950'
+                        : page === '...'
+                        ? 'text-stone-600 cursor-default'
+                        : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === pagination.totalPages}
+                className={`flex items-center gap-1 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${
+                  currentPage === pagination.totalPages
+                    ? 'text-stone-600 cursor-not-allowed'
+                    : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                }`}
+              >
+                Next
+                <ChevronRight size={14} />
+              </button>
+            </motion.div>
+          )}
+
+          {/* Pagination Info */}
+          {pagination.total > 0 && (
+            <div className="text-center text-stone-600 text-xs uppercase tracking-widest pb-8">
+              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of {pagination.total}
+            </div>
+          )}
+        </>
         )}
       </div>
       </div>

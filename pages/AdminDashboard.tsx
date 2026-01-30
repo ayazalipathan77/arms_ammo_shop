@@ -60,12 +60,13 @@ export const AdminDashboard: React.FC = () => {
 
    // Landing Page state
    const [landingForm, setLandingForm] = useState(landingPageContent || {
-      hero: { enabled: true, title: 'Elevation of Perspective', subtitle: 'Contemporary Pakistani Art', accentWord: 'Perspective', backgroundImage: '/header_bg.jpg' },
+      hero: { enabled: true, title: 'Elevation of Perspective', subtitle: 'Contemporary Pakistani Art', accentWord: 'Perspective', backgroundImage: '/header_bg.jpg', backgroundImages: [] as string[] },
       featuredExhibition: { enabled: true, exhibitionId: null, manualOverride: { title: '', artistName: '', description: '', date: '', imageUrl: '' } },
       curatedCollections: { enabled: true, collections: [] },
       topPaintings: { enabled: false, artworkIds: [] },
       muraqQaJournal: { enabled: true, featuredConversationIds: [] }
    });
+   const [isUploadingBgImages, setIsUploadingBgImages] = useState(false);
    const [exhibitionMode, setExhibitionMode] = useState<'auto' | 'manual'>('manual');
    const [isUploadingHero, setIsUploadingHero] = useState(false);
 
@@ -304,6 +305,52 @@ export const AdminDashboard: React.FC = () => {
       } finally {
          setIsUploadingHero(false);
       }
+   };
+
+   const handleBackgroundImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const currentImages = landingForm.hero.backgroundImages || [];
+      if (currentImages.length >= 10) {
+         alert('Maximum 10 background images allowed');
+         return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+         alert('Please upload an image file');
+         return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+         alert('File size must be less than 5MB');
+         return;
+      }
+      try {
+         setIsUploadingBgImages(true);
+         const url = await uploadApi.uploadImage(file);
+         setLandingForm(prev => ({
+            ...prev,
+            hero: {
+               ...prev.hero,
+               backgroundImages: [...(prev.hero.backgroundImages || []), url]
+            }
+         }));
+      } catch (error) {
+         console.error('Upload failed:', error);
+         alert('Failed to upload image. Please try again.');
+      } finally {
+         setIsUploadingBgImages(false);
+      }
+   };
+
+   const removeBackgroundImage = (index: number) => {
+      setLandingForm(prev => ({
+         ...prev,
+         hero: {
+            ...prev.hero,
+            backgroundImages: (prev.hero.backgroundImages || []).filter((_, i) => i !== index)
+         }
+      }));
    };
 
    const handleExhibitionImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1185,6 +1232,77 @@ export const AdminDashboard: React.FC = () => {
                         </div>
                      </div>
                   </div>
+               </div>
+
+               {/* Background Slideshow Images */}
+               <div className="bg-stone-900 p-6 border border-stone-800">
+                  <h3 className="text-white font-serif text-xl mb-4 flex items-center gap-2">
+                     <ImageIcon size={20} className="text-amber-600" /> Background Slideshow Images
+                  </h3>
+                  <p className="text-stone-500 text-sm mb-4">
+                     Upload multiple background images for an animated slideshow effect on the landing page hero section.
+                     Images will zoom in and fade to the next one continuously. Maximum 10 images.
+                  </p>
+
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                     {(landingForm.hero.backgroundImages || []).map((imgUrl: string, index: number) => (
+                        <div key={index} className="relative group aspect-video bg-stone-950 border border-stone-700 overflow-hidden">
+                           <img src={imgUrl} alt={`Background ${index + 1}`} className="w-full h-full object-cover" />
+                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <button
+                                 onClick={() => removeBackgroundImage(index)}
+                                 className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors"
+                              >
+                                 <Trash2 size={16} />
+                              </button>
+                           </div>
+                           <span className="absolute top-1 left-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded">
+                              {index + 1}
+                           </span>
+                        </div>
+                     ))}
+
+                     {/* Upload button */}
+                     {(landingForm.hero.backgroundImages || []).length < 10 && (
+                        <label className="aspect-video bg-stone-950 border-2 border-dashed border-stone-700 hover:border-amber-600 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                           {isUploadingBgImages ? (
+                              <div className="flex flex-col items-center gap-2">
+                                 <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                                 <span className="text-xs text-stone-500">Uploading...</span>
+                              </div>
+                           ) : (
+                              <>
+                                 <Plus size={24} className="text-stone-500 mb-1" />
+                                 <span className="text-xs text-stone-500">Add Image</span>
+                              </>
+                           )}
+                           <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleBackgroundImagesUpload}
+                              disabled={isUploadingBgImages}
+                           />
+                        </label>
+                     )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm">
+                     <span className="text-stone-500">
+                        {(landingForm.hero.backgroundImages || []).length} / 10 images uploaded
+                     </span>
+                     {(landingForm.hero.backgroundImages || []).length > 0 && (
+                        <button
+                           onClick={() => setLandingForm(prev => ({ ...prev, hero: { ...prev.hero, backgroundImages: [] } }))}
+                           className="text-red-500 hover:text-red-400 text-xs uppercase tracking-wide"
+                        >
+                           Clear All
+                        </button>
+                     )}
+                  </div>
+                  <p className="text-amber-500/70 text-xs mt-3">
+                     Note: If slideshow images are uploaded, they will be used instead of the single background image above.
+                  </p>
                </div>
 
                {/* Featured Exhibition Selector */}

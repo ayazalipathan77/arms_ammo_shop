@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ArrowRight, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { useGallery } from '../context/GalleryContext';
 
 interface HomeProps {
@@ -19,6 +19,11 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
   // Carousel state
   const carouselRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Background slideshow state
+  const [currentBgIndex, setCurrentBgIndex] = useState(0);
+  const backgroundImages = landingPageContent?.hero?.backgroundImages || [];
+  const hasMultipleBackgrounds = backgroundImages.length > 1;
 
   useEffect(() => {
     if (landingPageContent !== null) {
@@ -47,6 +52,17 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
 
     return () => clearInterval(scrollInterval);
   }, [isPaused]);
+
+  // Background slideshow auto-advance (zoom in 2s, then fade to next)
+  useEffect(() => {
+    if (!hasMultipleBackgrounds) return;
+
+    const slideshowInterval = setInterval(() => {
+      setCurrentBgIndex((prev) => (prev + 1) % backgroundImages.length);
+    }, 4000); // 2s zoom + 2s visible = 4s per slide
+
+    return () => clearInterval(slideshowInterval);
+  }, [hasMultipleBackgrounds, backgroundImages.length]);
 
   // Fallback to defaults if landingPageContent is not available
   const hero = landingPageContent?.hero || {
@@ -128,12 +144,41 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
             style={{ y: y1 }}
             className="absolute inset-0 z-0"
           >
-            <div className="absolute inset-0 bg-black/40 z-10" />
-            <img
-              src={hero.backgroundImage}
-              alt="Hero Art"
-              className="w-full h-full object-cover"
-            />
+            {/* Dark grey overlay filter */}
+            <div className="absolute inset-0 bg-stone-900/60 z-10" />
+
+            {/* Animated Background Slideshow */}
+            {hasMultipleBackgrounds ? (
+              <AnimatePresence mode="sync">
+                {backgroundImages.map((bgImage: string, index: number) => (
+                  index === currentBgIndex && (
+                    <motion.div
+                      key={`bg-${index}`}
+                      initial={{ opacity: 0, scale: 1 }}
+                      animate={{ opacity: 1, scale: 1.15 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        opacity: { duration: 1, ease: "easeInOut" },
+                        scale: { duration: 4, ease: "easeOut" }
+                      }}
+                      className="absolute inset-0"
+                    >
+                      <img
+                        src={bgImage}
+                        alt={`Background ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </motion.div>
+                  )
+                ))}
+              </AnimatePresence>
+            ) : (
+              <img
+                src={hero.backgroundImage}
+                alt="Hero Art"
+                className="w-full h-full object-cover"
+              />
+            )}
           </motion.div>
 
           <motion.div

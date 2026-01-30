@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, ArrowLeft, Loader2, Globe, Sparkles, ArrowRight, Palette } from 'lucide-react';
-import { artistApi, artworkApi, transformArtwork } from '../services/api';
+import { MapPin, ArrowLeft, Loader2, Globe, Sparkles, ArrowRight, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
+import { artistApi, artworkApi, transformArtwork, PaginationInfo } from '../services/api';
 import { Artist, Artwork } from '../types';
 import { useCurrency } from '../App';
 import { motion } from 'framer-motion';
+
+const ARTWORKS_PER_PAGE = 12;
 
 export const ArtistDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -13,7 +15,39 @@ export const ArtistDetail: React.FC = () => {
     const [artist, setArtist] = useState<Artist | null>(null);
     const [artworks, setArtworks] = useState<Artwork[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingArtworks, setIsLoadingArtworks] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState<PaginationInfo>({
+        total: 0,
+        page: 1,
+        limit: ARTWORKS_PER_PAGE,
+        totalPages: 0
+    });
+    const [totalArtworksCount, setTotalArtworksCount] = useState(0);
+    const [soldCount, setSoldCount] = useState(0);
+
+    // Fetch artworks with pagination
+    const fetchArtworks = useCallback(async (page: number) => {
+        if (!id) return;
+        setIsLoadingArtworks(true);
+        try {
+            const { artworks: artworksData, pagination: paginationData } = await artworkApi.getByArtist(id, {
+                page,
+                limit: ARTWORKS_PER_PAGE
+            });
+            setArtworks(artworksData.map(transformArtwork));
+            setPagination(paginationData);
+            // Store total count from first fetch
+            if (page === 1) {
+                setTotalArtworksCount(paginationData.total);
+            }
+        } catch (err) {
+            console.error('Failed to load artworks:', err);
+        } finally {
+            setIsLoadingArtworks(false);
+        }
+    }, [id]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -29,8 +63,18 @@ export const ArtistDetail: React.FC = () => {
                     specialty: artistData.originCity || 'Contemporary Art',
                 });
 
-                const { artworks: artworksData } = await artworkApi.getByArtist(id);
+                // Fetch first page of artworks
+                const { artworks: artworksData, pagination: paginationData } = await artworkApi.getByArtist(id, {
+                    page: 1,
+                    limit: ARTWORKS_PER_PAGE
+                });
                 setArtworks(artworksData.map(transformArtwork));
+                setPagination(paginationData);
+                setTotalArtworksCount(paginationData.total);
+
+                // Count sold artworks (need to fetch all for accurate count or use API)
+                const soldArtworks = artworksData.filter(a => !a.inStock).length;
+                setSoldCount(soldArtworks);
 
             } catch (err: any) {
                 console.error('Failed to load artist details:', err);
@@ -43,6 +87,35 @@ export const ArtistDetail: React.FC = () => {
         fetchData();
         window.scrollTo(0, 0);
     }, [id]);
+
+    // Handle page change
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= pagination.totalPages) {
+            setCurrentPage(page);
+            fetchArtworks(page);
+            // Scroll to portfolio section
+            document.getElementById('portfolio-section')?.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const total = pagination.totalPages;
+        const current = currentPage;
+
+        if (total <= 5) {
+            for (let i = 1; i <= total; i++) pages.push(i);
+        } else {
+            pages.push(1);
+            if (current > 3) pages.push('...');
+            const start = Math.max(2, current - 1);
+            const end = Math.min(total - 1, current + 1);
+            for (let i = start; i <= end; i++) pages.push(i);
+            if (current < total - 2) pages.push('...');
+            pages.push(total);
+        }
+        return pages;
+    };
 
     if (isLoading) {
         return (
@@ -164,7 +237,7 @@ export const ArtistDetail: React.FC = () => {
                                     <MapPin size={14} /> Pakistan
                                 </span>
                                 <span className="flex items-center gap-2 text-stone-500">
-                                    <Palette size={14} /> {artworks.length} Works
+                                    <Palette size={14} /> {totalArtworksCount} Works
                                 </span>
                             </motion.div>
                         </div>
@@ -177,11 +250,11 @@ export const ArtistDetail: React.FC = () => {
                             className="flex gap-6 md:border-l border-stone-800/50 md:pl-8"
                         >
                             <div className="text-center">
-                                <p className="text-2xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-500">{artworks.length}</p>
+                                <p className="text-2xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-500">{totalArtworksCount}</p>
                                 <p className="text-[10px] uppercase tracking-widest text-stone-600">Works</p>
                             </div>
                             <div className="text-center">
-                                <p className="text-2xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-500">{artworks.filter(a => !a.inStock).length}</p>
+                                <p className="text-2xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-amber-200 to-amber-500">{soldCount}</p>
                                 <p className="text-[10px] uppercase tracking-widest text-stone-600">Sold</p>
                             </div>
                         </motion.div>
@@ -213,6 +286,7 @@ export const ArtistDetail: React.FC = () => {
 
                     {/* Right: Portfolio - Compact Grid */}
                     <motion.div
+                        id="portfolio-section"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.7 }}
@@ -220,22 +294,30 @@ export const ArtistDetail: React.FC = () => {
                     >
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="font-serif text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-white tracking-wide">Portfolio</h3>
-                            <span className="text-amber-500/60 text-xs uppercase tracking-widest">{artworks.filter(a => a.inStock).length} Available</span>
+                            <span className="text-amber-500/60 text-xs uppercase tracking-widest">
+                                {totalArtworksCount - soldCount} Available
+                            </span>
                         </div>
 
-                        {artworks.length === 0 ? (
+                        {isLoadingArtworks ? (
+                            <div className="flex flex-col items-center justify-center py-16">
+                                <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+                                <p className="text-stone-500 text-xs uppercase tracking-widest mt-4">Loading artworks...</p>
+                            </div>
+                        ) : artworks.length === 0 ? (
                             <div className="text-center py-16 border border-dashed border-stone-800/50 rounded-2xl bg-stone-900/20">
                                 <Sparkles className="text-stone-700 mx-auto mb-4" size={40} />
                                 <p className="text-stone-500 font-serif text-lg">No artworks currently available.</p>
                             </div>
                         ) : (
+                            <>
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 {artworks.map((art, idx) => (
                                     <motion.div
                                         key={art.id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.1 * idx }}
+                                        transition={{ delay: 0.05 * idx }}
                                     >
                                         <Link to={`/artwork/${art.id}`} className="group block">
                                             <motion.div
@@ -273,6 +355,65 @@ export const ArtistDetail: React.FC = () => {
                                     </motion.div>
                                 ))}
                             </div>
+
+                            {/* Pagination */}
+                            {pagination.totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 mt-10">
+                                    {/* Previous Button */}
+                                    <button
+                                        onClick={() => goToPage(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${
+                                            currentPage === 1
+                                                ? 'text-stone-600 cursor-not-allowed'
+                                                : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                                        }`}
+                                    >
+                                        <ChevronLeft size={14} />
+                                    </button>
+
+                                    {/* Page Numbers */}
+                                    <div className="flex items-center gap-1">
+                                        {getPageNumbers().map((page, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => typeof page === 'number' && goToPage(page)}
+                                                disabled={page === '...'}
+                                                className={`w-8 h-8 rounded-full text-xs font-medium transition-all ${
+                                                    page === currentPage
+                                                        ? 'bg-amber-500 text-stone-950'
+                                                        : page === '...'
+                                                        ? 'text-stone-600 cursor-default'
+                                                        : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Next Button */}
+                                    <button
+                                        onClick={() => goToPage(currentPage + 1)}
+                                        disabled={currentPage === pagination.totalPages}
+                                        className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${
+                                            currentPage === pagination.totalPages
+                                                ? 'text-stone-600 cursor-not-allowed'
+                                                : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                                        }`}
+                                    >
+                                        <ChevronRight size={14} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Pagination Info */}
+                            {pagination.total > 0 && (
+                                <div className="text-center text-stone-600 text-xs uppercase tracking-widest mt-4">
+                                    Showing {((currentPage - 1) * ARTWORKS_PER_PAGE) + 1} - {Math.min(currentPage * ARTWORKS_PER_PAGE, pagination.total)} of {pagination.total}
+                                </div>
+                            )}
+                            </>
                         )}
                     </motion.div>
                 </div>
