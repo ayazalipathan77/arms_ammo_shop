@@ -46,6 +46,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
     { name: 'Exhibitions', path: '/exhibitions' },
     { name: 'Collection', path: '/gallery' },
     { name: 'Stories', path: '/conversations' },
+    { name: 'Contact', path: '/contact' },
   ];
 
   return (
@@ -68,16 +69,18 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-10">
-            {navLinks.map(link => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-xs uppercase tracking-[0.2em] font-medium transition-colors hover:text-amber-500 ${location.pathname === link.path ? 'text-white' : 'text-stone-400'
-                  }`}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map(link => {
+              const isActive = location.pathname === link.path || location.pathname.startsWith(link.path + '/');
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`text-xs uppercase tracking-[0.2em] font-medium transition-colors hover:text-amber-400 ${isActive ? 'text-amber-500' : 'text-stone-400'}`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Actions */}
@@ -166,15 +169,18 @@ export const Navbar: React.FC<NavbarProps> = () => {
       {/* Mobile Menu Overlay */}
       <div className={`fixed inset-0 bg-stone-950 z-40 transition-transform duration-500 flex flex-col items-center justify-center ${mobileMenuOpen ? 'translate-y-0' : '-translate-y-full'}`}>
         <div className="flex flex-col items-center gap-8">
-          {navLinks.map(link => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className="font-serif text-3xl text-white hover:text-amber-500 transition-colors"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map(link => {
+            const isActive = location.pathname === link.path || location.pathname.startsWith(link.path + '/');
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`font-serif text-3xl transition-colors hover:text-amber-400 ${isActive ? 'text-amber-500' : 'text-white'}`}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
           <div className="w-12 h-px bg-stone-800 my-4"></div>
           {user ? (
             <div className="flex flex-col items-center gap-6">

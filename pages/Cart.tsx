@@ -272,7 +272,7 @@ export const Cart: React.FC = () => {
          </div>
 
          {step === 'SUCCESS' ? (
-            <div className="text-center max-w-lg mx-auto bg-stone-900 p-12 border border-stone-800 animate-fade-in">
+            <div className="text-center max-w-lg mx-auto bg-gradient-to-br from-stone-900 to-stone-950 p-12 rounded-3xl border border-stone-800/50 shadow-2xl animate-fade-in">
                <CheckCircle size={64} className="text-green-500 mx-auto mb-6" />
                <h2 className="font-serif text-4xl text-white mb-2">
                   {paymentMethod === 'BANK' ? 'Order Placed' : 'Order Confirmed'}
@@ -288,21 +288,21 @@ export const Cart: React.FC = () => {
                   <Link
                      to={createdOrderId ? `/invoice/${createdOrderId}` : '#'}
                      target="_blank"
-                     className="flex items-center justify-center gap-2 w-full bg-amber-600 hover:bg-amber-500 px-6 py-3 text-sm text-white transition-colors uppercase tracking-wider font-bold"
+                     className="flex items-center justify-center gap-2 w-full bg-amber-600 hover:bg-amber-500 px-6 py-3 text-sm text-white transition-colors uppercase tracking-wider font-bold rounded-xl"
                   >
                      <FileText size={16} /> View & Print Invoice
                   </Link>
 
                   <Link
                      to="/gallery"
-                     className="flex items-center justify-center gap-2 w-full bg-stone-800 hover:bg-stone-700 px-6 py-3 text-sm text-stone-300 hover:text-white transition-colors uppercase tracking-wider"
+                     className="flex items-center justify-center gap-2 w-full bg-stone-800 hover:bg-stone-700 px-6 py-3 text-sm text-stone-300 hover:text-white transition-colors uppercase tracking-wider rounded-xl"
                   >
                      Continue Shopping
                   </Link>
 
                   <Link
                      to="/"
-                     className="flex items-center justify-center gap-2 w-full border border-stone-700 hover:border-stone-600 px-6 py-3 text-sm text-stone-400 hover:text-stone-300 transition-colors uppercase tracking-wider"
+                     className="flex items-center justify-center gap-2 w-full border border-stone-700 hover:border-stone-600 px-6 py-3 text-sm text-stone-400 hover:text-stone-300 transition-colors uppercase tracking-wider rounded-xl"
                   >
                      Back to Home
                   </Link>
@@ -317,8 +317,8 @@ export const Cart: React.FC = () => {
                   {step === 'CART' && (
                      <div className="space-y-6">
                         {cart.map((item, idx) => (
-                           <div key={`${item.id}-${idx}`} className="flex gap-6 bg-stone-900/50 p-6 border border-stone-800 items-center">
-                              <img src={item.imageUrl} alt={item.title} className="w-20 h-24 object-cover" />
+                           <div key={`${item.id}-${idx}`} className="flex gap-6 bg-gradient-to-br from-stone-900/80 to-stone-950/80 p-6 rounded-2xl border border-stone-800/50 backdrop-blur-sm items-center hover:border-stone-700 transition-all">
+                              <img src={item.imageUrl} alt={item.title} className="w-20 h-24 object-cover rounded-lg" />
                               <div className="flex-1">
                                  <h3 className="text-xl text-white font-serif">{item.title}</h3>
                                  <p className="text-amber-500 text-xs uppercase tracking-wider">{item.artistName}</p>
@@ -338,21 +338,21 @@ export const Cart: React.FC = () => {
                   )}
 
                   {step === 'SHIPPING' && (
-                     <div className="bg-stone-900 p-8 border border-stone-800 space-y-6 animate-fade-in">
+                     <div className="bg-gradient-to-br from-stone-900/80 to-stone-950/80 p-8 rounded-2xl border border-stone-800/50 backdrop-blur-sm space-y-6 animate-fade-in">
                         <h3 className="font-serif text-2xl text-white mb-6">Shipping Address</h3>
                         <div className="grid grid-cols-2 gap-4">
-                           <input type="text" placeholder="First Name" value={shippingDetails.firstName} onChange={e => setShippingDetails({ ...shippingDetails, firstName: e.target.value })} className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
-                           <input type="text" placeholder="Last Name" value={shippingDetails.lastName} onChange={e => setShippingDetails({ ...shippingDetails, lastName: e.target.value })} className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                           <input type="text" placeholder="First Name" value={shippingDetails.firstName} onChange={e => setShippingDetails({ ...shippingDetails, firstName: e.target.value })} className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
+                           <input type="text" placeholder="Last Name" value={shippingDetails.lastName} onChange={e => setShippingDetails({ ...shippingDetails, lastName: e.target.value })} className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
                         </div>
                         <div>
-                           <input type="text" placeholder="Address Line 1 (minimum 10 characters)" value={shippingDetails.address} onChange={e => setShippingDetails({ ...shippingDetails, address: e.target.value })} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                           <input type="text" placeholder="Address Line 1 (minimum 10 characters)" value={shippingDetails.address} onChange={e => setShippingDetails({ ...shippingDetails, address: e.target.value })} className="w-full bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
                            {shippingDetails.address && shippingDetails.address.length < 10 && (
                               <p className="text-red-400 text-xs mt-1">Address must be at least 10 characters ({shippingDetails.address.length}/10)</p>
                            )}
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                            <div>
-                              <input type="text" placeholder="City (minimum 2 characters)" value={shippingDetails.city} onChange={e => setShippingDetails({ ...shippingDetails, city: e.target.value })} className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                              <input type="text" placeholder="City (minimum 2 characters)" value={shippingDetails.city} onChange={e => setShippingDetails({ ...shippingDetails, city: e.target.value })} className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
                               {shippingDetails.city && shippingDetails.city.length < 2 && (
                                  <p className="text-red-400 text-xs mt-1">City must be at least 2 characters</p>
                               )}
@@ -361,7 +361,7 @@ export const Cart: React.FC = () => {
                               <select
                                  value={shippingDetails.country}
                                  onChange={(e) => setShippingDetails({ ...shippingDetails, country: e.target.value })}
-                                 className="bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none w-full"
+                                 className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all w-full"
                               >
                                  <option value="Pakistan">Pakistan</option>
                                  <option value="USA">United States</option>
@@ -485,26 +485,26 @@ export const Cart: React.FC = () => {
 
                {/* Right Column: Summary */}
                <div className="lg:col-span-1">
-                  <div className="bg-stone-900 p-6 border border-stone-800 sticky top-24">
+                  <div className="bg-gradient-to-br from-stone-900 to-stone-950 p-6 rounded-2xl border border-stone-800/50 backdrop-blur-sm sticky top-24 shadow-xl">
                      <h3 className="font-serif text-xl text-white mb-6">Order Summary</h3>
 
-                     <div className="space-y-3 text-sm text-stone-400 border-b border-stone-800 pb-6 mb-6">
+                     <div className="space-y-3 text-sm text-stone-400 border-b border-stone-800/50 pb-6 mb-6">
                         <div className="flex justify-between">
                            <span>Subtotal</span>
-                           <span className="text-white">{convertPrice(subtotalPKR)}</span>
+                           <span className="text-white font-medium">{convertPrice(subtotalPKR)}</span>
                         </div>
                         <div className="flex justify-between">
                            <span className="flex items-center gap-1">Shipping</span>
-                           <span className="text-white">{convertPrice(shippingCostPKR)}</span>
+                           <span className="text-white font-medium">{convertPrice(shippingCostPKR)}</span>
                         </div>
                         <div className="flex justify-between">
                            <span>Tax / Duty {shippingDetails.country !== 'Pakistan' && '(5%)'}</span>
-                           <span className="text-white">{convertPrice(taxPKR)}</span>
+                           <span className="text-white font-medium">{convertPrice(taxPKR)}</span>
                         </div>
                         {discountApplied > 0 && (
-                           <div className="flex justify-between text-green-500">
+                           <div className="flex justify-between text-green-400">
                               <span>Discount</span>
-                              <span>- {convertPrice(discountApplied)}</span>
+                              <span className="font-medium">- {convertPrice(discountApplied)}</span>
                            </div>
                         )}
                      </div>
@@ -516,27 +516,27 @@ export const Cart: React.FC = () => {
                            value={discountCode}
                            onChange={(e) => setDiscountCode(e.target.value)}
                            placeholder="Discount Code"
-                           className="flex-1 bg-stone-950 border border-stone-700 px-3 py-2 text-sm text-white focus:border-amber-500 outline-none"
+                           className="flex-1 bg-stone-950/50 border border-stone-700/50 px-3 py-2 text-sm text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-lg transition-all"
                         />
-                        <button onClick={handleApplyDiscount} className="bg-stone-800 text-stone-300 px-4 py-2 text-xs hover:bg-stone-700">Apply</button>
+                        <button onClick={handleApplyDiscount} className="bg-stone-800 text-stone-300 px-4 py-2 text-xs hover:bg-stone-700 rounded-lg transition-all font-medium">Apply</button>
                      </div>
 
-                     <div className="flex justify-between text-xl font-serif text-white mb-6">
+                     <div className="flex justify-between text-xl font-serif text-white mb-6 bg-stone-950/30 p-4 rounded-xl">
                         <span>Total</span>
-                        <span>{convertPrice(totalPKR)}</span>
+                        <span className="text-amber-500">{convertPrice(totalPKR)}</span>
                      </div>
 
                      {step === 'CART' && (
                         <>
                            <button
                               onClick={handleProceedToShipping}
-                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 uppercase tracking-widest text-sm font-bold shadow-lg shadow-amber-900/20"
+                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl uppercase tracking-widest text-sm font-bold shadow-lg shadow-amber-900/20 transition-all"
                            >
                               {token ? 'Proceed to Details' : 'Login to Checkout'}
                            </button>
                            <Link
                               to="/gallery"
-                              className="block w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors text-center"
+                              className="block w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors text-center rounded-xl"
                            >
                               ← Continue Shopping
                            </Link>
@@ -555,7 +555,7 @@ export const Cart: React.FC = () => {
                                  shippingDetails.city.length < 2 ||
                                  !selectedRateId
                               }
-                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 uppercase tracking-widest text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-900/20 transition-all flex items-center justify-center gap-2"
+                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl uppercase tracking-widest text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-900/20 transition-all flex items-center justify-center gap-2"
                            >
                               {isProcessing ? (
                                  <>
@@ -570,7 +570,7 @@ export const Cart: React.FC = () => {
                            {/* Validation Helper */}
                            {(!shippingDetails.firstName || !shippingDetails.address || !shippingDetails.city ||
                              shippingDetails.address.length < 10 || shippingDetails.city.length < 2 || !selectedRateId) && (
-                              <div className="mt-3 text-stone-400 text-xs space-y-1">
+                              <div className="mt-3 text-stone-400 text-xs space-y-1 bg-stone-900/30 p-3 rounded-lg border border-stone-800/50">
                                  <p className="font-semibold text-stone-300">Please complete the following:</p>
                                  {!shippingDetails.firstName && <p>• Enter first name</p>}
                                  {!shippingDetails.address && <p>• Enter shipping address</p>}
@@ -588,7 +588,7 @@ export const Cart: React.FC = () => {
                         <button
                            onClick={() => setStep('CART')}
                            disabled={isProcessing}
-                           className="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors disabled:opacity-50"
+                           className="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 rounded-xl"
                         >
                            ← Back to Cart
                         </button>
@@ -597,7 +597,7 @@ export const Cart: React.FC = () => {
                         <button
                            onClick={() => setStep('SHIPPING')}
                            disabled={isProcessing}
-                           className="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors disabled:opacity-50"
+                           className="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 rounded-xl"
                         >
                            ← Back to Shipping Details
                         </button>

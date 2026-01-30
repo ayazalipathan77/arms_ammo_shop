@@ -1,16 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
-    @apply bg-stone-950 text-stone-200 antialiased;
+    @apply bg-black text-stone-200 antialiased;
+    font-family: 'Montserrat', 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "cv11", "ss01";
+    letter-spacing: 0.01em;
   }
 
-  /* Typography Refinements */
+  /* Royal Typography */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif tracking-tight text-white;
+    font-family: 'Cinzel', 'Cormorant Garamond', serif;
+    @apply tracking-wide text-white;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  /* Elegant font for labels and UI */
+  label, button, input, select, textarea {
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  /* Details and descriptions */
+  .detail-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
   }
 }
 
@@ -54,4 +74,14 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Hide scrollbar for carousel */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

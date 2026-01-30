@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, ArrowRight, Sparkles, Award } from 'lucide-react';
+import { Loader2, ArrowRight, Sparkles, Award, Search } from 'lucide-react';
 import { artistApi, transformArtist } from '../services/api';
 import { Artist } from '../types';
 import { motion } from 'framer-motion';
@@ -9,6 +9,7 @@ export const Artists: React.FC = () => {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -28,6 +29,17 @@ export const Artists: React.FC = () => {
 
     fetchArtists();
   }, []);
+
+  // Filter artists based on search term
+  const filteredArtists = useMemo(() => {
+    if (!searchTerm.trim()) return artists;
+    const term = searchTerm.toLowerCase();
+    return artists.filter(artist =>
+      artist.name.toLowerCase().includes(term) ||
+      artist.specialty?.toLowerCase().includes(term) ||
+      artist.bio?.toLowerCase().includes(term)
+    );
+  }, [artists, searchTerm]);
 
   if (isLoading) {
     return (
@@ -94,7 +106,7 @@ export const Artists: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="mb-20"
         >
-          <div className="flex flex-col md:flex-row justify-between items-end border-b border-stone-800/50 pb-10">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b border-stone-800/50 pb-10">
             <div>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -114,33 +126,53 @@ export const Artists: React.FC = () => {
                 className="text-amber-500/60 uppercase tracking-[0.3em] text-xs flex items-center gap-2"
               >
                 <Award size={14} />
-                Masters of Contemporary Practice
+                {isLoading ? 'Discovering...' : `${filteredArtists.length} Masters of Contemporary Practice`}
               </motion.p>
             </div>
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="hidden md:block text-stone-400 text-sm max-w-xs text-right leading-relaxed mt-6 md:mt-0"
+              className="w-full md:w-auto"
             >
-              Representing a diverse collective of visionaries <br />
-              <span className="text-amber-500/80">redefining Pakistani art.</span>
+              {/* Search Input */}
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={16} />
+                <input
+                  type="text"
+                  placeholder="Search artists..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full md:w-72 bg-stone-900/50 backdrop-blur-sm border border-stone-800/50 rounded-full pl-11 pr-4 py-3 text-xs focus:outline-none text-white placeholder:text-stone-600 focus:border-amber-500 transition-all"
+                />
+              </div>
             </motion.div>
           </div>
         </motion.div>
 
         {/* Artists Grid */}
-        {artists.length === 0 ? (
-          <motion.p
+        {filteredArtists.length === 0 ? (
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center text-stone-500 py-20 text-sm uppercase tracking-widest"
+            className="text-center py-32 border border-dashed border-stone-800/50 rounded-2xl bg-stone-900/20"
           >
-            No artists found.
-          </motion.p>
+            <Sparkles className="text-stone-700 mx-auto mb-4" size={48} />
+            <p className="text-stone-500 font-serif text-2xl mb-2">
+              {searchTerm ? 'No artists match your search' : 'No artists found'}
+            </p>
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="text-amber-500 hover:text-amber-400 text-xs uppercase tracking-widest mt-4"
+              >
+                Clear Search
+              </button>
+            )}
+          </motion.div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {artists.map((artist, idx) => (
+            {filteredArtists.map((artist, idx) => (
               <motion.div
                 key={artist.id}
                 initial={{ opacity: 0, y: 40 }}

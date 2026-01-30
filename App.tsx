@@ -16,6 +16,7 @@ import { Exhibitions } from './pages/Exhibitions';
 import { Artists } from './pages/Artists';
 import { Conversations } from './pages/Conversations';
 import { InvoiceView } from './pages/InvoiceView';
+import { Contact } from './pages/Contact';
 import { AICurator } from './components/AICurator';
 import { Currency } from './types';
 import { RATES } from './constants';
@@ -92,31 +93,163 @@ const Footer: React.FC = () => {
   const { siteContent } = useGallery();
 
   return (
-    <footer className="bg-stone-950 border-t border-stone-900 py-12 px-4 text-center">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-left">
-        <div>
-          <h4 className="font-serif text-xl text-amber-500 mb-4">MURAQQA</h4>
-          <p className="text-stone-500 text-sm">Elevating Pakistani Art to the global stage.</p>
+    <footer className="relative bg-stone-950 border-t border-stone-800/50 overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-amber-600/3 rounded-full blur-3xl pointer-events-none translate-x-1/2 translate-y-1/2"></div>
+
+      {/* Main Footer Content */}
+      <div className="relative z-10 max-w-screen-2xl mx-auto px-6 md:px-12 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
+
+          {/* Brand Section */}
+          <div className="md:col-span-5">
+            <div className="mb-8 flex flex-col items-start">
+              <h4 className="font-serif text-4xl md:text-5xl tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-yellow-400 to-amber-600 mb-2">
+                MURAQQA
+              </h4>
+              <div className="h-px w-40 bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
+            </div>
+            <p className="text-stone-400 text-sm leading-relaxed max-w-sm mb-8 detail-text">
+              Elevating Pakistani Art to the global stage through curated exhibitions, authentic masterpieces, and a commitment to preserving cultural heritage.
+            </p>
+            {/* Social Links */}
+            <div className="flex gap-4">
+              {siteContent.socialLinks.instagram && (
+                <a
+                  href={siteContent.socialLinks.instagram}
+                  className="group w-12 h-12 rounded-full bg-stone-900/50 hover:bg-gradient-to-br hover:from-amber-500/20 hover:to-yellow-500/20 border border-stone-800 hover:border-amber-500/50 flex items-center justify-center transition-all duration-300"
+                >
+                  <span className="text-stone-500 group-hover:text-amber-400 text-sm font-medium transition-colors">IG</span>
+                </a>
+              )}
+              {siteContent.socialLinks.facebook && (
+                <a
+                  href={siteContent.socialLinks.facebook}
+                  className="group w-12 h-12 rounded-full bg-stone-900/50 hover:bg-gradient-to-br hover:from-amber-500/20 hover:to-yellow-500/20 border border-stone-800 hover:border-amber-500/50 flex items-center justify-center transition-all duration-300"
+                >
+                  <span className="text-stone-500 group-hover:text-amber-400 text-sm font-medium transition-colors">FB</span>
+                </a>
+              )}
+              <a
+                href="mailto:support@muraqqa.art"
+                className="group w-12 h-12 rounded-full bg-stone-900/50 hover:bg-gradient-to-br hover:from-amber-500/20 hover:to-yellow-500/20 border border-stone-800 hover:border-amber-500/50 flex items-center justify-center transition-all duration-300"
+              >
+                <span className="text-stone-500 group-hover:text-amber-400 text-sm font-medium transition-colors">@</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="md:col-span-2">
+            <h5 className="font-serif text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-white mb-6 tracking-wider">
+              Gallery
+            </h5>
+            <ul className="space-y-4">
+              {[
+                { label: 'Collection', path: '/#/gallery' },
+                { label: 'Artists', path: '/#/artists' },
+                { label: 'Exhibitions', path: '/#/exhibitions' },
+                { label: 'Stories', path: '/#/conversations' },
+              ].map((link) => (
+                <li key={link.path}>
+                  <a
+                    href={link.path}
+                    className="text-stone-500 hover:text-amber-400 text-sm transition-colors duration-300 flex items-center gap-2 group"
+                  >
+                    <span className="w-0 group-hover:w-2 h-px bg-amber-500 transition-all duration-300"></span>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Services */}
+          <div className="md:col-span-2">
+            <h5 className="font-serif text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-white mb-6 tracking-wider">
+              Services
+            </h5>
+            <ul className="space-y-4">
+              {[
+                { label: 'Private Viewing', path: '/#/contact' },
+                { label: 'Art Consultation', path: '/#/contact' },
+                { label: 'Commissions', path: '/#/contact' },
+                { label: 'Framing', path: '/#/contact' },
+              ].map((link, idx) => (
+                <li key={idx}>
+                  <a
+                    href={link.path}
+                    className="text-stone-500 hover:text-amber-400 text-sm transition-colors duration-300 flex items-center gap-2 group"
+                  >
+                    <span className="w-0 group-hover:w-2 h-px bg-amber-500 transition-all duration-300"></span>
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact Info */}
+          <div className="md:col-span-3">
+            <h5 className="font-serif text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-white mb-6 tracking-wider">
+              Visit Us
+            </h5>
+            <div className="space-y-4 text-sm">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-amber-500 text-xs">📍</span>
+                </div>
+                <div>
+                  <p className="text-stone-300 font-medium">Gallery Location</p>
+                  <p className="text-stone-500">DHA Phase 6, Lahore</p>
+                  <p className="text-stone-500">Punjab, Pakistan</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-amber-500 text-xs">🕐</span>
+                </div>
+                <div>
+                  <p className="text-stone-300 font-medium">Gallery Hours</p>
+                  <p className="text-stone-500">Mon - Sat: 10AM - 7PM</p>
+                  <p className="text-amber-500/70">Sun: By Appointment</p>
+                </div>
+              </div>
+              <div className="pt-4">
+                <a
+                  href="/#/contact"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-stone-950 text-xs uppercase tracking-widest font-bold rounded-full transition-all duration-300 shadow-lg shadow-amber-900/20 hover:shadow-amber-800/30"
+                >
+                  Contact Us
+                  <span>→</span>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <h4 className="font-serif text-white mb-4">Explore</h4>
-          <ul className="text-stone-500 text-sm space-y-2">
-            <li>Authenticity</li>
-            <li>Virtual Tours</li>
-            <li>Artists</li>
-          </ul>
+
+        {/* Decorative Divider */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-stone-800 to-transparent"></div>
+          <div className="w-2 h-2 rotate-45 bg-amber-500/30 border border-amber-500/50"></div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-stone-800 to-transparent"></div>
         </div>
-        <div>
-          <h4 className="font-serif text-white mb-4">Contact</h4>
-          <p className="text-stone-500 text-sm">Lahore • Karachi • Islamabad • London</p>
-          <p className="text-stone-500 text-sm mb-4">support@muraqqa.art</p>
-          <div className="flex gap-4">
-            {siteContent.socialLinks.instagram && <a href={siteContent.socialLinks.instagram} className="text-stone-600 hover:text-white text-xs uppercase">Instagram</a>}
-            {siteContent.socialLinks.facebook && <a href={siteContent.socialLinks.facebook} className="text-stone-600 hover:text-white text-xs uppercase">Facebook</a>}
+
+        {/* Bottom Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-stone-600 text-xs tracking-wide">
+            © 2024 <span className="text-amber-500/70">Muraqqa Gallery</span>. All rights reserved.
+          </p>
+          <div className="flex items-center gap-8 text-stone-600 text-xs">
+            <a href="#" className="hover:text-amber-400 transition-colors duration-300">Privacy Policy</a>
+            <span className="w-1 h-1 bg-stone-700 rounded-full"></span>
+            <a href="#" className="hover:text-amber-400 transition-colors duration-300">Terms of Service</a>
+            <span className="w-1 h-1 bg-stone-700 rounded-full"></span>
+            <a href="#" className="hover:text-amber-400 transition-colors duration-300">Shipping</a>
           </div>
         </div>
       </div>
-      <p className="text-stone-700 text-xs mt-8 border-t border-stone-900 pt-8">© 2024 Muraqqa Gallery. All rights reserved.</p>
     </footer>
   );
 };
@@ -154,6 +287,7 @@ const App: React.FC = () => {
                       <Route path="/artists/:id" element={<ArtistDetail />} />
                       <Route path="/exhibitions" element={<Exhibitions />} />
                       <Route path="/conversations" element={<Conversations />} />
+                      <Route path="/contact" element={<Contact />} />
                       <Route path="/artwork/:id" element={<ArtworkDetail />} />
                       <Route path="/cart" element={<Cart />} />
                       <Route path="/auth" element={<Auth />} />
