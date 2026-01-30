@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
    LayoutDashboard, Package, Users, DollarSign, Settings,
    Plus, Edit, Trash2, Truck, CreditCard, Check, X, Search,
-   Video, Globe, MessageSquare, Save, Facebook, Instagram, Image as ImageIcon, Calendar
+   Video, Globe, MessageSquare, Save, Facebook, Instagram, Image as ImageIcon, Calendar,
+   UserCheck, UserX, Clock, Mail, Shield, AlertCircle, Loader2
 } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
 import { useCurrency } from '../App';
@@ -26,6 +27,13 @@ export const AdminDashboard: React.FC = () => {
    // Users State
    const [users, setUsers] = useState<any[]>([]);
    const [userSearch, setUserSearch] = useState('');
+   const [userSubTab, setUserSubTab] = useState<'ALL' | 'COLLECTORS' | 'ARTISTS' | 'PENDING'>('ALL');
+   const [pendingArtists, setPendingArtists] = useState<any[]>([]);
+   const [isLoadingPending, setIsLoadingPending] = useState(false);
+   const [approvingId, setApprovingId] = useState<string | null>(null);
+   const [rejectingId, setRejectingId] = useState<string | null>(null);
+   const [rejectReason, setRejectReason] = useState('');
+   const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
 
    // Artists State
    const [artists, setArtists] = useState<any[]>([]);
@@ -102,11 +110,89 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
+   const loadPendingArtists = async () => {
+      setIsLoadingPending(true);
+      try {
+         const token = localStorage.getItem('authToken');
+         const response = await fetch('http://localhost:5000/api/admin/artists/pending', {
+            headers: { 'Authorization': `Bearer ${token}` }
+         });
+         const data = await response.json();
+         setPendingArtists(data.artists || []);
+      } catch (err) {
+         console.error('Failed to load pending artists', err);
+      } finally {
+         setIsLoadingPending(false);
+      }
+   };
+
+   const handleApproveArtist = async (userId: string) => {
+      setApprovingId(userId);
+      try {
+         const token = localStorage.getItem('authToken');
+         const response = await fetch(`http://localhost:5000/api/admin/artists/${userId}/approve`, {
+            method: 'PUT',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
+            }
+         });
+
+         if (response.ok) {
+            loadPendingArtists();
+            loadUsers();
+            loadStats(); // Update pending count in stats
+         } else {
+            const data = await response.json();
+            alert(data.message || 'Failed to approve artist');
+         }
+      } catch (err) {
+         console.error('Failed to approve artist', err);
+         alert('Failed to approve artist');
+      } finally {
+         setApprovingId(null);
+      }
+   };
+
+   const handleRejectArtist = async (userId: string, deleteAccount: boolean = false) => {
+      setRejectingId(userId);
+      try {
+         const token = localStorage.getItem('authToken');
+         const response = await fetch(`http://localhost:5000/api/admin/artists/${userId}/reject`, {
+            method: 'PUT',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ reason: rejectReason, deleteAccount })
+         });
+
+         if (response.ok) {
+            setShowRejectModal(null);
+            setRejectReason('');
+            loadPendingArtists();
+            loadUsers();
+            loadStats();
+         } else {
+            const data = await response.json();
+            alert(data.message || 'Failed to reject artist');
+         }
+      } catch (err) {
+         console.error('Failed to reject artist', err);
+         alert('Failed to reject artist');
+      } finally {
+         setRejectingId(null);
+      }
+   };
+
    useEffect(() => {
       if (activeTab === 'USERS') {
          loadUsers();
+         if (userSubTab === 'PENDING') {
+            loadPendingArtists();
+         }
       }
-   }, [activeTab, userSearch]);
+   }, [activeTab, userSearch, userSubTab]);
 
    useEffect(() => {
       if (activeTab === 'INVENTORY') {
@@ -463,8 +549,18 @@ export const AdminDashboard: React.FC = () => {
          {/* USERS TAB */}
          {activeTab === 'USERS' && (
             <div className="space-y-6 animate-fade-in">
+               {/* Header */}
                <div className="flex justify-between items-center">
-                  <h3 className="text-xl text-white font-serif">User Management</h3>
+                  <div>
+                     <h3 className="text-xl text-white font-serif">User Management</h3>
+                     <p className="text-stone-500 text-sm mt-1">
+                        {stats?.pendingArtists > 0 && (
+                           <span className="text-amber-500">
+                              {stats.pendingArtists} artist{stats.pendingArtists > 1 ? 's' : ''} awaiting approval
+                           </span>
+                        )}
+                     </p>
+                  </div>
                   <div className="relative">
                      <input
                         className="bg-stone-900 border border-stone-700 text-white pl-8 pr-4 py-2 text-sm rounded-full w-64"
@@ -476,44 +572,270 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                </div>
 
-               <div className="bg-stone-900 border border-stone-800 overflow-x-auto">
-                  <table className="w-full text-left text-sm text-stone-400">
-                     <thead className="bg-stone-950 text-stone-500 uppercase text-xs border-b border-stone-800">
-                        <tr>
-                           <th className="p-4">Name</th>
-                           <th className="p-4">Email</th>
-                           <th className="p-4">Role</th>
-                           <th className="p-4">Joined</th>
-                           <th className="p-4">Actions</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-stone-800">
-                        {users.map(u => (
-                           <tr key={u.id} className="hover:bg-stone-800/30">
-                              <td className="p-4 text-white font-medium">{u.fullName}</td>
-                              <td className="p-4">{u.email}</td>
-                              <td className="p-4">
-                                 <span className={`px-2 py-1 text-xs rounded ${u.role === 'ADMIN' ? 'bg-amber-900/30 text-amber-500' :
-                                       u.role === 'ARTIST' ? 'bg-purple-900/30 text-purple-400' :
-                                          'bg-stone-800 text-stone-500'
-                                    }`}>
-                                    {u.role}
+               {/* Subtab Navigation */}
+               <div className="flex gap-2 border-b border-stone-800 pb-4">
+                  {(['ALL', 'COLLECTORS', 'ARTISTS', 'PENDING'] as const).map(tab => (
+                     <button
+                        key={tab}
+                        onClick={() => setUserSubTab(tab)}
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-all flex items-center gap-2 ${
+                           userSubTab === tab
+                              ? 'bg-amber-600 text-white'
+                              : 'bg-stone-900 text-stone-400 hover:bg-stone-800 hover:text-white'
+                        }`}
+                     >
+                        {tab === 'ALL' && <Users size={14} />}
+                        {tab === 'COLLECTORS' && <Users size={14} />}
+                        {tab === 'ARTISTS' && <Shield size={14} />}
+                        {tab === 'PENDING' && (
+                           <>
+                              <Clock size={14} />
+                              {stats?.pendingArtists > 0 && (
+                                 <span className="bg-amber-500 text-stone-950 text-xs px-1.5 py-0.5 rounded-full font-bold">
+                                    {stats.pendingArtists}
                                  </span>
-                              </td>
-                              <td className="p-4">{new Date(u.createdAt).toLocaleDateString()}</td>
-                              <td className="p-4 flex gap-2">
-                                 {u.role === 'USER' && (
-                                    <button onClick={() => handleUpdateUserRole(u.id, 'ARTIST')} className="text-xs text-purple-400 hover:underline">Promote to Artist</button>
-                                 )}
-                                 {u.role !== 'ADMIN' && (
-                                    <button onClick={() => handleUpdateUserRole(u.id, 'ADMIN')} className="text-xs text-amber-500 hover:underline">Make Admin</button>
-                                 )}
-                              </td>
-                           </tr>
-                        ))}
-                     </tbody>
-                  </table>
+                              )}
+                           </>
+                        )}
+                        {tab}
+                     </button>
+                  ))}
                </div>
+
+               {/* PENDING Tab Content */}
+               {userSubTab === 'PENDING' && (
+                  <div className="space-y-4">
+                     {isLoadingPending ? (
+                        <div className="flex items-center justify-center py-12">
+                           <Loader2 className="animate-spin text-amber-500" size={32} />
+                        </div>
+                     ) : pendingArtists.length === 0 ? (
+                        <div className="bg-stone-900 border border-stone-800 p-12 text-center">
+                           <UserCheck size={48} className="mx-auto text-stone-600 mb-4" />
+                           <p className="text-stone-400 text-lg">No pending artist approvals</p>
+                           <p className="text-stone-600 text-sm mt-2">All artist applications have been reviewed</p>
+                        </div>
+                     ) : (
+                        <div className="grid gap-4">
+                           {pendingArtists.map(artist => (
+                              <div key={artist.id} className="bg-stone-900 border border-stone-800 p-6 rounded-lg">
+                                 <div className="flex items-start justify-between">
+                                    <div className="flex items-start gap-4">
+                                       <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-amber-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                          {artist.fullName?.charAt(0) || 'A'}
+                                       </div>
+                                       <div>
+                                          <h4 className="text-white font-semibold text-lg">{artist.fullName}</h4>
+                                          <p className="text-stone-400 text-sm flex items-center gap-2 mt-1">
+                                             <Mail size={12} /> {artist.email}
+                                          </p>
+                                          {artist.phoneNumber && (
+                                             <p className="text-stone-500 text-sm mt-1">{artist.phoneNumber}</p>
+                                          )}
+                                          <div className="flex items-center gap-3 mt-3">
+                                             <span className={`px-2 py-1 text-xs rounded flex items-center gap-1 ${
+                                                artist.isEmailVerified
+                                                   ? 'bg-green-900/30 text-green-400'
+                                                   : 'bg-yellow-900/30 text-yellow-400'
+                                             }`}>
+                                                {artist.isEmailVerified ? <Check size={10} /> : <Clock size={10} />}
+                                                {artist.isEmailVerified ? 'Email Verified' : 'Email Pending'}
+                                             </span>
+                                             <span className="text-stone-600 text-xs">
+                                                Applied {new Date(artist.createdAt).toLocaleDateString()}
+                                             </span>
+                                          </div>
+                                       </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                       <button
+                                          onClick={() => handleApproveArtist(artist.id)}
+                                          disabled={approvingId === artist.id || !artist.isEmailVerified}
+                                          className={`px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 transition-all ${
+                                             !artist.isEmailVerified
+                                                ? 'bg-stone-800 text-stone-600 cursor-not-allowed'
+                                                : approvingId === artist.id
+                                                   ? 'bg-green-800 text-green-200'
+                                                   : 'bg-green-600 hover:bg-green-500 text-white'
+                                          }`}
+                                          title={!artist.isEmailVerified ? 'Artist must verify email first' : 'Approve artist'}
+                                       >
+                                          {approvingId === artist.id ? (
+                                             <Loader2 size={14} className="animate-spin" />
+                                          ) : (
+                                             <UserCheck size={14} />
+                                          )}
+                                          Approve
+                                       </button>
+                                       <button
+                                          onClick={() => setShowRejectModal(artist.id)}
+                                          disabled={rejectingId === artist.id}
+                                          className="px-4 py-2 text-sm font-medium rounded-lg flex items-center gap-2 bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white transition-all"
+                                       >
+                                          <UserX size={14} />
+                                          Reject
+                                       </button>
+                                    </div>
+                                 </div>
+                              </div>
+                           ))}
+                        </div>
+                     )}
+                  </div>
+               )}
+
+               {/* ALL / COLLECTORS / ARTISTS Tab Content */}
+               {userSubTab !== 'PENDING' && (
+                  <div className="bg-stone-900 border border-stone-800 overflow-x-auto rounded-lg">
+                     <table className="w-full text-left text-sm text-stone-400">
+                        <thead className="bg-stone-950 text-stone-500 uppercase text-xs border-b border-stone-800">
+                           <tr>
+                              <th className="p-4">Name</th>
+                              <th className="p-4">Email</th>
+                              <th className="p-4">Role</th>
+                              <th className="p-4">Status</th>
+                              <th className="p-4">Joined</th>
+                              <th className="p-4">Actions</th>
+                           </tr>
+                        </thead>
+                        <tbody className="divide-y divide-stone-800">
+                           {users
+                              .filter(u => {
+                                 if (userSubTab === 'COLLECTORS') return u.role === 'USER';
+                                 if (userSubTab === 'ARTISTS') return u.role === 'ARTIST';
+                                 return true;
+                              })
+                              .map(u => (
+                                 <tr key={u.id} className="hover:bg-stone-800/30">
+                                    <td className="p-4 text-white font-medium">{u.fullName}</td>
+                                    <td className="p-4">{u.email}</td>
+                                    <td className="p-4">
+                                       <span className={`px-2 py-1 text-xs rounded ${
+                                          u.role === 'ADMIN' ? 'bg-amber-900/30 text-amber-500' :
+                                          u.role === 'ARTIST' ? 'bg-purple-900/30 text-purple-400' :
+                                          'bg-stone-800 text-stone-500'
+                                       }`}>
+                                          {u.role}
+                                       </span>
+                                    </td>
+                                    <td className="p-4">
+                                       <div className="flex flex-col gap-1">
+                                          <span className={`px-2 py-0.5 text-xs rounded inline-flex items-center gap-1 w-fit ${
+                                             u.isEmailVerified
+                                                ? 'bg-green-900/30 text-green-400'
+                                                : 'bg-yellow-900/30 text-yellow-400'
+                                          }`}>
+                                             {u.isEmailVerified ? <Check size={10} /> : <Clock size={10} />}
+                                             {u.isEmailVerified ? 'Verified' : 'Unverified'}
+                                          </span>
+                                          {u.role === 'ARTIST' && (
+                                             <span className={`px-2 py-0.5 text-xs rounded inline-flex items-center gap-1 w-fit ${
+                                                u.isApproved
+                                                   ? 'bg-green-900/30 text-green-400'
+                                                   : 'bg-orange-900/30 text-orange-400'
+                                             }`}>
+                                                {u.isApproved ? <UserCheck size={10} /> : <Clock size={10} />}
+                                                {u.isApproved ? 'Approved' : 'Pending'}
+                                             </span>
+                                          )}
+                                       </div>
+                                    </td>
+                                    <td className="p-4">{new Date(u.createdAt).toLocaleDateString()}</td>
+                                    <td className="p-4">
+                                       <div className="flex gap-2">
+                                          {u.role === 'USER' && (
+                                             <button
+                                                onClick={() => handleUpdateUserRole(u.id, 'ARTIST')}
+                                                className="text-xs text-purple-400 hover:underline"
+                                             >
+                                                Promote to Artist
+                                             </button>
+                                          )}
+                                          {u.role !== 'ADMIN' && (
+                                             <button
+                                                onClick={() => handleUpdateUserRole(u.id, 'ADMIN')}
+                                                className="text-xs text-amber-500 hover:underline"
+                                             >
+                                                Make Admin
+                                             </button>
+                                          )}
+                                       </div>
+                                    </td>
+                                 </tr>
+                              ))}
+                        </tbody>
+                     </table>
+                     {users.filter(u => {
+                        if (userSubTab === 'COLLECTORS') return u.role === 'USER';
+                        if (userSubTab === 'ARTISTS') return u.role === 'ARTIST';
+                        return true;
+                     }).length === 0 && (
+                        <div className="p-12 text-center">
+                           <Users size={48} className="mx-auto text-stone-600 mb-4" />
+                           <p className="text-stone-400">No users found</p>
+                        </div>
+                     )}
+                  </div>
+               )}
+
+               {/* Reject Modal */}
+               {showRejectModal && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                     <div className="bg-stone-900 border border-stone-700 p-6 w-full max-w-md rounded-lg space-y-4">
+                        <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 bg-red-900/30 rounded-full flex items-center justify-center">
+                              <AlertCircle className="text-red-400" size={20} />
+                           </div>
+                           <h3 className="text-white text-xl font-serif">Reject Artist Application</h3>
+                        </div>
+                        <p className="text-stone-400 text-sm">
+                           Provide a reason for rejection. The applicant will be notified via email.
+                        </p>
+                        <textarea
+                           className="w-full bg-stone-950 border border-stone-700 p-3 text-white rounded-lg"
+                           placeholder="Reason for rejection (optional)..."
+                           rows={3}
+                           value={rejectReason}
+                           onChange={e => setRejectReason(e.target.value)}
+                        />
+                        <div className="flex gap-2 pt-2">
+                           <button
+                              onClick={() => handleRejectArtist(showRejectModal, false)}
+                              disabled={rejectingId === showRejectModal}
+                              className="flex-1 bg-orange-600 hover:bg-orange-500 py-2 text-white rounded-lg flex items-center justify-center gap-2"
+                           >
+                              {rejectingId === showRejectModal ? (
+                                 <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                 <UserX size={14} />
+                              )}
+                              Convert to Collector
+                           </button>
+                           <button
+                              onClick={() => handleRejectArtist(showRejectModal, true)}
+                              disabled={rejectingId === showRejectModal}
+                              className="flex-1 bg-red-600 hover:bg-red-500 py-2 text-white rounded-lg flex items-center justify-center gap-2"
+                           >
+                              {rejectingId === showRejectModal ? (
+                                 <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                 <Trash2 size={14} />
+                              )}
+                              Delete Account
+                           </button>
+                        </div>
+                        <button
+                           onClick={() => {
+                              setShowRejectModal(null);
+                              setRejectReason('');
+                           }}
+                           className="w-full bg-stone-800 hover:bg-stone-700 py-2 text-stone-300 rounded-lg"
+                        >
+                           Cancel
+                        </button>
+                     </div>
+                  </div>
+               )}
             </div>
          )}
 

@@ -1,6 +1,41 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import prisma from '../config/database';
+import { sendEmail } from '../utils/email';
+import { env } from '../config/env';
+
+// Email template for artist approval
+const getArtistApprovalTemplate = (artistName: string) => {
+    return `
+    <div style="font-family: serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #d97706; text-align: center; border-bottom: 1px solid #e7e5e4; padding-bottom: 20px;">MURAQQA</h1>
+        <p>Dear ${artistName},</p>
+        <p>Congratulations! Your artist account has been approved. You can now log in and start showcasing your artwork on Muraqqa Art Gallery.</p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="${env.CLIENT_URL}/auth" style="background-color: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-family: sans-serif;">Login to Your Account</a>
+        </div>
+        <p style="font-size: 0.9em; color: #57534e;">Welcome to the Muraqqa family. We look forward to seeing your creative works.</p>
+        <hr style="border: 0; border-top: 1px solid #e7e5e4; margin: 20px 0;">
+        <p style="font-size: 0.8em; text-align: center; color: #78716c;">Muraqqa Art Gallery</p>
+    </div>
+    `;
+};
+
+// Email template for artist rejection
+const getArtistRejectionTemplate = (artistName: string, reason?: string) => {
+    return `
+    <div style="font-family: serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #d97706; text-align: center; border-bottom: 1px solid #e7e5e4; padding-bottom: 20px;">MURAQQA</h1>
+        <p>Dear ${artistName},</p>
+        <p>Thank you for your interest in joining Muraqqa Art Gallery as an artist.</p>
+        <p>After careful review, we regret to inform you that we are unable to approve your artist account at this time.</p>
+        ${reason ? `<p style="background: #fef3c7; padding: 12px; border-radius: 4px;"><strong>Reason:</strong> ${reason}</p>` : ''}
+        <p style="font-size: 0.9em; color: #57534e;">You are welcome to apply again in the future or contact us for more information.</p>
+        <hr style="border: 0; border-top: 1px solid #e7e5e4; margin: 20px 0;">
+        <p style="font-size: 0.8em; text-align: center; color: #78716c;">Muraqqa Art Gallery</p>
+    </div>
+    `;
+};
 
 // Get Dashboard Stats
 export const getDashboardStats = async (req: Request, res: Response): Promise<void> => {
@@ -26,7 +61,16 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
 
         const totalUsers = await prisma.user.count();
         const totalArtists = await prisma.artist.count();
-        const pendingArtists = await prisma.user.count({ where: { role: 'USER' } }); // Logic might vary if we have a specific 'APPLICANT' role or status
+        const pendingArtists = await prisma.user.count({
+            where: {
+                role: 'ARTIST',
+                isEmailVerified: true,
+                isApproved: false
+            }
+        });
+        const pendingVerification = await prisma.user.count({
+            where: { isEmailVerified: false }
+        });
 
         const totalArtworks = await prisma.artwork.count();
         const inStockArtworks = await prisma.artwork.count({ where: { inStock: true } });
@@ -51,6 +95,8 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
                 shippedOrders,
                 totalUsers,
                 totalArtists,
+                pendingArtists,
+                pendingVerification,
                 totalArtworks,
                 inStockArtworks
             },
@@ -85,9 +131,18 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
                 fullName: true,
                 email: true,
                 role: true,
+                isEmailVerified: true,
+                isApproved: true,
+                approvedAt: true,
                 createdAt: true,
                 artistProfile: {
-                    select: { id: true }
+                    select: {
+                        id: true,
+                        bio: true,
+                        portfolioUrl: true,
+                        originCity: true,
+                        imageUrl: true
+                    }
                 }
             },
             orderBy: { createdAt: 'desc' }
@@ -130,5 +185,161 @@ export const updateUserRole = async (req: Request, res: Response): Promise<void>
     } catch (error) {
         console.error('Update user role error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to update user role' });
+    }
+};
+
+// Get Pending Artist Approvals
+export const getPendingArtists = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const artists = await prisma.user.findMany({
+            where: {
+                role: 'ARTIST',
+                isEmailVerified: true,
+                isApproved: false
+            },
+            select: {
+                id: true,
+                fullName: true,
+                email: true,
+                createdAt: true,
+                artistProfile: {
+                    select: {
+                        id: true,
+                        bio: true,
+                        portfolioUrl: true,
+                        originCity: true,
+                        imageUrl: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'asc' } // Oldest first
+        });
+
+        res.status(StatusCodes.OK).json({ artists });
+    } catch (error) {
+        console.error('Get pending artists error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to fetch pending artists' });
+    }
+};
+
+// Approve Artist
+export const approveArtist = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const artistUserId = String(req.params.id);
+        const adminUserId = req.user?.userId;
+
+        const user = await prisma.user.findUnique({
+            where: { id: artistUserId }
+        });
+
+        if (!user) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+            return;
+        }
+
+        if (user.role !== 'ARTIST') {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'User is not an artist' });
+            return;
+        }
+
+        if (user.isApproved) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Artist is already approved' });
+            return;
+        }
+
+        if (!user.isEmailVerified) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Artist email is not verified yet' });
+            return;
+        }
+
+        // Approve the artist
+        const updatedUser = await prisma.user.update({
+            where: { id: artistUserId },
+            data: {
+                isApproved: true,
+                approvedAt: new Date(),
+                approvedBy: adminUserId
+            }
+        });
+
+        // Send approval email
+        const emailContent = getArtistApprovalTemplate(user.fullName);
+        await sendEmail(user.email, 'Your Artist Account Has Been Approved - Muraqqa', emailContent);
+
+        res.status(StatusCodes.OK).json({
+            message: 'Artist approved successfully',
+            user: {
+                id: updatedUser.id,
+                fullName: updatedUser.fullName,
+                email: updatedUser.email,
+                isApproved: updatedUser.isApproved,
+                approvedAt: updatedUser.approvedAt
+            }
+        });
+    } catch (error) {
+        console.error('Approve artist error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to approve artist' });
+    }
+};
+
+// Reject Artist (Delete or mark as rejected)
+export const rejectArtist = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const artistUserId = String(req.params.id);
+        const { reason, deleteAccount } = req.body;
+
+        const user = await prisma.user.findUnique({
+            where: { id: artistUserId },
+            include: { artistProfile: true }
+        });
+
+        if (!user) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+            return;
+        }
+
+        if (user.role !== 'ARTIST') {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'User is not an artist' });
+            return;
+        }
+
+        if (user.isApproved) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Cannot reject an already approved artist' });
+            return;
+        }
+
+        // Send rejection email
+        const emailContent = getArtistRejectionTemplate(user.fullName, reason);
+        await sendEmail(user.email, 'Artist Application Update - Muraqqa', emailContent);
+
+        if (deleteAccount) {
+            // Delete the artist profile first (if exists)
+            if (user.artistProfile) {
+                await prisma.artist.delete({ where: { userId: artistUserId } });
+            }
+            // Delete the user
+            await prisma.user.delete({ where: { id: artistUserId } });
+
+            res.status(StatusCodes.OK).json({ message: 'Artist rejected and account deleted' });
+        } else {
+            // Just change role to USER so they can use the account as a collector
+            await prisma.user.update({
+                where: { id: artistUserId },
+                data: {
+                    role: 'USER',
+                    isApproved: true // Auto-approve as regular user
+                }
+            });
+
+            // Delete artist profile
+            if (user.artistProfile) {
+                await prisma.artist.delete({ where: { userId: artistUserId } });
+            }
+
+            res.status(StatusCodes.OK).json({ message: 'Artist rejected, account converted to collector' });
+        }
+    } catch (error) {
+        console.error('Reject artist error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to reject artist' });
     }
 };

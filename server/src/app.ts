@@ -58,6 +58,14 @@ app.get('/health', (req: Request, res: Response) => {
     res.status(StatusCodes.OK).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Public Config (reCAPTCHA site key, etc.)
+app.get('/api/config', (req: Request, res: Response) => {
+    res.status(StatusCodes.OK).json({
+        recaptchaSiteKey: env.RECAPTCHA_SITE_KEY || null,
+        recaptchaEnabled: !!env.RECAPTCHA_SECRET_KEY
+    });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/artworks', artworkRoutes);

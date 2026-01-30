@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { User, Lock, Mail, Facebook, Chrome, ArrowRight, Phone, MapPin, Globe, Eye, EyeOff, Check, X, Loader2, Sparkles } from 'lucide-react';
+import { User, Lock, Mail, Facebook, Chrome, ArrowRight, Phone, MapPin, Globe, Eye, EyeOff, Check, X, Loader2, Sparkles, Shield, CheckCircle, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRecaptcha, RECAPTCHA_ACTIONS } from '../hooks/useRecaptcha';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -23,8 +24,16 @@ export const Auth: React.FC = () => {
 
    const [error, setError] = useState('');
    const [loading, setLoading] = useState(false);
+   const [registrationSuccess, setRegistrationSuccess] = useState<{
+      message: string;
+      requiresApproval: boolean;
+      email: string;
+   } | null>(null);
+   const [isResendingVerification, setIsResendingVerification] = useState(false);
+   const [resendMessage, setResendMessage] = useState('');
    const navigate = useNavigate();
    const { login, register: authRegister } = useAuth();
+   const { executeRecaptcha, isEnabled: recaptchaEnabled } = useRecaptcha();
 
    // Password strength calculator
    const getPasswordStrength = () => {
@@ -59,6 +68,10 @@ export const Auth: React.FC = () => {
       setLoading(true);
 
       try {
+         // Get reCAPTCHA token
+         const action = isLogin ? RECAPTCHA_ACTIONS.LOGIN : RECAPTCHA_ACTIONS.REGISTER;
+         const recaptchaToken = await executeRecaptcha(action);
+
          if (isLogin) {
             // Login request
             const response = await fetch(`${API_URL}/auth/login`, {
@@ -69,13 +82,33 @@ export const Auth: React.FC = () => {
                body: JSON.stringify({
                   email,
                   password,
+                  recaptchaToken,
                }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-               setError(data.message || 'Login failed');
+               // Handle specific error codes
+               if (data.code === 'RECAPTCHA_LOW_SCORE') {
+                  setError('Security verification failed. Please try again.');
+               } else if (data.code === 'RECAPTCHA_FAILED') {
+                  setError('Security check failed. Please refresh and try again.');
+               } else if (data.code === 'EMAIL_NOT_VERIFIED') {
+                  setRegistrationSuccess({
+                     message: 'Please verify your email before logging in. Check your inbox for the verification link.',
+                     requiresApproval: false,
+                     email: data.email || email
+                  });
+               } else if (data.code === 'ARTIST_NOT_APPROVED') {
+                  setRegistrationSuccess({
+                     message: data.message,
+                     requiresApproval: true,
+                     email: email
+                  });
+               } else {
+                  setError(data.message || 'Login failed');
+               }
                return;
             }
 
@@ -96,18 +129,31 @@ export const Auth: React.FC = () => {
                   address,
                   city,
                   country,
-                  zipCode
+                  zipCode,
+                  recaptchaToken,
                }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-               setError(data.message || 'Registration failed');
+               // Handle specific reCAPTCHA errors
+               if (data.code === 'RECAPTCHA_LOW_SCORE') {
+                  setError('Security verification failed. Please try again.');
+               } else if (data.code === 'RECAPTCHA_FAILED') {
+                  setError('Security check failed. Please refresh and try again.');
+               } else {
+                  setError(data.message || 'Registration failed');
+               }
                return;
             }
 
-            handleAuthSuccess(data.token, data.user.role);
+            // Show verification required message instead of auto-login
+            setRegistrationSuccess({
+               message: data.message,
+               requiresApproval: data.requiresApproval || false,
+               email: email
+            });
          }
       } catch (err: any) {
          setError(err.message || 'An error occurred');
@@ -121,6 +167,125 @@ export const Auth: React.FC = () => {
       console.log(`Initiating ${provider} login...`);
       setError('Social login not yet implemented');
    };
+
+   const handleResendVerification = async () => {
+      if (!registrationSuccess?.email) return;
+
+      setIsResendingVerification(true);
+      setResendMessage('');
+
+      try {
+         const response = await fetch(`${API_URL}/auth/resend-verification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: registrationSuccess.email }),
+         });
+
+         const data = await response.json();
+
+         if (response.ok) {
+            setResendMessage('Verification email sent! Check your inbox.');
+         } else {
+            setResendMessage(data.message || 'Failed to resend email');
+         }
+      } catch (error) {
+         setResendMessage('Failed to resend verification email');
+      } finally {
+         setIsResendingVerification(false);
+      }
+   };
+
+   // Show registration success / verification required screen
+   if (registrationSuccess) {
+      return (
+         <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[url('/header_bg.jpg')] bg-cover bg-center"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-stone-950/95 via-stone-900/90 to-stone-950/95 backdrop-blur-sm"></div>
+
+            <motion.div
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="relative z-10 w-full max-w-md"
+            >
+               <div className="text-center mb-10">
+                  <div className="inline-flex items-center gap-2 mb-4">
+                     <Sparkles className="text-amber-500" size={24} />
+                     <h1 className="font-serif text-4xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
+                        MURAQQA
+                     </h1>
+                     <Sparkles className="text-amber-500" size={24} />
+                  </div>
+               </div>
+
+               <div className="bg-stone-900/40 backdrop-blur-2xl border border-white/5 p-8 md:p-10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-2xl text-center">
+                  <div className={`w-20 h-20 mx-auto mb-6 ${registrationSuccess.requiresApproval ? 'bg-amber-500/20' : 'bg-green-500/20'} rounded-full flex items-center justify-center`}>
+                     {registrationSuccess.requiresApproval ? (
+                        <Clock className="w-10 h-10 text-amber-500" />
+                     ) : (
+                        <CheckCircle className="w-10 h-10 text-green-500" />
+                     )}
+                  </div>
+
+                  <h2 className="text-white font-serif text-2xl mb-2">
+                     {registrationSuccess.requiresApproval ? 'Registration Complete!' : 'Check Your Email'}
+                  </h2>
+
+                  <p className="text-stone-400 mb-6">{registrationSuccess.message}</p>
+
+                  {registrationSuccess.requiresApproval && (
+                     <div className="bg-stone-800/50 rounded-lg p-4 mb-6 text-left">
+                        <p className="text-stone-300 text-sm">
+                           <strong className="text-amber-500">What happens next?</strong>
+                        </p>
+                        <ul className="text-stone-400 text-sm mt-2 space-y-1">
+                           <li>1. Verify your email (check your inbox)</li>
+                           <li>2. Our team will review your application</li>
+                           <li>3. You'll receive approval notification</li>
+                        </ul>
+                     </div>
+                  )}
+
+                  {!registrationSuccess.requiresApproval && (
+                     <div className="space-y-4">
+                        <button
+                           onClick={handleResendVerification}
+                           disabled={isResendingVerification}
+                           className="text-amber-500 hover:text-amber-400 text-sm underline disabled:opacity-50 flex items-center gap-2 mx-auto"
+                        >
+                           {isResendingVerification ? (
+                              <>
+                                 <Loader2 size={14} className="animate-spin" />
+                                 Sending...
+                              </>
+                           ) : (
+                              "Didn't receive email? Resend"
+                           )}
+                        </button>
+                        {resendMessage && (
+                           <p className={`text-sm ${resendMessage.includes('sent') ? 'text-green-400' : 'text-red-400'}`}>
+                              {resendMessage}
+                           </p>
+                        )}
+                     </div>
+                  )}
+
+                  <div className="mt-8">
+                     <button
+                        onClick={() => {
+                           setRegistrationSuccess(null);
+                           setIsLogin(true);
+                        }}
+                        className="inline-flex items-center gap-2 border border-amber-500 text-amber-500 px-8 py-3 font-bold uppercase tracking-widest text-xs rounded-lg hover:bg-amber-500/10 transition-all"
+                     >
+                        Back to Login
+                        <ArrowRight size={16} />
+                     </button>
+                  </div>
+               </div>
+            </motion.div>
+         </div>
+      );
+   }
 
    return (
       <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative overflow-hidden">
@@ -569,9 +734,31 @@ export const Auth: React.FC = () => {
                className="text-center mt-8 space-y-2"
             >
                <p className="text-stone-600 text-xs flex items-center justify-center gap-2">
-                  <Lock size={12} />
-                  <span>Protected by Muraqqa Security</span>
+                  {recaptchaEnabled ? (
+                     <>
+                        <Shield size={12} className="text-green-500" />
+                        <span>Protected by reCAPTCHA</span>
+                     </>
+                  ) : (
+                     <>
+                        <Lock size={12} />
+                        <span>Protected by Muraqqa Security</span>
+                     </>
+                  )}
                </p>
+               {recaptchaEnabled && (
+                  <p className="text-stone-700 text-[10px]">
+                     This site is protected by reCAPTCHA and the Google{' '}
+                     <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">
+                        Privacy Policy
+                     </a>{' '}
+                     and{' '}
+                     <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="text-amber-600 hover:underline">
+                        Terms of Service
+                     </a>{' '}
+                     apply.
+                  </p>
+               )}
                <p className="text-stone-700 text-[10px] uppercase tracking-widest">
                   Contemporary Pakistani Art Gallery
                </p>

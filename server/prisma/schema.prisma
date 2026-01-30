@@ -41,6 +41,12 @@ model User {
   resetTokenExpiry  DateTime?
   isEmailVerified   Boolean   @default(false)
   verificationToken String?
+  verificationTokenExpiry DateTime?
+
+  // Artist approval (only applies to ARTIST role)
+  isApproved        Boolean   @default(false)
+  approvedAt        DateTime?
+  approvedBy        String?   // Admin user ID who approved
 
 
 

@@ -5,8 +5,13 @@ import crypto from 'crypto';
 import prisma from '../config/database';
 import { generateToken } from '../utils/jwt';
 import { registerSchema, loginSchema } from '../validators/auth.validator';
-import { sendEmail, getPasswordResetTemplate } from '../utils/email';
+import { sendEmail, getPasswordResetTemplate, getVerificationTemplate } from '../utils/email';
 import { env } from '../config/env';
+
+// Generate a secure random token
+const generateVerificationToken = (): string => {
+    return crypto.randomBytes(32).toString('hex');
+};
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -28,7 +33,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         // Hash password
         const passwordHash = await bcrypt.hash(validatedData.password, 10);
 
-        // Create user
+        // Generate verification token
+        const verificationToken = generateVerificationToken();
+        const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        // Create user with verification token
         const user = await prisma.user.create({
             data: {
                 email: validatedData.email,
@@ -36,6 +45,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 fullName: validatedData.fullName,
                 role: validatedData.role,
                 phoneNumber: validatedData.phoneNumber,
+                verificationToken,
+                verificationTokenExpiry,
+                isEmailVerified: false,
+                isApproved: validatedData.role === 'USER', // Users are auto-approved, artists need admin approval
             },
         });
 
@@ -47,6 +60,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 },
             });
         }
+
+        // Create address if provided
         if (validatedData.address && validatedData.city) {
             await prisma.address.create({
                 data: {
@@ -61,17 +76,17 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             });
         }
 
-        // Generate token
-        const token = generateToken({
-            userId: user.id,
-            email: user.email,
-            role: user.role,
-            fullName: user.fullName,
-        });
+        // Send verification email
+        const verifyUrl = `${env.CLIENT_URL}/verify-email?token=${verificationToken}&id=${user.id}`;
+        const emailContent = getVerificationTemplate(verifyUrl);
+        await sendEmail(user.email, 'Verify Your Email - Muraqqa Art Gallery', emailContent);
 
         res.status(StatusCodes.CREATED).json({
-            message: 'User registered successfully',
-            token,
+            message: validatedData.role === 'ARTIST'
+                ? 'Registration successful! Please verify your email. After verification, your account will be reviewed by our team.'
+                : 'Registration successful! Please verify your email to continue.',
+            requiresVerification: true,
+            requiresApproval: validatedData.role === 'ARTIST',
             user: {
                 id: user.id,
                 email: user.email,
@@ -163,6 +178,26 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
+        // Check email verification (skip for admins)
+        if (!user.isEmailVerified && user.role !== 'ADMIN') {
+            res.status(StatusCodes.FORBIDDEN).json({
+                message: 'Please verify your email before logging in.',
+                code: 'EMAIL_NOT_VERIFIED',
+                userId: user.id,
+                email: user.email
+            });
+            return;
+        }
+
+        // Check artist approval (only for artists)
+        if (user.role === 'ARTIST' && !user.isApproved) {
+            res.status(StatusCodes.FORBIDDEN).json({
+                message: 'Your artist account is pending approval. You will be notified once approved.',
+                code: 'ARTIST_NOT_APPROVED'
+            });
+            return;
+        }
+
         // Merge guest cart if provided
         if (validatedData.guestCart && validatedData.guestCart.length > 0) {
             await mergeGuestCart(user.id, validatedData.guestCart);
@@ -184,6 +219,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                 email: user.email,
                 fullName: user.fullName,
                 role: user.role,
+                isEmailVerified: user.isEmailVerified,
+                isApproved: user.isApproved,
                 artistProfile: user.artistProfile,
             },
         });
@@ -219,7 +256,12 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        res.status(StatusCodes.OK).json({ user });
+        res.status(StatusCodes.OK).json({
+            user: {
+                ...user,
+                passwordHash: undefined, // Remove password hash from response
+            }
+        });
     } catch (error) {
         console.error('Get me error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to fetch user' });
@@ -331,28 +373,101 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
 
         // Check if already verified
         if (user.isEmailVerified) {
-            res.status(StatusCodes.OK).json({ message: 'Email already verified' });
+            res.status(StatusCodes.OK).json({
+                message: 'Email already verified',
+                isApproved: user.isApproved,
+                role: user.role
+            });
             return;
         }
 
-        // In a real app, we would verify the token against a saved one or JWT
-        // For this MVP, we'll assume if they have the link (which we would email), it's valid
-        // But let's check the token matches what we would have sent (if we saved it)
-        // Since we didn't add verificationToken logic to register() yet, we'll implement a simple version:
-        // verificationToken field was added to schema, so let's use it properly in a future update.
-        // For now, we'll just mark as verified to unblock the feature.
+        // Verify the token matches
+        if (user.verificationToken !== token) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid verification token' });
+            return;
+        }
 
+        // Check token expiry
+        if (user.verificationTokenExpiry && new Date() > user.verificationTokenExpiry) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Verification link has expired. Please request a new one.' });
+            return;
+        }
+
+        // Mark as verified
         await prisma.user.update({
             where: { id: userId },
             data: {
                 isEmailVerified: true,
                 verificationToken: null,
+                verificationTokenExpiry: null,
             },
         });
 
-        res.status(StatusCodes.OK).json({ message: 'Email verified successfully' });
+        // Return different messages based on role
+        if (user.role === 'ARTIST') {
+            res.status(StatusCodes.OK).json({
+                message: 'Email verified successfully! Your artist account is now pending admin approval. You will be notified once approved.',
+                requiresApproval: true,
+                isApproved: false,
+                role: user.role
+            });
+        } else {
+            res.status(StatusCodes.OK).json({
+                message: 'Email verified successfully! You can now log in.',
+                requiresApproval: false,
+                isApproved: true,
+                role: user.role
+            });
+        }
     } catch (error) {
         console.error('Verify email error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to verify email' });
+    }
+};
+
+// Resend verification email
+export const resendVerificationEmail = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Email is required' });
+            return;
+        }
+
+        const user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            // Generic message to avoid enumeration
+            res.status(StatusCodes.OK).json({ message: 'If the email exists, a verification link has been sent.' });
+            return;
+        }
+
+        if (user.isEmailVerified) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Email is already verified' });
+            return;
+        }
+
+        // Generate new verification token
+        const verificationToken = generateVerificationToken();
+        const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                verificationToken,
+                verificationTokenExpiry,
+            },
+        });
+
+        // Send verification email
+        const verifyUrl = `${env.CLIENT_URL}/verify-email?token=${verificationToken}&id=${user.id}`;
+        const emailContent = getVerificationTemplate(verifyUrl);
+        await sendEmail(user.email, 'Verify Your Email - Muraqqa Art Gallery', emailContent);
+
+        res.status(StatusCodes.OK).json({ message: 'Verification email sent successfully' });
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to resend verification email' });
     }
 };

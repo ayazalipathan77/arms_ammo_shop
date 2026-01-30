@@ -17,6 +17,9 @@ import { Artists } from './pages/Artists';
 import { Conversations } from './pages/Conversations';
 import { InvoiceView } from './pages/InvoiceView';
 import { Contact } from './pages/Contact';
+import { VerifyEmail } from './pages/VerifyEmail';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 import { AICurator } from './components/AICurator';
 import { Currency } from './types';
 import { RATES } from './constants';
@@ -291,6 +294,9 @@ const App: React.FC = () => {
                       <Route path="/artwork/:id" element={<ArtworkDetail />} />
                       <Route path="/cart" element={<Cart />} />
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/verify-email" element={<VerifyEmail />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
                       <Route path="/artist-dashboard" element={<ProtectedRoute requiredRole="ARTIST"><ArtistDashboard /></ProtectedRoute>} />
                       <Route path="/artist/profile" element={<ProtectedRoute requiredRole="ARTIST"><ArtistProfile /></ProtectedRoute>} />

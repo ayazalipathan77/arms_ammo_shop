@@ -3,21 +3,19 @@ import { env } from '../config/env';
 
 // Create reusable transporter object using the default SMTP transport
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false, // true for 465, false for other ports
+    host: env.SMTP_HOST,
+    port: parseInt(env.SMTP_PORT),
+    secure: env.SMTP_PORT === '465', // true for 465, false for other ports
     auth: {
-        user: process.env.SMTP_USER, // generated ethereal user
-        pass: process.env.SMTP_PASS, // generated ethereal password
+        user: env.SMTP_USER,
+        pass: env.SMTP_PASS,
     },
 });
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
     try {
-        // console.log(`Attempting to send email to ${to} with subject: ${subject}`);
-
         // In development, if no credentials, mock it
-        if (env.NODE_ENV === 'development' && !process.env.SMTP_USER) {
+        if (env.NODE_ENV === 'development' && !env.SMTP_USER) {
             console.log('--- MOCK EMAIL ---');
             console.log(`To: ${to}`);
             console.log(`Subject: ${subject}`);
@@ -27,10 +25,10 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
         }
 
         const info = await transporter.sendMail({
-            from: `"Muraqqa Art Gallery" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`, // sender address
-            to, // list of receivers
-            subject, // Subject line
-            html, // html body
+            from: `"Muraqqa Art Gallery" <${env.SMTP_FROM || env.SMTP_USER}>`,
+            to,
+            subject,
+            html,
         });
 
         // console.log('Message sent: %s', info.messageId);
