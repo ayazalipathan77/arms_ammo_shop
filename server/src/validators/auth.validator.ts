@@ -1,15 +1,18 @@
 import { z } from 'zod';
 
+const emptyToUndefined = (val: unknown) => (val === '' ? undefined : val);
+
 export const registerSchema = z.object({
     email: z.string().email('Invalid email format'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
     role: z.enum(['USER', 'ARTIST']).default('USER'),
-    phoneNumber: z.string().optional(),
-    address: z.string().min(5, 'Address is too short').optional(),
-    city: z.string().min(2, 'City is required').optional(),
+    phoneNumber: z.preprocess(emptyToUndefined, z.string().optional()),
+    address: z.preprocess(emptyToUndefined, z.string().min(5, 'Address is too short').optional()),
+    city: z.preprocess(emptyToUndefined, z.string().min(2, 'City is required').optional()),
     country: z.string().default('Pakistan'),
-    zipCode: z.string().optional(),
+    zipCode: z.preprocess(emptyToUndefined, z.string().optional()),
+    recaptchaToken: z.any().optional(),
 });
 
 export const loginSchema = z.object({

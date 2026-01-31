@@ -10,18 +10,29 @@ const transporter = nodemailer.createTransport({
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
     },
+    connectionTimeout: 5000, // 5s connection timeout
+    socketTimeout: 5000,     // 5s socket timeout
 });
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
     try {
-        // In development, if no credentials, mock it
-        if (env.NODE_ENV === 'development' && !env.SMTP_USER) {
-            console.log('--- MOCK EMAIL ---');
+        // In development, always log email details to console
+        if (env.NODE_ENV === 'development') {
+            // Extract plain-text links from HTML for easy copy-paste
+            const links = html.match(/href="([^"]+)"/g)?.map(m => m.replace(/href="|"/g, '')) || [];
+            console.log('\n========== EMAIL ==========');
             console.log(`To: ${to}`);
             console.log(`Subject: ${subject}`);
-            console.log('Body:', html);
-            console.log('------------------');
-            return true;
+            if (links.length > 0) {
+                console.log('Links:');
+                links.forEach(l => console.log(`  → ${l}`));
+            }
+            console.log('===========================\n');
+
+            // If no SMTP credentials, skip sending
+            if (!env.SMTP_USER) {
+                return true;
+            }
         }
 
         const info = await transporter.sendMail({
@@ -31,10 +42,15 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
             html,
         });
 
-        // console.log('Message sent: %s', info.messageId);
+        console.log('Email sent:', info.messageId);
         return true;
-    } catch (error) {
-        console.error('Error sending email:', error);
+    } catch (error: any) {
+        console.error('Error sending email:', error.message || error);
+        // Don't block the flow in development if SMTP fails
+        if (env.NODE_ENV === 'development') {
+            console.log('[DEV] Email send failed but continuing (check SMTP connectivity)');
+            return true;
+        }
         return false;
     }
 };
