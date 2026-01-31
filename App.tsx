@@ -20,6 +20,7 @@ import { Contact } from './pages/Contact';
 import { VerifyEmail } from './pages/VerifyEmail';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
+import { ArtistConfirmation } from './pages/ArtistConfirmation';
 import { AICurator } from './components/AICurator';
 import { Currency } from './types';
 import { RATES } from './constants';
@@ -297,6 +298,7 @@ const App: React.FC = () => {
                       <Route path="/verify-email" element={<VerifyEmail />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/artist-confirmation" element={<ArtistConfirmation />} />
                       <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
                       <Route path="/artist-dashboard" element={<ProtectedRoute requiredRole="ARTIST"><ArtistDashboard /></ProtectedRoute>} />
                       <Route path="/artist/profile" element={<ProtectedRoute requiredRole="ARTIST"><ArtistProfile /></ProtectedRoute>} />

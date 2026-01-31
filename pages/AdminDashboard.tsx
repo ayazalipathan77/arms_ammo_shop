@@ -59,8 +59,17 @@ export const AdminDashboard: React.FC = () => {
       title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING'
    });
 
-   // Local State for Order Tracking
+   // Order Management State
    const [trackingInput, setTrackingInput] = useState<{ id: string, code: string } | null>(null);
+   const [adminOrders, setAdminOrders] = useState<any[]>([]);
+   const [ordersPagination, setOrdersPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+   const [orderStatusFilter, setOrderStatusFilter] = useState('ALL');
+   const [orderSearch, setOrderSearch] = useState('');
+   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+   const [orderActionLoading, setOrderActionLoading] = useState<string | null>(null);
+   const [shipModal, setShipModal] = useState<{ orderId: string; trackingNumber: string; carrier: string; notes: string } | null>(null);
+   const [cancelModal, setCancelModal] = useState<{ orderId: string; reason: string } | null>(null);
+   const [orderNotesInput, setOrderNotesInput] = useState<{ orderId: string; notes: string } | null>(null);
 
    // Content form states
    const [heroForm, setHeroForm] = useState(siteContent);
@@ -80,6 +89,7 @@ export const AdminDashboard: React.FC = () => {
 
    useEffect(() => {
       loadStats();
+      if (activeTab === 'ORDERS') loadAdminOrders();
    }, [activeTab]); // Reload stats when tab changes to refresh data
 
    const loadStats = async () => {
@@ -90,6 +100,116 @@ export const AdminDashboard: React.FC = () => {
       } catch (err) {
          console.error('Failed to load stats', err);
       }
+   };
+
+   // Order Management Functions
+   const loadAdminOrders = async (page = 1) => {
+      try {
+         const filters: any = { page, limit: 20 };
+         if (orderStatusFilter !== 'ALL') filters.status = orderStatusFilter;
+         if (orderSearch) filters.search = orderSearch;
+         const data = await adminApi.getAllOrders(filters);
+         setAdminOrders(data.orders || []);
+         setOrdersPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
+      } catch (err) {
+         console.error('Failed to load orders', err);
+      }
+   };
+
+   const handleRequestArtistConfirmation = async (orderId: string) => {
+      setOrderActionLoading(orderId);
+      try {
+         await adminApi.requestArtistConfirmation(orderId);
+         await loadAdminOrders(ordersPagination.page);
+      } catch (err: any) {
+         alert(err.message || 'Failed to send artist confirmation');
+      }
+      setOrderActionLoading(null);
+   };
+
+   const handleAdminConfirm = async (orderId: string) => {
+      setOrderActionLoading(orderId);
+      try {
+         await adminApi.adminConfirmOrder(orderId);
+         await loadAdminOrders(ordersPagination.page);
+      } catch (err: any) {
+         alert(err.message || 'Failed to confirm order');
+      }
+      setOrderActionLoading(null);
+   };
+
+   const handleShipOrder = async () => {
+      if (!shipModal) return;
+      setOrderActionLoading(shipModal.orderId);
+      try {
+         await adminApi.markOrderShipped(shipModal.orderId, shipModal.trackingNumber, shipModal.carrier || undefined, shipModal.notes || undefined);
+         setShipModal(null);
+         await loadAdminOrders(ordersPagination.page);
+      } catch (err: any) {
+         alert(err.message || 'Failed to mark as shipped');
+      }
+      setOrderActionLoading(null);
+   };
+
+   const handleDeliverOrder = async (orderId: string) => {
+      setOrderActionLoading(orderId);
+      try {
+         await adminApi.markOrderDelivered(orderId);
+         await loadAdminOrders(ordersPagination.page);
+      } catch (err: any) {
+         alert(err.message || 'Failed to mark as delivered');
+      }
+      setOrderActionLoading(null);
+   };
+
+   const handleCancelOrder = async () => {
+      if (!cancelModal) return;
+      setOrderActionLoading(cancelModal.orderId);
+      try {
+         await adminApi.cancelOrder(cancelModal.orderId, cancelModal.reason || undefined);
+         setCancelModal(null);
+         await loadAdminOrders(ordersPagination.page);
+      } catch (err: any) {
+         alert(err.message || 'Failed to cancel order');
+      }
+      setOrderActionLoading(null);
+   };
+
+   const handleSaveOrderNotes = async () => {
+      if (!orderNotesInput) return;
+      try {
+         await adminApi.updateOrderNotes(orderNotesInput.orderId, orderNotesInput.notes);
+         setOrderNotesInput(null);
+         await loadAdminOrders(ordersPagination.page);
+      } catch (err: any) {
+         alert(err.message || 'Failed to save notes');
+      }
+   };
+
+   const getOrderStatusColor = (status: string) => {
+      const colors: Record<string, string> = {
+         PENDING: 'bg-stone-600 text-stone-200',
+         PAID: 'bg-blue-600 text-blue-100',
+         AWAITING_CONFIRMATION: 'bg-yellow-600 text-yellow-100',
+         CONFIRMED: 'bg-emerald-600 text-emerald-100',
+         SHIPPED: 'bg-purple-600 text-purple-100',
+         DELIVERED: 'bg-green-600 text-green-100',
+         CANCELLED: 'bg-red-600 text-red-100',
+      };
+      return colors[status] || 'bg-stone-600 text-stone-200';
+   };
+
+   const getOrderStatusLabel = (status: string) => {
+      const labels: Record<string, string> = {
+         PENDING: 'Pending',
+         PAID: 'Paid',
+         AWAITING_CONFIRMATION: 'Awaiting Artist',
+         CONFIRMED: 'Confirmed',
+         SHIPPED: 'Shipped',
+         DELIVERED: 'Delivered',
+         CANCELLED: 'Cancelled',
+      };
+      return labels[status] || status;
    };
 
    const loadUsers = async () => {
@@ -1150,70 +1270,333 @@ export const AdminDashboard: React.FC = () => {
          {/* ORDERS TAB */}
          {activeTab === 'ORDERS' && (
             <div className="space-y-6 animate-fade-in">
-               <h3 className="text-xl text-white font-serif">Order Management</h3>
+               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <h3 className="text-xl text-white font-serif">Order Management</h3>
+                  <div className="flex items-center gap-3">
+                     <div className="relative">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
+                        <input
+                           type="text"
+                           placeholder="Search orders..."
+                           value={orderSearch}
+                           onChange={e => setOrderSearch(e.target.value)}
+                           onKeyDown={e => e.key === 'Enter' && loadAdminOrders()}
+                           className="pl-9 pr-3 py-2 bg-stone-950 border border-stone-700 text-white text-sm w-48"
+                        />
+                     </div>
+                     <select
+                        value={orderStatusFilter}
+                        onChange={e => { setOrderStatusFilter(e.target.value); setTimeout(() => loadAdminOrders(), 0); }}
+                        className="bg-stone-950 border border-stone-700 text-white text-sm p-2"
+                     >
+                        <option value="ALL">All Statuses</option>
+                        {['PENDING', 'PAID', 'AWAITING_CONFIRMATION', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(s => (
+                           <option key={s} value={s}>{getOrderStatusLabel(s)}</option>
+                        ))}
+                     </select>
+                  </div>
+               </div>
+
+               {/* Order Status Summary */}
+               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                  {['PENDING', 'PAID', 'AWAITING_CONFIRMATION', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(s => {
+                     const count = adminOrders.filter(o => o.status === s).length;
+                     return (
+                        <button
+                           key={s}
+                           onClick={() => { setOrderStatusFilter(s === orderStatusFilter ? 'ALL' : s); setTimeout(() => loadAdminOrders(), 0); }}
+                           className={`p-3 border text-center transition-colors ${
+                              orderStatusFilter === s
+                                 ? 'border-amber-500 bg-amber-500/10'
+                                 : 'border-stone-800 bg-stone-900 hover:border-stone-600'
+                           }`}
+                        >
+                           <div className="text-lg font-bold text-white">{count}</div>
+                           <div className="text-[10px] text-stone-500 uppercase tracking-wider">{getOrderStatusLabel(s)}</div>
+                        </button>
+                     );
+                  })}
+               </div>
+
+               {/* Orders Table */}
                <div className="bg-stone-900 border border-stone-800 overflow-x-auto">
                   <table className="w-full text-left text-sm text-stone-400">
                      <thead className="bg-stone-950 text-stone-500 uppercase text-xs border-b border-stone-800">
                         <tr>
-                           <th className="p-4">Order ID</th>
+                           <th className="p-4">Order</th>
                            <th className="p-4">Customer</th>
+                           <th className="p-4">Items</th>
                            <th className="p-4">Total</th>
-                           <th className="p-4">Payment</th>
                            <th className="p-4">Status</th>
-                           <th className="p-4">Fulfillment</th>
+                           <th className="p-4">Timeline</th>
+                           <th className="p-4">Actions</th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-stone-800">
-                        {orders.map(order => (
-                           <tr key={order.id} className="hover:bg-stone-800/30">
-                              <td className="p-4 font-mono text-white">{order.id}</td>
+                        {adminOrders.length === 0 ? (
+                           <tr><td colSpan={7} className="p-8 text-center text-stone-600">No orders found</td></tr>
+                        ) : adminOrders.map(order => (
+                           <tr key={order.id} className="hover:bg-stone-800/30 group">
                               <td className="p-4">
-                                 <div className="text-white">{order.customerName}</div>
-                                 <div className="text-xs">{order.shippingCountry}</div>
+                                 <div className="font-mono text-white text-xs">#{order.id.slice(-8).toUpperCase()}</div>
+                                 <div className="text-[10px] text-stone-600 mt-1">{new Date(order.createdAt).toLocaleDateString()}</div>
                               </td>
-                              <td className="p-4">{convertPrice(order.totalAmount)}</td>
                               <td className="p-4">
-                                 <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-white">{order.paymentMethod}</span>
-                                    {order.transactionId && <span className="text-[10px] font-mono text-stone-500">{order.transactionId}</span>}
+                                 <div className="text-white text-sm">{order.user?.fullName || 'N/A'}</div>
+                                 <div className="text-[11px] text-stone-500">{order.user?.email}</div>
+                              </td>
+                              <td className="p-4">
+                                 <div className="space-y-1">
+                                    {order.items?.slice(0, 2).map((item: any, i: number) => (
+                                       <div key={i} className="flex items-center gap-2">
+                                          {item.artwork?.imageUrl && (
+                                             <img src={item.artwork.imageUrl} alt="" className="w-8 h-8 object-cover rounded" />
+                                          )}
+                                          <div>
+                                             <div className="text-white text-xs truncate max-w-[120px]">{item.artwork?.title || 'Artwork'}</div>
+                                             <div className="text-[10px] text-stone-600">{item.type} x{item.quantity}</div>
+                                          </div>
+                                       </div>
+                                    ))}
+                                    {order.items?.length > 2 && (
+                                       <div className="text-[10px] text-stone-500">+{order.items.length - 2} more</div>
+                                    )}
                                  </div>
                               </td>
                               <td className="p-4">
-                                 <select
-                                    value={order.status}
-                                    onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderStatus)}
-                                    className="bg-stone-950 border border-stone-700 text-xs text-white p-1 rounded"
-                                 >
-                                    {['PENDING', 'PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(s => (
-                                       <option key={s} value={s}>{s}</option>
-                                    ))}
-                                 </select>
+                                 <div className="text-white font-semibold">PKR {parseFloat(order.totalAmount).toLocaleString()}</div>
                               </td>
                               <td className="p-4">
-                                 {order.trackingNumber ? (
-                                    <span className="text-green-500 text-xs flex items-center gap-1"><Truck size={12} /> {order.trackingNumber}</span>
-                                 ) : (
-                                    trackingInput?.id === order.id ? (
-                                       <div className="flex gap-1">
-                                          <input
-                                             className="w-24 bg-stone-950 text-white text-xs p-1 border border-stone-600"
-                                             placeholder="Tracking #"
-                                             value={trackingInput.code}
-                                             onChange={e => setTrackingInput({ id: order.id, code: e.target.value })}
-                                          />
-                                          <button onClick={() => { updateOrderStatus(order.id, 'SHIPPED', trackingInput.code); setTrackingInput(null); }} className="text-green-500"><Check size={16} /></button>
-                                          <button onClick={() => setTrackingInput(null)} className="text-red-500"><X size={16} /></button>
-                                       </div>
-                                    ) : (
-                                       <button onClick={() => setTrackingInput({ id: order.id, code: '' })} className="text-amber-500 text-xs hover:underline">Add Tracking</button>
-                                    )
+                                 <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${getOrderStatusColor(order.status)}`}>
+                                    {getOrderStatusLabel(order.status)}
+                                 </span>
+                                 {order.artistConfirmedAt && order.status === 'AWAITING_CONFIRMATION' && (
+                                    <div className="mt-1 text-[10px] text-emerald-400 flex items-center gap-1">
+                                       <Check size={10} /> Artist confirmed
+                                    </div>
                                  )}
+                              </td>
+                              <td className="p-4">
+                                 <div className="space-y-0.5 text-[10px]">
+                                    {order.paidAt && <div className="text-blue-400">Paid: {new Date(order.paidAt).toLocaleDateString()}</div>}
+                                    {order.artistNotifiedAt && <div className="text-yellow-400">Artist notified: {new Date(order.artistNotifiedAt).toLocaleDateString()}</div>}
+                                    {order.artistConfirmedAt && <div className="text-emerald-400">Artist confirmed: {new Date(order.artistConfirmedAt).toLocaleDateString()}</div>}
+                                    {order.adminConfirmedAt && <div className="text-green-400">Admin confirmed: {new Date(order.adminConfirmedAt).toLocaleDateString()}</div>}
+                                    {order.shippedAt && <div className="text-purple-400">Shipped: {new Date(order.shippedAt).toLocaleDateString()}</div>}
+                                    {order.deliveredAt && <div className="text-green-300">Delivered: {new Date(order.deliveredAt).toLocaleDateString()}</div>}
+                                    {order.cancelledAt && <div className="text-red-400">Cancelled: {new Date(order.cancelledAt).toLocaleDateString()}</div>}
+                                 </div>
+                              </td>
+                              <td className="p-4">
+                                 <div className="flex flex-col gap-1.5">
+                                    {/* PAID → Request Artist Confirmation */}
+                                    {order.status === 'PAID' && (
+                                       <button
+                                          onClick={() => handleRequestArtistConfirmation(order.id)}
+                                          disabled={orderActionLoading === order.id}
+                                          className="bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1 disabled:opacity-50"
+                                       >
+                                          {orderActionLoading === order.id ? <Loader2 size={10} className="animate-spin" /> : <Mail size={10} />}
+                                          Request Artist
+                                       </button>
+                                    )}
+
+                                    {/* AWAITING_CONFIRMATION with artist confirmed → Admin Confirm */}
+                                    {order.status === 'AWAITING_CONFIRMATION' && order.artistConfirmedAt && (
+                                       <button
+                                          onClick={() => handleAdminConfirm(order.id)}
+                                          disabled={orderActionLoading === order.id}
+                                          className="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1 disabled:opacity-50"
+                                       >
+                                          {orderActionLoading === order.id ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />}
+                                          Confirm Order
+                                       </button>
+                                    )}
+
+                                    {/* AWAITING_CONFIRMATION without artist response */}
+                                    {order.status === 'AWAITING_CONFIRMATION' && !order.artistConfirmedAt && (
+                                       <span className="text-[10px] text-yellow-500 flex items-center gap-1">
+                                          <Clock size={10} /> Waiting for artist...
+                                       </span>
+                                    )}
+
+                                    {/* CONFIRMED → Ship */}
+                                    {order.status === 'CONFIRMED' && (
+                                       <button
+                                          onClick={() => setShipModal({ orderId: order.id, trackingNumber: '', carrier: '', notes: '' })}
+                                          className="bg-purple-600 hover:bg-purple-500 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1"
+                                       >
+                                          <Truck size={10} /> Mark Shipped
+                                       </button>
+                                    )}
+
+                                    {/* SHIPPED → Deliver */}
+                                    {order.status === 'SHIPPED' && (
+                                       <>
+                                          {order.trackingNumber && (
+                                             <span className="text-[10px] text-purple-400 flex items-center gap-1">
+                                                <Truck size={10} /> {order.trackingNumber}
+                                             </span>
+                                          )}
+                                          <button
+                                             onClick={() => handleDeliverOrder(order.id)}
+                                             disabled={orderActionLoading === order.id}
+                                             className="bg-green-600 hover:bg-green-500 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1 disabled:opacity-50"
+                                          >
+                                             {orderActionLoading === order.id ? <Loader2 size={10} className="animate-spin" /> : <Check size={10} />}
+                                             Mark Delivered
+                                          </button>
+                                       </>
+                                    )}
+
+                                    {/* Cancel button (for non-terminal statuses) */}
+                                    {!['DELIVERED', 'CANCELLED'].includes(order.status) && (
+                                       <button
+                                          onClick={() => setCancelModal({ orderId: order.id, reason: '' })}
+                                          className="text-red-500 hover:text-red-400 text-[10px] flex items-center gap-1"
+                                       >
+                                          <X size={10} /> Cancel
+                                       </button>
+                                    )}
+
+                                    {/* Notes button */}
+                                    <button
+                                       onClick={() => setOrderNotesInput({ orderId: order.id, notes: order.adminNotes || '' })}
+                                       className="text-stone-500 hover:text-stone-300 text-[10px] flex items-center gap-1"
+                                    >
+                                       <Edit size={10} /> Notes
+                                    </button>
+                                 </div>
                               </td>
                            </tr>
                         ))}
                      </tbody>
                   </table>
                </div>
+
+               {/* Pagination */}
+               {ordersPagination.totalPages > 1 && (
+                  <div className="flex justify-center gap-2">
+                     {Array.from({ length: ordersPagination.totalPages }, (_, i) => i + 1).map(p => (
+                        <button
+                           key={p}
+                           onClick={() => loadAdminOrders(p)}
+                           className={`w-8 h-8 text-xs border ${p === ordersPagination.page ? 'bg-amber-600 border-amber-600 text-white' : 'border-stone-700 text-stone-400 hover:border-stone-500'}`}
+                        >
+                           {p}
+                        </button>
+                     ))}
+                  </div>
+               )}
+
+               {/* Ship Modal */}
+               {shipModal && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                     <div className="bg-stone-900 border border-stone-700 w-full max-w-md p-6">
+                        <div className="flex justify-between items-center mb-6">
+                           <h4 className="text-white font-serif text-lg">Ship Order</h4>
+                           <button onClick={() => setShipModal(null)}><X className="text-stone-500 hover:text-white" size={20} /></button>
+                        </div>
+                        <div className="space-y-4">
+                           <div>
+                              <label className="block text-stone-500 text-xs uppercase mb-2">Tracking Number *</label>
+                              <input
+                                 className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                                 placeholder="Enter tracking number"
+                                 value={shipModal.trackingNumber}
+                                 onChange={e => setShipModal({ ...shipModal, trackingNumber: e.target.value })}
+                              />
+                           </div>
+                           <div>
+                              <label className="block text-stone-500 text-xs uppercase mb-2">Carrier</label>
+                              <input
+                                 className="w-full bg-stone-950 border border-stone-700 p-3 text-white"
+                                 placeholder="e.g. DHL, TCS, Leopard"
+                                 value={shipModal.carrier}
+                                 onChange={e => setShipModal({ ...shipModal, carrier: e.target.value })}
+                              />
+                           </div>
+                           <div>
+                              <label className="block text-stone-500 text-xs uppercase mb-2">Notes</label>
+                              <textarea
+                                 className="w-full bg-stone-950 border border-stone-700 p-3 text-white h-20 resize-none"
+                                 placeholder="Optional shipping notes"
+                                 value={shipModal.notes}
+                                 onChange={e => setShipModal({ ...shipModal, notes: e.target.value })}
+                              />
+                           </div>
+                           <button
+                              onClick={handleShipOrder}
+                              disabled={!shipModal.trackingNumber || orderActionLoading === shipModal.orderId}
+                              className="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                           >
+                              {orderActionLoading === shipModal.orderId ? <Loader2 size={16} className="animate-spin" /> : <Truck size={16} />}
+                              Confirm Shipment
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* Cancel Modal */}
+               {cancelModal && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                     <div className="bg-stone-900 border border-stone-700 w-full max-w-md p-6">
+                        <div className="flex justify-between items-center mb-6">
+                           <h4 className="text-white font-serif text-lg">Cancel Order</h4>
+                           <button onClick={() => setCancelModal(null)}><X className="text-stone-500 hover:text-white" size={20} /></button>
+                        </div>
+                        <div className="space-y-4">
+                           <div className="bg-red-900/30 border border-red-800 p-4 rounded text-sm text-red-300">
+                              This will cancel the order and notify the customer. If the order was confirmed, artwork stock will be restored.
+                           </div>
+                           <div>
+                              <label className="block text-stone-500 text-xs uppercase mb-2">Cancellation Reason</label>
+                              <textarea
+                                 className="w-full bg-stone-950 border border-stone-700 p-3 text-white h-20 resize-none"
+                                 placeholder="Reason for cancellation (will be sent to customer)"
+                                 value={cancelModal.reason}
+                                 onChange={e => setCancelModal({ ...cancelModal, reason: e.target.value })}
+                              />
+                           </div>
+                           <button
+                              onClick={handleCancelOrder}
+                              disabled={orderActionLoading === cancelModal.orderId}
+                              className="w-full bg-red-600 hover:bg-red-500 text-white py-3 text-sm font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                           >
+                              {orderActionLoading === cancelModal.orderId ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
+                              Cancel Order
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* Notes Modal */}
+               {orderNotesInput && (
+                  <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+                     <div className="bg-stone-900 border border-stone-700 w-full max-w-md p-6">
+                        <div className="flex justify-between items-center mb-6">
+                           <h4 className="text-white font-serif text-lg">Admin Notes</h4>
+                           <button onClick={() => setOrderNotesInput(null)}><X className="text-stone-500 hover:text-white" size={20} /></button>
+                        </div>
+                        <div className="space-y-4">
+                           <textarea
+                              className="w-full bg-stone-950 border border-stone-700 p-3 text-white h-32 resize-none"
+                              placeholder="Internal notes about this order..."
+                              value={orderNotesInput.notes}
+                              onChange={e => setOrderNotesInput({ ...orderNotesInput, notes: e.target.value })}
+                           />
+                           <button
+                              onClick={handleSaveOrderNotes}
+                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 text-sm font-semibold flex items-center justify-center gap-2"
+                           >
+                              <Save size={16} /> Save Notes
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               )}
             </div>
          )}
 

@@ -12,7 +12,7 @@ export enum Currency {
   GBP = 'GBP'
 }
 
-export type OrderStatus = 'PENDING' | 'PAID' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+export type OrderStatus = 'PENDING' | 'PAID' | 'AWAITING_CONFIRMATION' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
 
 export interface ShippingConfig {
   domesticRate: number;

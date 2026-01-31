@@ -803,9 +803,8 @@ export const adminApi = {
 
     // Get all orders (Admin only)
     getAllOrders: async (filters: any = {}): Promise<{
-        orders: ApiOrder[];
+        orders: any[];
         pagination: PaginationInfo;
-        summary: any
     }> => {
         const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
@@ -813,7 +812,7 @@ export const adminApi = {
                 params.append(key, String(value));
             }
         });
-        const response = await authFetch(`${API_URL}/orders/admin?${params}`);
+        const response = await authFetch(`${API_URL}/orders?${params}`);
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to fetch all orders');
@@ -821,15 +820,89 @@ export const adminApi = {
         return response.json();
     },
 
-    // Update order status (Admin only)
-    updateOrderStatus: async (id: string, status: string, trackingNumber?: string): Promise<any> => {
-        const response = await authFetch(`${API_URL}/orders/${id}/status`, {
-            method: 'PUT',
-            body: JSON.stringify({ status, trackingNumber }),
+    // Get single order details
+    getOrderById: async (id: string): Promise<{ order: any }> => {
+        const response = await authFetch(`${API_URL}/orders/${id}`);
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch order');
+        }
+        return response.json();
+    },
+
+    // Request artist confirmation (Admin sends email to artist)
+    requestArtistConfirmation: async (id: string): Promise<any> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/request-artist-confirmation`, {
+            method: 'POST',
         });
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Failed to update order status');
+            throw new Error(error.message || 'Failed to send artist confirmation request');
+        }
+        return response.json();
+    },
+
+    // Admin confirms order (after artist confirmation)
+    adminConfirmOrder: async (id: string, notes?: string): Promise<any> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/confirm`, {
+            method: 'PUT',
+            body: JSON.stringify({ notes }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to confirm order');
+        }
+        return response.json();
+    },
+
+    // Mark order as shipped
+    markOrderShipped: async (id: string, trackingNumber: string, carrier?: string, notes?: string): Promise<any> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/ship`, {
+            method: 'PUT',
+            body: JSON.stringify({ trackingNumber, carrier, notes }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to mark order as shipped');
+        }
+        return response.json();
+    },
+
+    // Mark order as delivered
+    markOrderDelivered: async (id: string, notes?: string): Promise<any> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/deliver`, {
+            method: 'PUT',
+            body: JSON.stringify({ notes }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to mark order as delivered');
+        }
+        return response.json();
+    },
+
+    // Cancel order
+    cancelOrder: async (id: string, reason?: string): Promise<any> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/cancel`, {
+            method: 'PUT',
+            body: JSON.stringify({ reason }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to cancel order');
+        }
+        return response.json();
+    },
+
+    // Update order notes
+    updateOrderNotes: async (id: string, notes: string): Promise<any> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/notes`, {
+            method: 'PUT',
+            body: JSON.stringify({ notes }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update order notes');
         }
         return response.json();
     },
