@@ -211,15 +211,15 @@ export const Gallery: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-20"
+          className="mb-10"
         >
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b border-stone-800/50 pb-10">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-stone-800/50 pb-8">
             <div>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
-                className="flex items-center gap-3 mb-4"
+                className="flex items-center gap-3 mb-2"
               >
                 <Sparkles className="text-amber-500" size={28} />
                 <h1 className="font-serif text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
@@ -364,7 +364,7 @@ export const Gallery: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredArtworks.map((art) => (
               <Link key={art.id} to={`/artwork/${art.id}`} className="group block">
-                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-900 to-neutral-950 rounded-2xl border border-stone-800/30 shadow-2xl group-hover:shadow-amber-900/20 transition-all duration-500 mb-6">
+                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-900 to-neutral-950 rounded-2xl border border-stone-800/30 shadow-2xl group-hover:shadow-amber-900/20 transition-all duration-500 mb-4">
                   <img
                     src={art.imageUrl}
                     alt={art.title}
@@ -397,7 +397,7 @@ export const Gallery: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-2 mt-16 pb-8"
+              className="flex items-center justify-center gap-2 mt-10 pb-6"
             >
               {/* Previous Button */}
               <button
@@ -471,14 +471,14 @@ export const Gallery: React.FC = () => {
         {/* Sidebar */}
         <div className={`absolute right-0 top-0 bottom-0 w-full max-w-md bg-gradient-to-br from-zinc-900 to-neutral-950 border-l border-stone-800/50 shadow-2xl transition-transform duration-500 ${filterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="p-8 h-full flex flex-col">
-            <div className="flex justify-between items-center mb-12">
+            <div className="flex justify-between items-center mb-8">
               <h2 className="font-serif text-3xl text-white tracking-wider">Filters</h2>
               <button onClick={() => setFilterOpen(false)} className="text-stone-500 hover:text-white transition-colors w-10 h-10 rounded-full hover:bg-stone-800/50 flex items-center justify-center">
                 <X size={24} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-10 pr-2 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto space-y-8 pr-2 scrollbar-hide">
 
               {/* Categories */}
               <div>

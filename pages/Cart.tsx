@@ -264,7 +264,7 @@ export const Cart: React.FC = () => {
       <div className="pt-32 pb-20 max-w-6xl mx-auto px-4">
 
          {/* Stepper */}
-         <div className="flex justify-center mb-12 text-xs uppercase tracking-widest">
+         <div className="flex justify-center mb-8 text-xs uppercase tracking-widest">
             <div className={`px-4 border-b-2 pb-2 ${step === 'CART' ? 'border-amber-500 text-white' : 'border-stone-800 text-stone-600'}`}>1. Cart</div>
             <div className={`px-4 border-b-2 pb-2 ${step === 'SHIPPING' ? 'border-amber-500 text-white' : 'border-stone-800 text-stone-600'}`}>2. Details</div>
             <div className={`px-4 border-b-2 pb-2 ${step === 'PAYMENT' ? 'border-amber-500 text-white' : 'border-stone-800 text-stone-600'}`}>3. Payment</div>
@@ -309,10 +309,10 @@ export const Cart: React.FC = () => {
                </div>
             </div>
          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                {/* Left Column: Form/Items */}
-               <div className="lg:col-span-2 space-y-8">
+               <div className="lg:col-span-2 space-y-6">
 
                   {step === 'CART' && (
                      <div className="space-y-6">
@@ -339,7 +339,7 @@ export const Cart: React.FC = () => {
 
                   {step === 'SHIPPING' && (
                      <div className="bg-gradient-to-br from-stone-900/80 to-stone-950/80 p-8 rounded-2xl border border-stone-800/50 backdrop-blur-sm space-y-6 animate-fade-in">
-                        <h3 className="font-serif text-2xl text-white mb-6">Shipping Address</h3>
+                        <h3 className="font-serif text-2xl text-white mb-4">Shipping Address</h3>
                         <div className="grid grid-cols-2 gap-4">
                            <input type="text" placeholder="First Name" value={shippingDetails.firstName} onChange={e => setShippingDetails({ ...shippingDetails, firstName: e.target.value })} className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
                            <input type="text" placeholder="Last Name" value={shippingDetails.lastName} onChange={e => setShippingDetails({ ...shippingDetails, lastName: e.target.value })} className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
@@ -372,8 +372,8 @@ export const Cart: React.FC = () => {
                         </div>
 
                         {/* Shipping Method Selection */}
-                        <div className="pt-6 border-t border-stone-800">
-                           <h4 className="font-serif text-xl text-white mb-4">Shipping Method</h4>
+                        <div className="pt-4 border-t border-stone-800">
+                           <h4 className="font-serif text-xl text-white mb-3">Shipping Method</h4>
                            {loadingRates ? (
                               <p className="text-stone-500 text-sm">Calculating rates...</p>
                            ) : (
@@ -397,8 +397,8 @@ export const Cart: React.FC = () => {
 
 
                         {/* Payment Method Selection */}
-                        <div className="pt-6 border-t border-stone-800">
-                           <h4 className="font-serif text-xl text-white mb-4">Payment Method</h4>
+                        <div className="pt-4 border-t border-stone-800">
+                           <h4 className="font-serif text-xl text-white mb-3">Payment Method</h4>
                            <div className="flex gap-4">
                               <button
                                  onClick={() => setPaymentMethod('STRIPE')}
@@ -442,7 +442,7 @@ export const Cart: React.FC = () => {
                   {step === 'PAYMENT' && pendingOrderId && (
                      <div className="space-y-6 animate-fade-in">
                         <div className="bg-stone-900 p-8 border border-stone-800">
-                           <h3 className="font-serif text-2xl text-white mb-6">Complete Payment</h3>
+                           <h3 className="font-serif text-2xl text-white mb-4">Complete Payment</h3>
 
                            {paymentMethod === 'STRIPE' ? (
                               <div className="space-y-4">
@@ -486,9 +486,9 @@ export const Cart: React.FC = () => {
                {/* Right Column: Summary */}
                <div className="lg:col-span-1">
                   <div className="bg-gradient-to-br from-stone-900 to-stone-950 p-6 rounded-2xl border border-stone-800/50 backdrop-blur-sm sticky top-24 shadow-xl">
-                     <h3 className="font-serif text-xl text-white mb-6">Order Summary</h3>
+                     <h3 className="font-serif text-xl text-white mb-4">Order Summary</h3>
 
-                     <div className="space-y-3 text-sm text-stone-400 border-b border-stone-800/50 pb-6 mb-6">
+                     <div className="space-y-3 text-sm text-stone-400 border-b border-stone-800/50 pb-4 mb-4">
                         <div className="flex justify-between">
                            <span>Subtotal</span>
                            <span className="text-white font-medium">{convertPrice(subtotalPKR)}</span>
@@ -510,7 +510,7 @@ export const Cart: React.FC = () => {
                      </div>
 
                      {/* Promo Code */}
-                     <div className="flex gap-2 mb-6">
+                     <div className="flex gap-2 mb-4">
                         <input
                            type="text"
                            value={discountCode}
@@ -521,7 +521,7 @@ export const Cart: React.FC = () => {
                         <button onClick={handleApplyDiscount} className="bg-stone-800 text-stone-300 px-4 py-2 text-xs hover:bg-stone-700 rounded-lg transition-all font-medium">Apply</button>
                      </div>
 
-                     <div className="flex justify-between text-xl font-serif text-white mb-6 bg-stone-950/30 p-4 rounded-xl">
+                     <div className="flex justify-between text-xl font-serif text-white mb-4 bg-stone-950/30 p-4 rounded-xl">
                         <span>Total</span>
                         <span className="text-amber-500">{convertPrice(totalPKR)}</span>
                      </div>

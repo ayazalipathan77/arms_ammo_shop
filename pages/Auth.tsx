@@ -322,9 +322,9 @@ export const Auth: React.FC = () => {
                initial={{ opacity: 0, y: -20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.2, duration: 0.6 }}
-               className="text-center mb-10"
+               className="text-center mb-6"
             >
-               <div className="inline-flex items-center gap-2 mb-4">
+               <div className="inline-flex items-center gap-2 mb-3">
                   <Sparkles className="text-amber-500" size={24} />
                   <h1 className="font-serif text-5xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
                      MURAQQA
@@ -345,7 +345,7 @@ export const Auth: React.FC = () => {
                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-transparent pointer-events-none"></div>
 
                {/* Modern Tab Switching */}
-               <div className="relative mb-10">
+               <div className="relative mb-6">
                   <div className="flex gap-2 p-1 bg-stone-950/50 rounded-full border border-white/5">
                      <button
                         onClick={() => {
@@ -386,7 +386,7 @@ export const Auth: React.FC = () => {
                   </div>
                </div>
 
-               <form onSubmit={handleSubmit} className="space-y-6 relative">
+               <form onSubmit={handleSubmit} className="space-y-4 relative">
                   <AnimatePresence mode="wait">
                      {!isLogin && (
                         <motion.div
@@ -395,7 +395,7 @@ export const Auth: React.FC = () => {
                            animate={{ opacity: 1, height: "auto" }}
                            exit={{ opacity: 0, height: 0 }}
                            transition={{ duration: 0.3 }}
-                           className="space-y-6"
+                           className="space-y-4"
                         >
                            {/* Role Selection */}
                            <div className="grid grid-cols-2 gap-3">
@@ -448,7 +448,7 @@ export const Auth: React.FC = () => {
                            </div>
 
                            {/* Registration Fields */}
-                           <div className="space-y-5">
+                           <div className="space-y-3">
                               <motion.div
                                  initial={{ x: -20, opacity: 0 }}
                                  animate={{ x: 0, opacity: 1 }}
@@ -530,7 +530,7 @@ export const Auth: React.FC = () => {
                   </AnimatePresence>
 
                   {/* Email & Password Fields */}
-                  <div className="space-y-5">
+                  <div className="space-y-3">
                      <motion.div
                         initial={{ x: -20, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
@@ -654,7 +654,7 @@ export const Auth: React.FC = () => {
                      initial={{ opacity: 0, y: 20 }}
                      animate={{ opacity: 1, y: 0 }}
                      transition={{ delay: isLogin ? 0.25 : 0.35 }}
-                     className="pt-2"
+                     className="pt-1"
                   >
                      <motion.button
                         whileHover={{ scale: loading ? 1 : 1.02 }}
@@ -687,7 +687,7 @@ export const Auth: React.FC = () => {
                      initial={{ opacity: 0 }}
                      animate={{ opacity: 1 }}
                      transition={{ delay: 0.4 }}
-                     className="pt-6 space-y-4"
+                     className="pt-4 space-y-3"
                   >
                      <div className="relative">
                         <div className="absolute inset-0 flex items-center">
@@ -731,7 +731,7 @@ export const Auth: React.FC = () => {
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
                transition={{ delay: 0.5 }}
-               className="text-center mt-8 space-y-2"
+               className="text-center mt-6 space-y-2"
             >
                <p className="text-stone-600 text-xs flex items-center justify-center gap-2">
                   {recaptchaEnabled ? (

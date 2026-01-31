@@ -187,9 +187,9 @@ export const ArtistDetail: React.FC = () => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="mb-12"
+                    className="mb-8"
                 >
-                    <div className="flex flex-col md:flex-row gap-8 items-start md:items-center border-b border-stone-800/50 pb-10">
+                    <div className="flex flex-col md:flex-row gap-6 items-start md:items-center border-b border-stone-800/50 pb-8">
                         {/* Profile Image */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
@@ -262,7 +262,7 @@ export const ArtistDetail: React.FC = () => {
                 </motion.div>
 
                 {/* Content Grid - Compact */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left: About - Compact */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -271,7 +271,7 @@ export const ArtistDetail: React.FC = () => {
                         className="lg:col-span-4"
                     >
                         <div className="bg-stone-900/30 backdrop-blur-sm border border-white/5 p-6 rounded-2xl hover:border-amber-500/30 transition-all duration-500 sticky top-28">
-                            <h3 className="font-serif text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-white mb-4 tracking-wide">About</h3>
+                            <h3 className="font-serif text-xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-white mb-3 tracking-wide">About</h3>
                             <div className="text-stone-400 text-sm leading-relaxed space-y-4">
                                 {artist.bio ? (
                                     artist.bio.split('\n').map((paragraph, i) => (

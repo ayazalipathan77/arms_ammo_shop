@@ -68,7 +68,7 @@ export const ArtworkDetail: React.FC = () => {
    };
 
    return (
-      <div className="min-h-screen bg-stone-950 pb-20">
+      <div className="min-h-screen bg-stone-950 pb-12">
          {showAR && <ARView artwork={artwork} onClose={() => setShowAR(false)} />}
 
          {/* Fullscreen Zoom Lightbox */}
@@ -123,7 +123,7 @@ export const ArtworkDetail: React.FC = () => {
             </div>
 
             {/* Right: Details Panel */}
-            <div className="lg:col-span-4 bg-stone-950 px-8 md:px-12 py-12 lg:py-24 space-y-12 overflow-y-auto">
+            <div className="lg:col-span-4 bg-stone-950 px-8 md:px-12 py-10 lg:py-16 space-y-8 overflow-y-auto">
 
                {/* Header */}
                <div className="space-y-4">
@@ -148,7 +148,7 @@ export const ArtworkDetail: React.FC = () => {
                </div>
 
                {/* Commerce Section */}
-               <div className="space-y-8 pt-8 border-t border-stone-800">
+               <div className="space-y-5 pt-6 border-t border-stone-800">
 
                   {/* Type Selection */}
                   <div className="flex items-center gap-1 bg-stone-900 p-1 rounded-lg w-fit">
@@ -184,7 +184,7 @@ export const ArtworkDetail: React.FC = () => {
                   )}
 
                   {/* Price & Add */}
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-3">
                      <p className="font-serif text-4xl text-white">{convertPrice(finalPricePKR)}</p>
                      {artwork.inStock ? (
                         <button
@@ -198,14 +198,14 @@ export const ArtworkDetail: React.FC = () => {
                            Sold Out
                         </button>
                      )}
-                     <p className="text-center text-[10px] text-stone-500 uppercase tracking-widest mt-2">
+                     <p className="text-center text-[10px] text-stone-500 uppercase tracking-widest mt-1">
                         Free insured shipping worldwide
                      </p>
                   </div>
                </div>
 
                {/* Collapsible Meta */}
-               <div className="space-y-4 pt-8 border-t border-stone-800">
+               <div className="space-y-3 pt-6 border-t border-stone-800">
                   <div className="flex items-center gap-3 text-stone-400 text-xs uppercase tracking-widest">
                      <ShieldCheck size={14} /> Certificate of Authenticity Included
                   </div>
@@ -218,10 +218,10 @@ export const ArtworkDetail: React.FC = () => {
 
          {/* More from this Artist */}
          {relatedArtworks.length > 0 && (
-            <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-24 border-t border-stone-800 mt-12 bg-stone-950">
-               <div className="flex items-end justify-between mb-12">
+            <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-16 border-t border-stone-800 mt-8 bg-stone-950">
+               <div className="flex items-end justify-between mb-8">
                   <div>
-                     <p className="text-amber-500 text-xs uppercase tracking-[0.3em] mb-3">Collection</p>
+                     <p className="text-amber-500 text-xs uppercase tracking-[0.3em] mb-2">Collection</p>
                      <h3 className="font-serif text-3xl text-white">More from <span className="italic text-amber-500">{artwork.artistName}</span></h3>
                   </div>
                   <Link to={`/artists/${artwork.artistId}`} className="text-stone-500 hover:text-amber-500 text-xs uppercase tracking-[0.2em] transition-colors hidden md:block">
@@ -231,7 +231,7 @@ export const ArtworkDetail: React.FC = () => {
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   {relatedArtworks.map((art) => (
                      <Link key={art.id} to={`/artwork/${art.id}`} className="group block">
-                        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-900 to-neutral-950 rounded-2xl border border-stone-800/30 shadow-2xl group-hover:shadow-amber-900/20 transition-all duration-500 mb-6">
+                        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-900 to-neutral-950 rounded-2xl border border-stone-800/30 shadow-2xl group-hover:shadow-amber-900/20 transition-all duration-500 mb-4">
                            <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
                            {!art.inStock && (
                               <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center rounded-2xl">

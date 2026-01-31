@@ -46,15 +46,15 @@ export const Exhibitions: React.FC = () => {
                initial={{ opacity: 0, y: 30 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ duration: 0.6 }}
-               className="mb-16"
+               className="mb-10"
             >
-               <div className="flex flex-col md:flex-row justify-between items-center gap-8 border-b border-stone-800/50 pb-12">
+               <div className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-stone-800/50 pb-8">
                   <div>
                      <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.2, duration: 0.6 }}
-                        className="flex items-center gap-3 mb-4"
+                        className="flex items-center gap-3 mb-2"
                      >
                         <Sparkles className="text-amber-500" size={32} />
                         <h1 className="font-serif text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
@@ -107,7 +107,7 @@ export const Exhibitions: React.FC = () => {
                   <p className="text-stone-600 text-sm">Check back soon for new exhibitions.</p>
                </motion.div>
             ) : (
-               <div className="space-y-32">
+               <div className="space-y-20">
                   <AnimatePresence mode="wait">
                      {filteredExhibitions.map((ex, idx) => (
                         <motion.div
@@ -122,7 +122,7 @@ export const Exhibitions: React.FC = () => {
                            }}
                            className={`flex flex-col ${
                               idx % 2 === 1 ? 'lg:flex-row-reverse' : 'lg:flex-row'
-                           } gap-16 items-center group`}
+                           } gap-10 items-center group`}
                         >
                            {/* Image Section */}
                            <motion.div
@@ -172,7 +172,7 @@ export const Exhibitions: React.FC = () => {
                            </motion.div>
 
                            {/* Content Section */}
-                           <div className="flex-1 space-y-8">
+                           <div className="flex-1 space-y-5">
                               {/* Virtual Badge */}
                               {ex.isVirtual && (
                                  <motion.span
@@ -211,7 +211,7 @@ export const Exhibitions: React.FC = () => {
                                  initial={{ opacity: 0, y: 10 }}
                                  animate={{ opacity: 1, y: 0 }}
                                  transition={{ delay: idx * 0.15 + 0.4 }}
-                                 className="flex flex-wrap gap-6 text-stone-500 text-sm pt-4 border-t border-stone-800/50"
+                                 className="flex flex-wrap gap-6 text-stone-500 text-sm pt-3 border-t border-stone-800/50"
                               >
                                  <span className="flex items-center gap-2">
                                     <Calendar size={16} className="text-amber-500/70" />
@@ -231,7 +231,7 @@ export const Exhibitions: React.FC = () => {
                                  initial={{ opacity: 0 }}
                                  animate={{ opacity: 1 }}
                                  transition={{ delay: idx * 0.15 + 0.5 }}
-                                 className="pt-4"
+                                 className="pt-2"
                               >
                                  <motion.button
                                     whileHover={{ gap: "16px" }}

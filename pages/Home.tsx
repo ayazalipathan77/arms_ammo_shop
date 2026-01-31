@@ -225,7 +225,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
 
       {/* Featured Exhibition (Editorial Layout) */}
       {landingPageContent?.featuredExhibition?.enabled && (
-        <section className="py-32 px-6 md:px-12 max-w-screen-2xl mx-auto relative bg-gradient-to-b from-stone-950 via-zinc-950 to-stone-950">
+        <section className="py-20 px-6 md:px-12 max-w-screen-2xl mx-auto relative bg-gradient-to-b from-stone-950 via-zinc-950 to-stone-950">
           {/* Subtle Background Accent */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -235,14 +235,14 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-amber-500/20 rounded-full blur-3xl pointer-events-none"
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center relative z-10">
             {/* Content Section */}
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
               viewport={{ once: true }}
-              className="order-2 md:order-1 space-y-8"
+              className="order-2 md:order-1 space-y-5"
             >
               {/* Decorative Line */}
               <motion.span
@@ -250,7 +250,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
                 whileInView={{ width: "48px" }}
                 transition={{ duration: 0.6, delay: 0.2 }}
                 viewport={{ once: true }}
-                className="inline-block h-px bg-gradient-to-r from-amber-500 to-transparent mb-4"
+                className="inline-block h-px bg-gradient-to-r from-amber-500 to-transparent mb-2"
               />
 
               {/* Badge */}
@@ -320,7 +320,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
                 viewport={{ once: true }}
-                className="pt-8"
+                className="pt-4"
               >
                 <Link
                   to="/exhibitions"
@@ -367,10 +367,10 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
 
       {/* Curated Collections (Asymmetric Grid) */}
       {landingPageContent?.curatedCollections?.enabled && curatedCollections.length > 0 && (
-        <section className="py-24 bg-gradient-to-br from-zinc-900 via-stone-900 to-neutral-950 relative overflow-hidden">
+        <section className="py-16 bg-gradient-to-br from-zinc-900 via-stone-900 to-neutral-950 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/3 via-transparent to-transparent"></div>
           <div className="max-w-screen-2xl mx-auto px-6 md:px-12">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
               <div>
                 <h3 className="font-serif text-3xl text-white mb-2">Curated Collections</h3>
                 <p className="text-stone-500">Handpicked selections by our curators.</p>
@@ -410,13 +410,13 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
 
       {/* Curator's Picks - Horizontal Carousel */}
       {landingPageContent?.topPaintings?.enabled && topPaintings.length > 0 && (
-        <section className="py-32 bg-gradient-to-b from-stone-950 via-stone-900/50 to-stone-950 border-t border-stone-800/50 relative overflow-hidden">
+        <section className="py-20 bg-gradient-to-b from-stone-950 via-stone-900/50 to-stone-950 border-t border-stone-800/50 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-900/5 via-transparent to-transparent"></div>
 
           <div className="relative z-10 px-6 md:px-12 max-w-screen-2xl mx-auto">
-            <div className="flex items-center justify-between mb-16">
+            <div className="flex items-center justify-between mb-10">
               <div>
-                <h2 className="font-serif text-4xl md:text-5xl text-white mb-2">Curator's Picks</h2>
+                <h2 className="font-serif text-4xl md:text-5xl text-white mb-1">Curator's Picks</h2>
                 <p className="text-stone-500 uppercase tracking-widest text-xs">Handpicked Masterpieces</p>
               </div>
               <div className="flex gap-3">
@@ -460,7 +460,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
                   to={`/artwork/${artwork.id}`}
                   className="group flex-shrink-0 w-80"
                 >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-stone-900 rounded-2xl mb-4 border border-stone-800/50 shadow-2xl">
+                  <div className="relative aspect-[3/4] overflow-hidden bg-stone-900 rounded-2xl mb-3 border border-stone-800/50 shadow-2xl">
                     <img
                       src={artwork.imageUrl}
                       alt={artwork.title}
@@ -476,7 +476,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
                     </div>
                   </div>
                   <div className="px-2">
-                    <h3 className="font-serif text-xl text-white mb-2 group-hover:text-amber-500 transition-colors line-clamp-1">
+                    <h3 className="font-serif text-xl text-white mb-1 group-hover:text-amber-500 transition-colors line-clamp-1">
                       {artwork.title}
                     </h3>
                     <p className="text-stone-500 text-sm mb-1">{artwork.artistName}</p>
@@ -491,34 +491,34 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
 
       {/* Editorial / Latest Essays */}
       {landingPageContent?.muraqQaJournal?.enabled && featuredConversations.length > 0 && (
-        <section className="py-32 px-6 md:px-12 max-w-screen-2xl mx-auto bg-gradient-to-b from-stone-950 via-neutral-900 to-stone-950">
-          <div className="text-center mb-20">
-            <h2 className="font-serif text-4xl text-white mb-4">Muraqqa Journal</h2>
+        <section className="py-20 px-6 md:px-12 max-w-screen-2xl mx-auto bg-gradient-to-b from-stone-950 via-neutral-900 to-stone-950">
+          <div className="text-center mb-10">
+            <h2 className="font-serif text-4xl text-white mb-2">Muraqqa Journal</h2>
             <p className="text-stone-500 uppercase tracking-widest text-xs">Stories, Interviews, and Critical Essays</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-stone-800/50 pt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-stone-800/50 pt-8">
             {featuredConversations.map((conv) => (
               <Link key={conv.id} to="/conversations" className="group cursor-pointer">
-                <div className="aspect-[3/2] overflow-hidden mb-6 bg-stone-900 rounded-xl border border-stone-800/50 shadow-xl group-hover:shadow-amber-900/20 transition-shadow duration-500">
+                <div className="aspect-[3/2] overflow-hidden mb-4 bg-stone-900 rounded-xl border border-stone-800/50 shadow-xl group-hover:shadow-amber-900/20 transition-shadow duration-500">
                   <img
                     src={conv.thumbnailUrl || `https://picsum.photos/seed/${conv.id}/800/600`}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                     alt={conv.title}
                   />
                 </div>
-                <p className={`text-xs uppercase tracking-widest mb-3 ${
+                <p className={`text-xs uppercase tracking-widest mb-2 ${
                   conv.category === 'WATCH' ? 'text-blue-500' :
                   conv.category === 'LISTEN' ? 'text-purple-500' :
                   'text-green-500'
                 }`}>
                   {conv.category}
                 </p>
-                <h3 className="font-serif text-2xl text-white mb-4 group-hover:underline decoration-stone-600 underline-offset-4">
+                <h3 className="font-serif text-2xl text-white mb-2 group-hover:underline decoration-stone-600 underline-offset-4">
                   {conv.title}
                 </h3>
                 {conv.subtitle && (
-                  <p className="text-stone-500 text-sm leading-relaxed mb-6">
+                  <p className="text-stone-500 text-sm leading-relaxed mb-3">
                     {conv.subtitle}
                   </p>
                 )}
