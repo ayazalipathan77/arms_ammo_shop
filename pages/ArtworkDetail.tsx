@@ -20,6 +20,7 @@ export const ArtworkDetail: React.FC = () => {
 
    const [showAR, setShowAR] = useState(false);
    const [showProvenance, setShowProvenance] = useState(false);
+   const [showZoom, setShowZoom] = useState(false);
    const [isSaved, setIsSaved] = useState(false);
 
    // Print Logic
@@ -51,7 +52,7 @@ export const ArtworkDetail: React.FC = () => {
    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-stone-950"><Loader2 className="w-8 h-8 text-amber-500 animate-spin" /></div>;
    if (error || !artwork) return <div className="min-h-screen flex items-center justify-center bg-stone-950 text-white">{error || 'Artwork not found'}</div>;
 
-   const relatedArtworks = artworks.filter(art => art.id !== id && (art.category === artwork.category || art.artistName === artwork.artistName)).slice(0, 3);
+   const relatedArtworks = artworks.filter(art => art.id !== id && art.artistName === artwork.artistName).slice(0, 4);
 
    const finalPricePKR = purchaseType === 'ORIGINAL' ? artwork.price :
       (selectedPrintSize === 'A4' ? artwork.price * 0.05 : selectedPrintSize === 'A3' ? artwork.price * 0.08 : artwork.price * 0.15);
@@ -69,6 +70,28 @@ export const ArtworkDetail: React.FC = () => {
    return (
       <div className="min-h-screen bg-stone-950 pb-20">
          {showAR && <ARView artwork={artwork} onClose={() => setShowAR(false)} />}
+
+         {/* Fullscreen Zoom Lightbox */}
+         {showZoom && (
+            <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center" onClick={() => setShowZoom(false)}>
+               <button
+                  onClick={() => setShowZoom(false)}
+                  className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors z-10"
+               >
+                  <X size={28} />
+               </button>
+               <img
+                  src={artwork.imageUrl}
+                  alt={artwork.title}
+                  className="max-w-[95vw] max-h-[95vh] object-contain cursor-zoom-out"
+                  onClick={(e) => { e.stopPropagation(); setShowZoom(false); }}
+               />
+               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
+                  <p className="font-serif text-lg text-white/80">{artwork.title}</p>
+                  <p className="text-stone-500 text-xs uppercase tracking-widest mt-1">{artwork.artistName} • {artwork.year}</p>
+               </div>
+            </div>
+         )}
 
          {/* Navigation Bar */}
          <div className="fixed top-24 left-0 w-full z-40 px-6 md:px-12 pointer-events-none">
@@ -92,7 +115,7 @@ export const ArtworkDetail: React.FC = () => {
                      <button onClick={() => setShowAR(true)} className="bg-stone-950/80 backdrop-blur text-white p-3 hover:text-amber-500 transition-colors rounded-full" title="View in AR">
                         <Box size={20} />
                      </button>
-                     <button className="bg-stone-950/80 backdrop-blur text-white p-3 hover:text-amber-500 transition-colors rounded-full" title="Zoom">
+                     <button onClick={() => setShowZoom(true)} className="bg-stone-950/80 backdrop-blur text-white p-3 hover:text-amber-500 transition-colors rounded-full" title="Zoom">
                         <Maximize2 size={20} />
                      </button>
                   </div>
@@ -193,21 +216,45 @@ export const ArtworkDetail: React.FC = () => {
             </div>
          </div>
 
-         {/* Related Works (Below fold) */}
+         {/* More from this Artist */}
          {relatedArtworks.length > 0 && (
             <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-24 border-t border-stone-800 mt-12 bg-stone-950">
-               <h3 className="font-serif text-3xl text-white mb-12">More from this Series</h3>
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+               <div className="flex items-end justify-between mb-12">
+                  <div>
+                     <p className="text-amber-500 text-xs uppercase tracking-[0.3em] mb-3">Collection</p>
+                     <h3 className="font-serif text-3xl text-white">More from <span className="italic text-amber-500">{artwork.artistName}</span></h3>
+                  </div>
+                  <Link to={`/artists/${artwork.artistId}`} className="text-stone-500 hover:text-amber-500 text-xs uppercase tracking-[0.2em] transition-colors hidden md:block">
+                     View All Works →
+                  </Link>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   {relatedArtworks.map((art) => (
                      <Link key={art.id} to={`/artwork/${art.id}`} className="group block">
-                        <div className="aspect-[3/4] overflow-hidden bg-stone-900 mb-4">
-                           <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100" />
+                        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-900 to-neutral-950 rounded-2xl border border-stone-800/30 shadow-2xl group-hover:shadow-amber-900/20 transition-all duration-500 mb-6">
+                           <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                           {!art.inStock && (
+                              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center rounded-2xl">
+                                 <span className="text-white border border-white px-4 py-2 rounded-full uppercase tracking-[0.3em] text-[10px] font-medium">Sold</span>
+                              </div>
+                           )}
+                           <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500 rounded-b-2xl">
+                              <span className="text-amber-500 text-xs uppercase tracking-[0.3em] font-medium">View Details</span>
+                           </div>
                         </div>
-                        <h4 className="font-serif text-lg text-white group-hover:text-amber-500 transition-colors">{art.title}</h4>
-                        <p className="text-stone-500 text-xs uppercase tracking-widest">{convertPrice(art.price)}</p>
+                        <div className="space-y-2 px-2">
+                           <h4 className="font-serif text-lg text-white group-hover:text-amber-500 transition-colors truncate tracking-wide">{art.title}</h4>
+                           <div className="flex justify-between items-center pt-2 border-t border-stone-800/30">
+                              <span className="text-amber-500/80 text-sm font-medium">{convertPrice(art.price)}</span>
+                              <span className="text-stone-600 text-[10px] uppercase tracking-wider">{art.year}</span>
+                           </div>
+                        </div>
                      </Link>
                   ))}
                </div>
+               <Link to={`/artists/${artwork.artistId}`} className="block text-center text-stone-500 hover:text-amber-500 text-xs uppercase tracking-[0.2em] transition-colors mt-8 md:hidden">
+                  View All Works →
+               </Link>
             </div>
          )}
       </div>
