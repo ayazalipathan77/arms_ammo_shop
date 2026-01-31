@@ -73,7 +73,7 @@ export const ArtworkDetail: React.FC = () => {
 
          {/* Fullscreen Zoom Lightbox */}
          {showZoom && (
-            <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center" onClick={() => setShowZoom(false)}>
+            <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center" onClick={() => setShowZoom(false)}>
                <button
                   onClick={() => setShowZoom(false)}
                   className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors z-10"
