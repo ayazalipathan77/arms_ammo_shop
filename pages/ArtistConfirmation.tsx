@@ -15,7 +15,7 @@ export const ArtistConfirmation: React.FC = () => {
       return (
          <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative overflow-hidden">
             <div className="absolute inset-0 bg-[url('/header_bg.jpg')] bg-cover bg-center"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-stone-950/95 via-stone-900/90 to-stone-950/95 backdrop-blur-sm"></div>
+            <div className="absolute inset-0 bg-stone-900/70 backdrop-blur-sm"></div>
 
             <div className="relative z-10 text-center">
                <p className="text-stone-400">Invalid confirmation link</p>
@@ -30,7 +30,7 @@ export const ArtistConfirmation: React.FC = () => {
    return (
       <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative overflow-hidden">
          <div className="absolute inset-0 bg-[url('/header_bg.jpg')] bg-cover bg-center"></div>
-         <div className="absolute inset-0 bg-gradient-to-br from-stone-950/95 via-stone-900/90 to-stone-950/95 backdrop-blur-sm"></div>
+         <div className="absolute inset-0 bg-stone-900/70 backdrop-blur-sm"></div>
 
          {/* Animated Gradient Orbs */}
          <motion.div

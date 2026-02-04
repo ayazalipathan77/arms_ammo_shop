@@ -21,6 +21,8 @@ import { VerifyEmail } from './pages/VerifyEmail';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { ArtistConfirmation } from './pages/ArtistConfirmation';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { TermsOfService } from './pages/TermsOfService';
 import { AICurator } from './components/AICurator';
 import { Currency } from './types';
 import { RATES } from './constants';
@@ -220,10 +222,10 @@ const Footer: React.FC = () => {
                   <p className="text-amber-500/70">Sun: By Appointment</p>
                 </div>
               </div>
-              <div className="pt-4">
+              <div className="pt-4 mt-2 border-t border-stone-800/30">
                 <a
                   href="/#/contact"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-stone-950 text-xs uppercase tracking-widest font-bold rounded-full transition-all duration-300 shadow-lg shadow-amber-900/20 hover:shadow-amber-800/30"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-stone-950 text-xs uppercase tracking-widest font-bold rounded-full transition-all duration-300 shadow-lg shadow-amber-900/20 hover:shadow-amber-800/30 w-full justify-center"
                 >
                   Contact Us
                   <span>→</span>
@@ -246,11 +248,11 @@ const Footer: React.FC = () => {
             © 2024 <span className="text-amber-500/70">Muraqqa Gallery</span>. All rights reserved.
           </p>
           <div className="flex items-center gap-8 text-stone-600 text-xs">
-            <a href="#" className="hover:text-amber-400 transition-colors duration-300">Privacy Policy</a>
+            <a href="/#/privacy-policy" className="hover:text-amber-400 transition-colors duration-300">Privacy Policy</a>
             <span className="w-1 h-1 bg-stone-700 rounded-full"></span>
-            <a href="#" className="hover:text-amber-400 transition-colors duration-300">Terms of Service</a>
+            <a href="/#/terms-of-service" className="hover:text-amber-400 transition-colors duration-300">Terms of Service</a>
             <span className="w-1 h-1 bg-stone-700 rounded-full"></span>
-            <a href="#" className="hover:text-amber-400 transition-colors duration-300">Shipping</a>
+            <a href="/#/contact" className="hover:text-amber-400 transition-colors duration-300">Shipping</a>
           </div>
         </div>
       </div>
@@ -299,6 +301,8 @@ const App: React.FC = () => {
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/artist-confirmation" element={<ArtistConfirmation />} />
+                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                      <Route path="/terms-of-service" element={<TermsOfService />} />
                       <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
                       <Route path="/artist-dashboard" element={<ProtectedRoute requiredRole="ARTIST"><ArtistDashboard /></ProtectedRoute>} />
                       <Route path="/artist/profile" element={<ProtectedRoute requiredRole="ARTIST"><ArtistProfile /></ProtectedRoute>} />

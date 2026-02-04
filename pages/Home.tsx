@@ -145,7 +145,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
             className="absolute inset-0 z-0"
           >
             {/* Dark grey overlay filter */}
-            <div className="absolute inset-0 bg-stone-900/60 z-10" />
+            <div className="absolute inset-0 bg-stone-900/70 z-10" />
 
             {/* Animated Background Slideshow */}
             {hasMultipleBackgrounds ? (
@@ -166,7 +166,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
                       <img
                         src={bgImage}
                         alt={`Background ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover grayscale brightness-50"
                       />
                     </motion.div>
                   )
@@ -176,7 +176,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
               <img
                 src={hero.backgroundImage}
                 alt="Hero Art"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover grayscale brightness-50"
               />
             )}
           </motion.div>

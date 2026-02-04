@@ -89,7 +89,7 @@ export const VerifyEmail: React.FC = () => {
         <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative overflow-hidden">
             {/* Background */}
             <div className="absolute inset-0 bg-[url('/header_bg.jpg')] bg-cover bg-center"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-stone-950/95 via-stone-900/90 to-stone-950/95 backdrop-blur-sm"></div>
+            <div className="absolute inset-0 bg-stone-900/70 backdrop-blur-sm"></div>
 
             {/* Animated Orbs */}
             <motion.div
