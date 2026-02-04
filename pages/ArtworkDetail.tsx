@@ -25,7 +25,8 @@ export const ArtworkDetail: React.FC = () => {
 
    // Print Logic
    const [purchaseType, setPurchaseType] = useState<'ORIGINAL' | 'PRINT'>('ORIGINAL');
-   const [selectedPrintSize, setSelectedPrintSize] = useState<'A4' | 'A3' | 'CANVAS_24x36'>('A3');
+   const [selectedPrintSize, setSelectedPrintSize] = useState<string>('');
+   const [printQuantity, setPrintQuantity] = useState(1);
 
    // Fetch artwork from API
    useEffect(() => {
@@ -49,20 +50,40 @@ export const ArtworkDetail: React.FC = () => {
       window.scrollTo(0, 0);
    }, [id]);
 
+   // Derive print availability
+   const hasPrints = !!(artwork?.printOptions?.enabled && artwork.printOptions.sizes.length > 0);
+   const printSizes = artwork?.printOptions?.sizes || [];
+
+   // Auto-select first print size when artwork loads
+   useEffect(() => {
+      if (hasPrints && printSizes.length > 0 && !selectedPrintSize) {
+         setSelectedPrintSize(printSizes[0].name);
+      }
+   }, [hasPrints, printSizes, selectedPrintSize]);
+
+   // Reset to ORIGINAL if prints not available
+   useEffect(() => {
+      if (!hasPrints && purchaseType === 'PRINT') {
+         setPurchaseType('ORIGINAL');
+      }
+   }, [hasPrints, purchaseType]);
+
    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-stone-950"><Loader2 className="w-8 h-8 text-amber-500 animate-spin" /></div>;
    if (error || !artwork) return <div className="min-h-screen flex items-center justify-center bg-stone-950 text-white">{error || 'Artwork not found'}</div>;
 
    const relatedArtworks = artworks.filter(art => art.id !== id && art.artistName === artwork.artistName).slice(0, 4);
 
-   const finalPricePKR = purchaseType === 'ORIGINAL' ? artwork.price :
-      (selectedPrintSize === 'A4' ? artwork.price * 0.05 : selectedPrintSize === 'A3' ? artwork.price * 0.08 : artwork.price * 0.15);
+   // Calculate price based on purchase type
+   const selectedSizeOption = printSizes.find(s => s.name === selectedPrintSize);
+   const printUnitPrice = selectedSizeOption?.price || 0;
+   const finalPricePKR = purchaseType === 'ORIGINAL' ? artwork.price : printUnitPrice * printQuantity;
 
    const handleAddToCart = () => {
       addToCart({
          ...artwork,
-         quantity: 1,
+         quantity: purchaseType === 'PRINT' ? printQuantity : 1,
          selectedPrintSize: purchaseType === 'PRINT' ? selectedPrintSize : 'ORIGINAL',
-         finalPrice: finalPricePKR
+         finalPrice: purchaseType === 'PRINT' ? printUnitPrice * printQuantity : artwork.price,
       });
       navigate('/cart');
    };
@@ -150,42 +171,91 @@ export const ArtworkDetail: React.FC = () => {
                {/* Commerce Section */}
                <div className="space-y-5 pt-6 border-t border-stone-800">
 
-                  {/* Type Selection */}
-                  <div className="flex items-center gap-1 bg-stone-900 p-1 rounded-lg w-fit">
-                     <button
-                        onClick={() => setPurchaseType('ORIGINAL')}
-                        className={`px-6 py-2 text-xs uppercase tracking-widest rounded-md transition-all ${purchaseType === 'ORIGINAL' ? 'bg-stone-800 text-white shadow' : 'text-stone-500 hover:text-stone-300'}`}
-                     >
-                        Original
-                     </button>
-                     <button
-                        onClick={() => setPurchaseType('PRINT')}
-                        className={`px-6 py-2 text-xs uppercase tracking-widest rounded-md transition-all ${purchaseType === 'PRINT' ? 'bg-stone-800 text-white shadow' : 'text-stone-500 hover:text-stone-300'}`}
-                     >
-                        Print
-                     </button>
-                  </div>
+                  {/* Type Selection - Only show tabs if prints available */}
+                  {hasPrints && (
+                     <div className="flex items-center gap-1 bg-stone-900 p-1 rounded-lg w-fit">
+                        <button
+                           onClick={() => { setPurchaseType('ORIGINAL'); setPrintQuantity(1); }}
+                           className={`px-6 py-2 text-xs uppercase tracking-widest rounded-md transition-all ${purchaseType === 'ORIGINAL' ? 'bg-stone-800 text-white shadow' : 'text-stone-500 hover:text-stone-300'}`}
+                        >
+                           Original
+                        </button>
+                        <button
+                           onClick={() => setPurchaseType('PRINT')}
+                           className={`px-6 py-2 text-xs uppercase tracking-widest rounded-md transition-all ${purchaseType === 'PRINT' ? 'bg-stone-800 text-white shadow' : 'text-stone-500 hover:text-stone-300'}`}
+                        >
+                           Print
+                        </button>
+                     </div>
+                  )}
 
-                  {purchaseType === 'PRINT' && (
-                     <div className="space-y-3">
-                        <span className="text-stone-500 text-xs uppercase tracking-widest">Select Size</span>
-                        <div className="flex flex-wrap gap-2">
-                           {(['A4', 'A3', 'CANVAS_24x36'] as const).map(size => (
+                  {purchaseType === 'PRINT' && hasPrints && (
+                     <div className="space-y-4">
+                        {/* Fabric Canvas Notice */}
+                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+                           <p className="text-amber-500/90 text-xs leading-relaxed">
+                              Printed on high-end fabric canvas — the same material used for the original painting. Colors may differ slightly from the original artwork.
+                           </p>
+                        </div>
+
+                        {/* Size Selection */}
+                        <div className="space-y-3">
+                           <span className="text-stone-500 text-xs uppercase tracking-widest">Select Size</span>
+                           <div className="flex flex-col gap-2">
+                              {printSizes.map(size => (
+                                 <button
+                                    key={size.name}
+                                    onClick={() => setSelectedPrintSize(size.name)}
+                                    className={`flex items-center justify-between px-4 py-3 border rounded-lg text-xs transition-all ${selectedPrintSize === size.name ? 'border-amber-500 bg-amber-500/5 text-white' : 'border-stone-800 text-stone-500 hover:border-stone-600'}`}
+                                 >
+                                    <div className="flex flex-col items-start gap-0.5">
+                                       <span className="font-medium uppercase tracking-wider">{size.name}</span>
+                                       <span className="text-stone-600 text-[10px]">{size.dimensions}</span>
+                                    </div>
+                                    <span className={`font-medium ${selectedPrintSize === size.name ? 'text-amber-500' : ''}`}>
+                                       {convertPrice(size.price)}
+                                    </span>
+                                 </button>
+                              ))}
+                           </div>
+                        </div>
+
+                        {/* Medium Label */}
+                        <div className="flex items-center gap-2 text-stone-600 text-[10px] uppercase tracking-widest">
+                           <div className="w-2 h-2 rounded-full bg-amber-500/40"></div>
+                           Medium: Fabric Canvas
+                        </div>
+
+                        {/* Quantity Selector */}
+                        <div className="space-y-2">
+                           <span className="text-stone-500 text-xs uppercase tracking-widest">Quantity</span>
+                           <div className="flex items-center gap-3">
                               <button
-                                 key={size}
-                                 onClick={() => setSelectedPrintSize(size)}
-                                 className={`px-4 py-2 border text-xs ${selectedPrintSize === size ? 'border-amber-500 text-amber-500' : 'border-stone-800 text-stone-500 hover:border-stone-600'}`}
+                                 onClick={() => setPrintQuantity(Math.max(1, printQuantity - 1))}
+                                 className="w-10 h-10 border border-stone-800 text-stone-400 hover:border-stone-600 hover:text-white flex items-center justify-center rounded-lg transition-colors text-lg"
                               >
-                                 {size.replace('_', ' ')}
+                                 −
                               </button>
-                           ))}
+                              <span className="text-white text-lg w-8 text-center font-medium">{printQuantity}</span>
+                              <button
+                                 onClick={() => setPrintQuantity(printQuantity + 1)}
+                                 className="w-10 h-10 border border-stone-800 text-stone-400 hover:border-stone-600 hover:text-white flex items-center justify-center rounded-lg transition-colors text-lg"
+                              >
+                                 +
+                              </button>
+                           </div>
                         </div>
                      </div>
                   )}
 
                   {/* Price & Add */}
                   <div className="flex flex-col gap-3">
-                     <p className="font-serif text-4xl text-white">{convertPrice(finalPricePKR)}</p>
+                     <div>
+                        <p className="font-serif text-4xl text-white">{convertPrice(finalPricePKR)}</p>
+                        {purchaseType === 'PRINT' && printQuantity > 1 && selectedSizeOption && (
+                           <p className="text-stone-500 text-xs mt-1">{convertPrice(printUnitPrice)} each × {printQuantity}</p>
+                        )}
+                     </div>
                      {artwork.inStock ? (
                         <button
                            onClick={handleAddToCart}

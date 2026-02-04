@@ -45,7 +45,7 @@ export const InvoiceView: React.FC = () => {
             artistName: item.artwork.artistName || 'Unknown Artist',
             imageUrl: item.artwork.imageUrl,
             finalPrice: item.price,
-            selectedPrintSize: item.type === 'ORIGINAL' ? 'ORIGINAL' : item.printSize || 'A4',
+            selectedPrintSize: item.type === 'ORIGINAL' ? 'ORIGINAL' : item.printSize || undefined,
             dimensions: item.artwork.dimensions || '',
             medium: item.artwork.medium || '',
             quantity: item.quantity
@@ -201,7 +201,7 @@ export const InvoiceView: React.FC = () => {
                        </td>
                        <td className="py-6 text-center">
                           <span className="inline-block px-3 py-1 bg-stone-100 text-stone-600 text-xs rounded-full border border-stone-200">
-                             {item.selectedPrintSize === 'ORIGINAL' ? 'Original' : `Print (${item.selectedPrintSize})`}
+                             {item.selectedPrintSize === 'ORIGINAL' || !item.selectedPrintSize ? 'Original' : `Print: ${item.selectedPrintSize} (Fabric Canvas)`}
                           </span>
                        </td>
                        <td className="py-6 text-right font-mono text-stone-800">

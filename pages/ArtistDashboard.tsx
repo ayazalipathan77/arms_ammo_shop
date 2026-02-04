@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart, Upload, DollarSign, Image as ImageIcon, X, Save, Eye, Edit2, Trash2, MoreHorizontal, CheckCircle } from 'lucide-react';
+import { BarChart, Upload, DollarSign, Image as ImageIcon, X, Save, Eye, Edit2, Trash2, MoreHorizontal, CheckCircle, Plus } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
 import { useCurrency } from '../App';
-import { Artwork } from '../types';
+import { Artwork, PrintSizeOption, PrintOptions } from '../types';
 import { uploadApi, artistApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -40,10 +40,50 @@ export const ArtistDashboard: React.FC = () => {
       category: 'Abstract',
       description: '',
       imageUrl: '',
-      inStock: true
+      inStock: true,
+      printOptions: { enabled: false, sizes: [] },
    };
    const [formData, setFormData] = useState<Partial<Artwork>>(initialFormState);
    const [isUploading, setIsUploading] = useState(false);
+
+   // Print options helpers
+   const printOptions = formData.printOptions || { enabled: false, sizes: [] };
+
+   const setPrintEnabled = (enabled: boolean) => {
+      setFormData(prev => ({
+         ...prev,
+         printOptions: { ...printOptions, enabled },
+      }));
+   };
+
+   const addPrintSize = () => {
+      setFormData(prev => ({
+         ...prev,
+         printOptions: {
+            ...printOptions,
+            sizes: [...printOptions.sizes, { name: '', dimensions: '', price: 0 }],
+         },
+      }));
+   };
+
+   const updatePrintSize = (index: number, field: keyof PrintSizeOption, value: string | number) => {
+      const newSizes = [...printOptions.sizes];
+      newSizes[index] = { ...newSizes[index], [field]: value };
+      setFormData(prev => ({
+         ...prev,
+         printOptions: { ...printOptions, sizes: newSizes },
+      }));
+   };
+
+   const removePrintSize = (index: number) => {
+      setFormData(prev => ({
+         ...prev,
+         printOptions: {
+            ...printOptions,
+            sizes: printOptions.sizes.filter((_, i) => i !== index),
+         },
+      }));
+   };
 
    // Derived Data
    const artistArtworks = artworks.filter(a => artistProfile && a.artistId === artistProfile.id);
@@ -59,7 +99,10 @@ export const ArtistDashboard: React.FC = () => {
 
    const handleOpenEdit = (art: Artwork) => {
       setSelectedArtwork(art);
-      setFormData({ ...art });
+      setFormData({
+         ...art,
+         printOptions: art.printOptions || { enabled: false, sizes: [] },
+      });
       setIsFormOpen(true);
    };
 
@@ -314,6 +357,82 @@ export const ArtistDashboard: React.FC = () => {
                      <div>
                         <label className="block text-xs uppercase text-stone-500 mb-1">Description</label>
                         <textarea required rows={4} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-stone-950 border border-stone-700 p-3 text-white focus:border-amber-500 outline-none" />
+                     </div>
+
+                     {/* Print Options Configuration */}
+                     <div className="border border-stone-800 rounded-lg p-5 space-y-4">
+                        <div className="flex items-center justify-between">
+                           <div>
+                              <h4 className="text-white text-sm font-medium">Print Purchases</h4>
+                              <p className="text-stone-500 text-xs mt-0.5">Allow customers to buy fabric canvas prints of this artwork</p>
+                           </div>
+                           <button
+                              type="button"
+                              onClick={() => setPrintEnabled(!printOptions.enabled)}
+                              className={`relative w-12 h-6 rounded-full transition-colors ${printOptions.enabled ? 'bg-amber-600' : 'bg-stone-700'}`}
+                           >
+                              <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${printOptions.enabled ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                           </button>
+                        </div>
+
+                        {printOptions.enabled && (
+                           <div className="space-y-3 pt-3 border-t border-stone-800">
+                              <div className="flex items-center gap-2 text-stone-500 text-[10px] uppercase tracking-widest mb-2">
+                                 <div className="w-2 h-2 rounded-full bg-amber-500/40"></div>
+                                 Medium: Fabric Canvas (Fixed)
+                              </div>
+
+                              {/* Size Rows */}
+                              {printOptions.sizes.map((size, idx) => (
+                                 <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                                    <div className="col-span-3">
+                                       <input
+                                          type="text"
+                                          placeholder="Size name"
+                                          value={size.name}
+                                          onChange={e => updatePrintSize(idx, 'name', e.target.value)}
+                                          className="w-full bg-stone-950 border border-stone-700 px-3 py-2 text-white text-xs focus:border-amber-500 outline-none"
+                                       />
+                                    </div>
+                                    <div className="col-span-4">
+                                       <input
+                                          type="text"
+                                          placeholder="e.g. 11.7 x 16.5 inches"
+                                          value={size.dimensions}
+                                          onChange={e => updatePrintSize(idx, 'dimensions', e.target.value)}
+                                          className="w-full bg-stone-950 border border-stone-700 px-3 py-2 text-white text-xs focus:border-amber-500 outline-none"
+                                       />
+                                    </div>
+                                    <div className="col-span-4">
+                                       <input
+                                          type="number"
+                                          placeholder="Price (PKR)"
+                                          value={size.price || ''}
+                                          onChange={e => updatePrintSize(idx, 'price', Number(e.target.value))}
+                                          className="w-full bg-stone-950 border border-stone-700 px-3 py-2 text-white text-xs focus:border-amber-500 outline-none"
+                                       />
+                                    </div>
+                                    <div className="col-span-1 flex justify-center">
+                                       <button
+                                          type="button"
+                                          onClick={() => removePrintSize(idx)}
+                                          className="text-stone-600 hover:text-red-500 transition-colors"
+                                       >
+                                          <X size={16} />
+                                       </button>
+                                    </div>
+                                 </div>
+                              ))}
+
+                              <button
+                                 type="button"
+                                 onClick={addPrintSize}
+                                 className="flex items-center gap-2 text-amber-500 hover:text-amber-400 text-xs uppercase tracking-widest transition-colors mt-2"
+                              >
+                                 <Plus size={14} /> Add Print Size
+                              </button>
+                           </div>
+                        )}
                      </div>
 
                      <div className="pt-4 border-t border-stone-800 flex justify-end gap-3">

@@ -52,6 +52,17 @@ export interface Review {
   userId?: string;
 }
 
+export interface PrintSizeOption {
+  name: string;        // e.g., "A3", "24x36"
+  dimensions: string;  // e.g., "11.7 x 16.5 inches"
+  price: number;       // Price in PKR
+}
+
+export interface PrintOptions {
+  enabled: boolean;
+  sizes: PrintSizeOption[];
+}
+
 export interface Artwork {
   id: string;
   title: string;
@@ -69,10 +80,11 @@ export interface Artwork {
   reviews: Review[];
   isAuction?: boolean;
   auctionEndTime?: Date;
+  printOptions?: PrintOptions;
 }
 
 export interface CartItem extends Artwork {
-  selectedPrintSize?: 'ORIGINAL' | 'A4' | 'A3' | 'CANVAS_24x36';
+  selectedPrintSize?: string;
   quantity: number;
   finalPrice: number; // Price after print selection and currency conversion
 }

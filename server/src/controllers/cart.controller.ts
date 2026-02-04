@@ -37,7 +37,18 @@ export const getCart = async (req: Request, res: Response): Promise<void> => {
 
         // Calculate totals
         const subtotal = cartItems.reduce((sum, item) => {
-            return sum + Number(item.artwork.price) * item.quantity;
+            let unitPrice = Number(item.artwork.price);
+
+            // For prints, look up price from artwork's printOptions
+            if (item.type === 'PRINT' && item.printSize && item.artwork.printOptions) {
+                const printOpts = item.artwork.printOptions as { enabled: boolean; sizes: Array<{ name: string; price: number }> };
+                const sizeOption = printOpts.sizes?.find(s => s.name === item.printSize);
+                if (sizeOption) {
+                    unitPrice = sizeOption.price;
+                }
+            }
+
+            return sum + unitPrice * item.quantity;
         }, 0);
 
         res.status(StatusCodes.OK).json({

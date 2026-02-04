@@ -188,12 +188,14 @@ export const createArtwork = async (req: Request, res: Response): Promise<void> 
         // Determine artist name: use provided name, or artist's full name, or fallback
         const artistName = validatedData.artistName || artist?.user.fullName || 'Unknown Artist';
 
+        const { printOptions, ...restData } = validatedData;
         const artwork = await prisma.artwork.create({
             data: {
-                ...validatedData,
+                ...restData,
                 price: new Prisma.Decimal(validatedData.price),
                 artistId: artist?.id || null,
                 artistName,
+                printOptions: printOptions ?? Prisma.DbNull,
             },
             include: {
                 artist: {
@@ -262,9 +264,13 @@ export const updateArtwork = async (req: Request, res: Response): Promise<void> 
         }
 
         // Prepare update data
-        const updateData: Prisma.ArtworkUpdateInput = { ...validatedData };
+        const { printOptions: updatedPrintOptions, ...restUpdateData } = validatedData;
+        const updateData: Prisma.ArtworkUpdateInput = { ...restUpdateData };
         if (validatedData.price !== undefined) {
             updateData.price = new Prisma.Decimal(validatedData.price);
+        }
+        if (updatedPrintOptions !== undefined) {
+            updateData.printOptions = updatedPrintOptions ?? Prisma.DbNull;
         }
 
         const artwork = await prisma.artwork.update({

@@ -105,6 +105,7 @@ model Artwork {
   year             Int
   isAuction        Boolean  @default(false)
   inStock          Boolean  @default(true)
+  printOptions     Json?
   viewCount        Int      @default(0)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

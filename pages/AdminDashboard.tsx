@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
 import { useCurrency } from '../App';
-import { OrderStatus, Artwork, Conversation } from '../types';
+import { OrderStatus, Artwork, Conversation, PrintSizeOption } from '../types';
 import { uploadApi, adminApi, artistApi } from '../services/api';
 
 export const AdminDashboard: React.FC = () => {
@@ -42,7 +42,8 @@ export const AdminDashboard: React.FC = () => {
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
    const [newArtwork, setNewArtwork] = useState<any>({
       title: '', artistId: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
-      year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: ''
+      year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: '',
+      printOptions: { enabled: false, sizes: [] }
    });
 
    // Local State for Conversations
@@ -389,7 +390,8 @@ export const AdminDashboard: React.FC = () => {
          setIsAddModalOpen(false);
          setNewArtwork({
             title: '', artistId: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
-            year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: ''
+            year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: '',
+            printOptions: { enabled: false, sizes: [] }
          });
       } catch (err) {
          alert('Failed to add artwork');
@@ -1218,6 +1220,91 @@ export const AdminDashboard: React.FC = () => {
                         </div>
 
                         <textarea className="w-full bg-stone-950 border border-stone-700 p-2 text-white text-sm" rows={3} placeholder="Artwork Description..." value={newArtwork.description} onChange={e => setNewArtwork({ ...newArtwork, description: e.target.value })} />
+
+                        {/* Print Options Configuration */}
+                        <div className="border border-stone-800 rounded-lg p-4 space-y-3">
+                           <div className="flex items-center justify-between">
+                              <div>
+                                 <h4 className="text-white text-sm font-medium">Print Purchases</h4>
+                                 <p className="text-stone-500 text-[10px] mt-0.5">Enable fabric canvas prints for this artwork</p>
+                              </div>
+                              <button
+                                 type="button"
+                                 onClick={() => setNewArtwork({ ...newArtwork, printOptions: { ...newArtwork.printOptions, enabled: !newArtwork.printOptions?.enabled } })}
+                                 className={`relative w-12 h-6 rounded-full transition-colors ${newArtwork.printOptions?.enabled ? 'bg-amber-600' : 'bg-stone-700'}`}
+                              >
+                                 <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${newArtwork.printOptions?.enabled ? 'translate-x-6' : 'translate-x-0.5'}`} />
+                              </button>
+                           </div>
+
+                           {newArtwork.printOptions?.enabled && (
+                              <div className="space-y-2 pt-3 border-t border-stone-800">
+                                 <div className="flex items-center gap-2 text-stone-500 text-[10px] uppercase tracking-widest">
+                                    <div className="w-2 h-2 rounded-full bg-amber-500/40"></div>
+                                    Medium: Fabric Canvas (Fixed)
+                                 </div>
+
+                                 {(newArtwork.printOptions?.sizes || []).map((size: PrintSizeOption, idx: number) => (
+                                    <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                                       <input
+                                          type="text"
+                                          placeholder="Size"
+                                          value={size.name}
+                                          onChange={e => {
+                                             const sizes = [...(newArtwork.printOptions?.sizes || [])];
+                                             sizes[idx] = { ...sizes[idx], name: e.target.value };
+                                             setNewArtwork({ ...newArtwork, printOptions: { ...newArtwork.printOptions, sizes } });
+                                          }}
+                                          className="col-span-3 bg-stone-950 border border-stone-700 px-2 py-1.5 text-white text-xs focus:border-amber-500 outline-none"
+                                       />
+                                       <input
+                                          type="text"
+                                          placeholder="Dimensions"
+                                          value={size.dimensions}
+                                          onChange={e => {
+                                             const sizes = [...(newArtwork.printOptions?.sizes || [])];
+                                             sizes[idx] = { ...sizes[idx], dimensions: e.target.value };
+                                             setNewArtwork({ ...newArtwork, printOptions: { ...newArtwork.printOptions, sizes } });
+                                          }}
+                                          className="col-span-4 bg-stone-950 border border-stone-700 px-2 py-1.5 text-white text-xs focus:border-amber-500 outline-none"
+                                       />
+                                       <input
+                                          type="number"
+                                          placeholder="Price PKR"
+                                          value={size.price || ''}
+                                          onChange={e => {
+                                             const sizes = [...(newArtwork.printOptions?.sizes || [])];
+                                             sizes[idx] = { ...sizes[idx], price: Number(e.target.value) };
+                                             setNewArtwork({ ...newArtwork, printOptions: { ...newArtwork.printOptions, sizes } });
+                                          }}
+                                          className="col-span-4 bg-stone-950 border border-stone-700 px-2 py-1.5 text-white text-xs focus:border-amber-500 outline-none"
+                                       />
+                                       <button
+                                          type="button"
+                                          onClick={() => {
+                                             const sizes = (newArtwork.printOptions?.sizes || []).filter((_: any, i: number) => i !== idx);
+                                             setNewArtwork({ ...newArtwork, printOptions: { ...newArtwork.printOptions, sizes } });
+                                          }}
+                                          className="col-span-1 text-stone-600 hover:text-red-500 transition-colors flex justify-center"
+                                       >
+                                          <X size={14} />
+                                       </button>
+                                    </div>
+                                 ))}
+
+                                 <button
+                                    type="button"
+                                    onClick={() => {
+                                       const sizes = [...(newArtwork.printOptions?.sizes || []), { name: '', dimensions: '', price: 0 }];
+                                       setNewArtwork({ ...newArtwork, printOptions: { ...newArtwork.printOptions, sizes } });
+                                    }}
+                                    className="flex items-center gap-1 text-amber-500 hover:text-amber-400 text-xs uppercase tracking-widest transition-colors"
+                                 >
+                                    <Plus size={12} /> Add Print Size
+                                 </button>
+                              </div>
+                           )}
+                        </div>
 
                         <div className="flex gap-2">
                            <button onClick={handleAddArtwork} className="flex-1 bg-amber-600 py-2 text-white">Save</button>

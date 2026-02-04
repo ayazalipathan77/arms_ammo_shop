@@ -1,5 +1,16 @@
 import { z } from 'zod';
 
+const printSizeOptionSchema = z.object({
+    name: z.string().min(1, 'Size name is required').max(50),
+    dimensions: z.string().min(1, 'Dimensions are required').max(100),
+    price: z.number().positive('Price must be positive'),
+});
+
+const printOptionsSchema = z.object({
+    enabled: z.boolean(),
+    sizes: z.array(printSizeOptionSchema).default([]),
+}).optional().nullable();
+
 export const createArtworkSchema = z.object({
     title: z.string().min(1, 'Title is required').max(255),
     artistName: z.string().optional(),
@@ -13,6 +24,7 @@ export const createArtworkSchema = z.object({
     year: z.number().int().min(1000).max(new Date().getFullYear()),
     isAuction: z.boolean().default(false),
     inStock: z.boolean().default(true),
+    printOptions: printOptionsSchema,
 });
 
 export const updateArtworkSchema = z.object({
@@ -27,6 +39,7 @@ export const updateArtworkSchema = z.object({
     year: z.number().int().min(1000).max(new Date().getFullYear()).optional(),
     isAuction: z.boolean().optional(),
     inStock: z.boolean().optional(),
+    printOptions: printOptionsSchema,
 });
 
 export const artworkQuerySchema = z.object({

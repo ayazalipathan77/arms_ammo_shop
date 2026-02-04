@@ -38,6 +38,14 @@ export interface ApiArtwork {
     year: number;
     isAuction: boolean;
     inStock: boolean;
+    printOptions?: {
+        enabled: boolean;
+        sizes: Array<{
+            name: string;
+            dimensions: string;
+            price: number;
+        }>;
+    } | null;
     viewCount: number;
     createdAt: string;
     updatedAt: string;
@@ -186,6 +194,10 @@ export const artworkApi = {
         isAuction?: boolean;
         inStock?: boolean;
         artistName?: string;
+        printOptions?: {
+            enabled: boolean;
+            sizes: Array<{ name: string; dimensions: string; price: number }>;
+        } | null;
     }): Promise<{ message: string; artwork: ApiArtwork }> => {
         const response = await authFetch(`${API_URL}/artworks`, {
             method: 'POST',
@@ -211,6 +223,10 @@ export const artworkApi = {
         year: number;
         isAuction: boolean;
         inStock: boolean;
+        printOptions?: {
+            enabled: boolean;
+            sizes: Array<{ name: string; dimensions: string; price: number }>;
+        } | null;
     }>): Promise<{ message: string; artwork: ApiArtwork }> => {
         const response = await authFetch(`${API_URL}/artworks/${id}`, {
             method: 'PUT',
@@ -351,6 +367,10 @@ export const transformArtwork = (apiArtwork: ApiArtwork): import('../types').Art
             userId: r.userId,
         })),
         isAuction: apiArtwork.isAuction,
+        printOptions: apiArtwork.printOptions ? {
+            enabled: apiArtwork.printOptions.enabled,
+            sizes: apiArtwork.printOptions.sizes || [],
+        } : undefined,
     };
 };
 
@@ -620,13 +640,25 @@ export const orderApi = {
 // Transform API cart item to frontend CartItem type
 export const transformCartItem = (apiCartItem: ApiCartItem): import('../types').CartItem => {
     const artwork = transformArtwork(apiCartItem.artwork);
+    let unitPrice = Number(apiCartItem.artwork.price);
+
+    // For prints, look up the price from artwork's printOptions
+    if (apiCartItem.type === 'PRINT' && apiCartItem.printSize && apiCartItem.artwork.printOptions) {
+        const sizeOption = apiCartItem.artwork.printOptions.sizes.find(
+            (s: { name: string; price: number }) => s.name === apiCartItem.printSize
+        );
+        if (sizeOption) {
+            unitPrice = sizeOption.price;
+        }
+    }
+
     return {
         ...artwork,
         selectedPrintSize: apiCartItem.type === 'ORIGINAL'
             ? 'ORIGINAL'
-            : (apiCartItem.printSize as 'A4' | 'A3' | 'CANVAS_24x36') || 'A4',
+            : apiCartItem.printSize || undefined,
         quantity: apiCartItem.quantity,
-        finalPrice: Number(apiCartItem.artwork.price) * apiCartItem.quantity,
+        finalPrice: unitPrice * apiCartItem.quantity,
     };
 };
 
@@ -650,7 +682,7 @@ export const transformOrder = (apiOrder: ApiOrder): import('../types').Order => 
             category: 'Abstract' as const,
             inStock: true,
             reviews: [],
-            selectedPrintSize: item.type === 'ORIGINAL' ? 'ORIGINAL' : (item.printSize as any) || 'A4',
+            selectedPrintSize: item.type === 'ORIGINAL' ? 'ORIGINAL' : item.printSize || undefined,
             quantity: item.quantity,
             finalPrice: parseFloat(item.priceAtPurchase) * item.quantity,
         })),

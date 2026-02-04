@@ -323,8 +323,13 @@ export const Cart: React.FC = () => {
                                  <h3 className="text-xl text-white font-serif">{item.title}</h3>
                                  <p className="text-amber-500 text-xs uppercase tracking-wider">{item.artistName}</p>
                                  <p className="text-stone-500 text-xs mt-2">
-                                    {item.selectedPrintSize === 'ORIGINAL' ? 'Original Artwork' : `Print: ${item.selectedPrintSize?.replace('_', ' ')}`}
+                                    {item.selectedPrintSize === 'ORIGINAL' || !item.selectedPrintSize
+                                       ? 'Original Artwork'
+                                       : `Print: ${item.selectedPrintSize} (Fabric Canvas)`}
                                  </p>
+                                 {item.quantity > 1 && (
+                                    <p className="text-stone-600 text-[10px] mt-1">Qty: {item.quantity}</p>
+                                 )}
                               </div>
                               <div className="text-right">
                                  <p className="text-white font-mono mb-2">{convertPrice(item.finalPrice)}</p>
