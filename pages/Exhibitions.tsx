@@ -57,7 +57,7 @@ export const Exhibitions: React.FC = () => {
                         className="flex items-center gap-3 mb-2"
                      >
                         <Sparkles className="text-amber-500" size={32} />
-                        <h1 className="font-serif text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
+                        <h1 className="font-serif text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
                            Exhibitions
                         </h1>
                      </motion.div>

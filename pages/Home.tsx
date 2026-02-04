@@ -188,7 +188,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
             <p className="text-stone-300 uppercase tracking-[0.3em] text-xs md:text-sm mb-6 animate-fade-in">
               {hero.subtitle}
             </p>
-            <h1 className="font-serif text-5xl md:text-8xl text-white mb-8 leading-[1.1] animate-enter">
+            <h1 className="font-serif text-2xl text-white mb-8 leading-[1.1] animate-enter">
               {hero.title.split(hero.accentWord)[0]}
               {hero.accentWord && (
                 <>

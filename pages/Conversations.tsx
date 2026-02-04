@@ -70,7 +70,7 @@ export const Conversations: React.FC = () => {
                         className="flex items-center gap-3 mb-4"
                      >
                         <Sparkles className="text-amber-500" size={32} />
-                        <h1 className="font-serif text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
+                        <h1 className="font-serif text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
                            Stories
                         </h1>
                      </motion.div>

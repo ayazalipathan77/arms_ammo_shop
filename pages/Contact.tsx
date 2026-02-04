@@ -65,7 +65,7 @@ export const Contact: React.FC = () => {
             className="flex items-center justify-center gap-3 mb-6"
           >
             <Sparkles className="text-amber-500" size={32} />
-            <h1 className="font-serif text-5xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200 tracking-wider">
+            <h1 className="font-serif text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200 tracking-wider">
               Get in Touch
             </h1>
           </motion.div>
