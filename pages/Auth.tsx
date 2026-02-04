@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Lock, Mail, Facebook, Chrome, ArrowRight, Phone, MapPin, Globe, Eye, EyeOff, Check, X, Loader2, Sparkles, Shield, CheckCircle, Clock } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRecaptcha, RECAPTCHA_ACTIONS } from '../hooks/useRecaptcha';
@@ -31,9 +31,28 @@ export const Auth: React.FC = () => {
    } | null>(null);
    const [isResendingVerification, setIsResendingVerification] = useState(false);
    const [resendMessage, setResendMessage] = useState('');
+   const [socialConfig, setSocialConfig] = useState<{ googleEnabled: boolean; facebookEnabled: boolean }>({ googleEnabled: false, facebookEnabled: false });
    const navigate = useNavigate();
+   const [searchParams] = useSearchParams();
    const { login, register: authRegister } = useAuth();
    const { executeRecaptcha, isEnabled: recaptchaEnabled } = useRecaptcha();
+
+   // Fetch social login config and handle OAuth error params
+   useEffect(() => {
+      fetch(`${API_URL}/config`)
+         .then(res => res.json())
+         .then(data => setSocialConfig({ googleEnabled: data.googleEnabled, facebookEnabled: data.facebookEnabled }))
+         .catch(() => {});
+
+      const errorParam = searchParams.get('error');
+      if (errorParam) {
+         const messages: Record<string, string> = {
+            google_failed: 'Google login failed. Please try again.',
+            facebook_failed: 'Facebook login failed. Please try again.',
+         };
+         setError(messages[errorParam] || 'Social login failed. Please try again.');
+      }
+   }, [searchParams]);
 
    // Password strength calculator
    const getPasswordStrength = () => {
@@ -106,6 +125,8 @@ export const Auth: React.FC = () => {
                      requiresApproval: true,
                      email: email
                   });
+               } else if (data.code === 'SOCIAL_ONLY_ACCOUNT') {
+                  setError(data.message || 'This account uses social login. Please sign in with Google or Facebook.');
                } else {
                   setError(data.message || 'Login failed');
                }
@@ -163,9 +184,7 @@ export const Auth: React.FC = () => {
    };
 
    const handleSocialLogin = (provider: string) => {
-      // Simulate OAuth process
-      console.log(`Initiating ${provider} login...`);
-      setError('Social login not yet implemented');
+      window.location.href = `${API_URL}/auth/${provider.toLowerCase()}`;
    };
 
    const handleResendVerification = async () => {
@@ -701,26 +720,33 @@ export const Auth: React.FC = () => {
                      </div>
 
                      <div className="flex gap-3">
-                        <motion.button
-                           whileHover={{ scale: 1.05, y: -2 }}
-                           whileTap={{ scale: 0.95 }}
-                           type="button"
-                           onClick={() => handleSocialLogin('Google')}
-                           className="flex-1 p-3 rounded-lg bg-stone-900/50 hover:bg-white/10 text-white transition-all border border-white/5 hover:border-white/20 flex items-center justify-center gap-2 group"
-                        >
-                           <Chrome size={18} className="group-hover:text-amber-500 transition-colors" />
-                           <span className="text-xs font-medium">Google</span>
-                        </motion.button>
-                        <motion.button
-                           whileHover={{ scale: 1.05, y: -2 }}
-                           whileTap={{ scale: 0.95 }}
-                           type="button"
-                           onClick={() => handleSocialLogin('Facebook')}
-                           className="flex-1 p-3 rounded-lg bg-stone-900/50 hover:bg-[#1877F2]/20 text-white hover:text-[#1877F2] transition-all border border-white/5 hover:border-[#1877F2]/30 flex items-center justify-center gap-2 group"
-                        >
-                           <Facebook size={18} className="group-hover:text-[#1877F2] transition-colors" />
-                           <span className="text-xs font-medium">Facebook</span>
-                        </motion.button>
+                        {socialConfig.googleEnabled && (
+                           <motion.button
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              type="button"
+                              onClick={() => handleSocialLogin('Google')}
+                              className="flex-1 p-3 rounded-lg bg-stone-900/50 hover:bg-white/10 text-white transition-all border border-white/5 hover:border-white/20 flex items-center justify-center gap-2 group"
+                           >
+                              <Chrome size={18} className="group-hover:text-amber-500 transition-colors" />
+                              <span className="text-xs font-medium">Google</span>
+                           </motion.button>
+                        )}
+                        {socialConfig.facebookEnabled && (
+                           <motion.button
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              type="button"
+                              onClick={() => handleSocialLogin('Facebook')}
+                              className="flex-1 p-3 rounded-lg bg-stone-900/50 hover:bg-[#1877F2]/20 text-white hover:text-[#1877F2] transition-all border border-white/5 hover:border-[#1877F2]/30 flex items-center justify-center gap-2 group"
+                           >
+                              <Facebook size={18} className="group-hover:text-[#1877F2] transition-colors" />
+                              <span className="text-xs font-medium">Facebook</span>
+                           </motion.button>
+                        )}
+                        {!socialConfig.googleEnabled && !socialConfig.facebookEnabled && (
+                           <p className="text-stone-600 text-xs text-center w-full">Social login not configured</p>
+                        )}
                      </div>
                   </motion.div>
                </form>

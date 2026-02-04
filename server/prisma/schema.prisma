@@ -28,11 +28,18 @@ enum PurchaseType {
   PRINT
 }
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+}
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
-  passwordHash String
+  passwordHash String?
   fullName     String
+  avatarUrl    String?
   role         Role      @default(USER)
   phoneNumber  String?
   createdAt    DateTime  @default(now())
@@ -52,11 +59,23 @@ model User {
 
 
 
-  artistProfile Artist?
-  orders        Order[]
-  reviews       Review[]
-  cartItems     CartItem[]
-  addresses     Address[]
+  artistProfile  Artist?
+  orders         Order[]
+  reviews        Review[]
+  cartItems      CartItem[]
+  addresses      Address[]
+  socialAccounts SocialAccount[]
+}
+
+model SocialAccount {
+  id             String       @id @default(cuid())
+  provider       AuthProvider
+  providerUserId String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  createdAt      DateTime     @default(now())
+
+  @@unique([provider, providerUserId])
 }
 
 model Address {

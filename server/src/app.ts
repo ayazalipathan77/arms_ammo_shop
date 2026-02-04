@@ -4,9 +4,13 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import passport from 'passport';
 import { StatusCodes } from 'http-status-codes';
 import { env } from './config/env';
 import { apiLimiter } from './middleware/rateLimiter';
+
+// Initialize passport strategies
+import './config/passport';
 
 // Import Routes
 import authRoutes from './routes/auth.routes';
@@ -32,6 +36,7 @@ app.use(cookieParser());
 app.use(compression());
 app.use(helmet());
 app.use(morgan(env.NODE_ENV === 'development' ? 'dev' : 'combined'));
+app.use(passport.initialize());
 
 // Rate Limiting
 app.use('/api', apiLimiter);
@@ -58,11 +63,13 @@ app.get('/health', (req: Request, res: Response) => {
     res.status(StatusCodes.OK).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Public Config (reCAPTCHA site key, etc.)
+// Public Config (reCAPTCHA site key, social login providers, etc.)
 app.get('/api/config', (req: Request, res: Response) => {
     res.status(StatusCodes.OK).json({
         recaptchaSiteKey: env.RECAPTCHA_SITE_KEY || null,
-        recaptchaEnabled: !!env.RECAPTCHA_SECRET_KEY
+        recaptchaEnabled: !!env.RECAPTCHA_SECRET_KEY,
+        googleEnabled: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+        facebookEnabled: !!(env.FACEBOOK_APP_ID && env.FACEBOOK_APP_SECRET),
     });
 });
 

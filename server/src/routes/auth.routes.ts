@@ -1,8 +1,11 @@
 import { Router } from 'express';
+import passport from 'passport';
 import { register, login, getMe, forgotPassword, resetPassword, verifyEmail, resendVerificationEmail } from '../controllers/auth.controller';
+import { googleCallback, facebookCallback } from '../controllers/social-auth.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { authLimiter } from '../middleware/rateLimiter';
 import { verifyRecaptcha, RECAPTCHA_ACTIONS } from '../middleware/recaptcha.middleware';
+import { env } from '../config/env';
 
 const router = Router();
 
@@ -57,5 +60,25 @@ router.post('/resend-verification', authLimiter, resendVerificationEmail);
  * @access  Private
  */
 router.get('/me', authenticate, getMe);
+
+// Social Login Routes - Google
+if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
+    router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
+    router.get(
+        '/google/callback',
+        passport.authenticate('google', { session: false, failureRedirect: '/#/auth?error=google_failed' }),
+        googleCallback
+    );
+}
+
+// Social Login Routes - Facebook
+if (env.FACEBOOK_APP_ID && env.FACEBOOK_APP_SECRET) {
+    router.get('/facebook', passport.authenticate('facebook', { scope: ['email'], session: false }));
+    router.get(
+        '/facebook/callback',
+        passport.authenticate('facebook', { session: false, failureRedirect: '/#/auth?error=facebook_failed' }),
+        facebookCallback
+    );
+}
 
 export default router;

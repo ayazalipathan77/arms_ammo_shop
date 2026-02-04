@@ -23,6 +23,7 @@ import { ResetPassword } from './pages/ResetPassword';
 import { ArtistConfirmation } from './pages/ArtistConfirmation';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
+import { SocialAuthCallback } from './pages/SocialAuthCallback';
 import { AICurator } from './components/AICurator';
 import { Currency } from './types';
 import { RATES } from './constants';
@@ -297,6 +298,7 @@ const App: React.FC = () => {
                       <Route path="/artwork/:id" element={<ArtworkDetail />} />
                       <Route path="/cart" element={<Cart />} />
                       <Route path="/auth" element={<Auth />} />
+                      <Route path="/auth/social-callback" element={<SocialAuthCallback />} />
                       <Route path="/verify-email" element={<VerifyEmail />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
                       <Route path="/reset-password" element={<ResetPassword />} />

@@ -2,12 +2,10 @@ import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { verifyToken, JWTPayload } from '../utils/jwt';
 
-// Extend Express Request to include user
+// Extend Passport's Express.User to include JWT payload fields
 declare global {
     namespace Express {
-        interface Request {
-            user?: JWTPayload;
-        }
+        interface User extends JWTPayload {}
     }
 }
 

@@ -168,6 +168,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
         console.log('User found:', user.email, 'Role:', user.role);
 
+        // Check if this is a social-only account (no password)
+        if (!user.passwordHash) {
+            res.status(StatusCodes.FORBIDDEN).json({
+                message: 'This account uses social login. Please sign in with Google or Facebook.',
+                code: 'SOCIAL_ONLY_ACCOUNT',
+            });
+            return;
+        }
+
         // Verify password
         const isPasswordValid = await bcrypt.compare(validatedData.password, user.passwordHash);
         console.log('Password valid:', isPasswordValid);
@@ -280,6 +289,15 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
         if (!user) {
             // Generic message to avoid enumeration
             res.status(StatusCodes.OK).json({ message: 'If the email exists, a reset link has been sent.' });
+            return;
+        }
+
+        // Social-only accounts can't reset passwords
+        if (!user.passwordHash) {
+            res.status(StatusCodes.BAD_REQUEST).json({
+                message: 'This account uses social login and has no password to reset. Please sign in with Google or Facebook.',
+                code: 'SOCIAL_ONLY_ACCOUNT',
+            });
             return;
         }
 

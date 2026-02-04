@@ -24,6 +24,12 @@ const envSchema = z.object({
     RECAPTCHA_SITE_KEY: z.string().optional(),
     RECAPTCHA_SECRET_KEY: z.string().optional(),
 
+    // OAuth - Social Login
+    GOOGLE_CLIENT_ID: z.string().optional().default(''),
+    GOOGLE_CLIENT_SECRET: z.string().optional().default(''),
+    FACEBOOK_APP_ID: z.string().optional().default(''),
+    FACEBOOK_APP_SECRET: z.string().optional().default(''),
+
     // SMTP Email (Gmail)
     SMTP_HOST: z.string().default('smtp.gmail.com'),
     SMTP_PORT: z.string().default('587'),
