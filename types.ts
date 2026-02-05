@@ -186,6 +186,7 @@ export interface LandingPageFeaturedExhibition {
 export interface LandingPageCollection {
   id: string;
   title: string;
+  description?: string;
   artworkIds: string[];
   imageUrl?: string;
   layout: 'large' | 'tall' | 'normal';

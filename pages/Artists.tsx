@@ -100,7 +100,7 @@ export const Artists: React.FC = () => {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
           <AnimatePresence>
             {filteredArtists.map((artist, i) => (
               <motion.div
@@ -111,25 +111,24 @@ export const Artists: React.FC = () => {
                 transition={{ delay: i * 0.1 }}
               >
                 <Link to={`/artists/${artist.id}`} className="group block">
-                  <div className="relative aspect-[4/5] bg-charcoal mb-6 overflow-hidden border border-pearl/5 group-hover:border-tangerine/30 transition-all duration-500">
+                  <div className="relative aspect-square bg-charcoal mb-4 overflow-hidden rounded-full border-2 border-pearl/10 group-hover:border-tangerine transition-all duration-500">
                     <img
                       src={artist.imageUrl}
                       alt={artist.name}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-void via-transparent to-transparent opacity-60"></div>
+                    <div className="absolute inset-0 bg-gradient-radial from-transparent via-void/20 to-void/60 opacity-60 group-hover:opacity-40 transition-opacity duration-500"></div>
 
-                    <div className="absolute bottom-0 left-0 w-full p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                      <div className="w-12 h-[1px] bg-tangerine mb-4 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 delay-100"></div>
-                      <span className="inline-block bg-void/80 backdrop-blur text-pearl text-[10px] uppercase tracking-widest px-3 py-1 mb-2 border border-pearl/10">
-                        View Profile
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className="bg-tangerine text-void text-[10px] font-bold uppercase tracking-widest px-4 py-2 shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                        View
                       </span>
                     </div>
                   </div>
 
-                  <div>
-                    <h2 className="font-display text-3xl text-pearl leading-none mb-2 group-hover:text-tangerine transition-colors">{artist.name}</h2>
-                    <p className="text-warm-gray text-xs font-mono uppercase tracking-wider">{artist.specialty}</p>
+                  <div className="text-center">
+                    <h2 className="font-display text-lg text-pearl leading-tight mb-1 group-hover:text-tangerine transition-colors">{artist.name}</h2>
+                    <p className="text-warm-gray text-[10px] font-mono uppercase tracking-wider">{artist.specialty}</p>
                   </div>
                 </Link>
               </motion.div>

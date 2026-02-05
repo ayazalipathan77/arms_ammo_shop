@@ -1243,8 +1243,8 @@ export const AdminDashboard: React.FC = () => {
                   <h3 className="text-pearl font-display text-lg mb-4">Curated Collections</h3>
                   <div className="space-y-4">
                      {landingForm.curatedCollections.collections.map((col, idx) => (
-                        <div key={idx} className="border border-pearl/10 bg-void p-4">
-                           <div className="flex justify-between mb-4">
+                        <div key={idx} className="border border-pearl/10 bg-void p-4 space-y-3">
+                           <div className="flex justify-between mb-2">
                               <input className="bg-transparent text-tangerine font-display text-lg outline-none w-full" value={col.title} onChange={e => {
                                  const newCols = [...landingForm.curatedCollections.collections];
                                  newCols[idx].title = e.target.value;
@@ -1256,7 +1256,30 @@ export const AdminDashboard: React.FC = () => {
                               }} className="text-red-500"><Trash2 size={16} /></button>
                            </div>
 
-                           <div className="flex flex-wrap gap-2 mb-2">
+                           <textarea
+                              className="w-full bg-charcoal border border-pearl/10 text-xs p-2 text-pearl font-mono resize-none"
+                              rows={2}
+                              value={col.description || ''}
+                              onChange={e => {
+                                 const newCols = [...landingForm.curatedCollections.collections];
+                                 newCols[idx].description = e.target.value;
+                                 setLandingForm({ ...landingForm, curatedCollections: { ...landingForm.curatedCollections, collections: newCols } });
+                              }}
+                              placeholder="Collection description..."
+                           />
+
+                           <input
+                              className="w-full bg-charcoal border border-pearl/10 text-xs p-2 text-pearl font-mono"
+                              value={col.imageUrl || ''}
+                              onChange={e => {
+                                 const newCols = [...landingForm.curatedCollections.collections];
+                                 newCols[idx].imageUrl = e.target.value;
+                                 setLandingForm({ ...landingForm, curatedCollections: { ...landingForm.curatedCollections, collections: newCols } });
+                              }}
+                              placeholder="Cover image URL (optional - will use first artwork if empty)"
+                           />
+
+                           <div className="flex flex-wrap gap-2">
                               {col.artworkIds.map(id => {
                                  const art = artworks.find(a => a.id === id);
                                  return (
@@ -1295,7 +1318,7 @@ export const AdminDashboard: React.FC = () => {
                            ...landingForm,
                            curatedCollections: {
                               ...landingForm.curatedCollections,
-                              collections: [...landingForm.curatedCollections.collections, { id: Date.now().toString(), title: 'New Collection', artworkIds: [], layout: 'normal' }]
+                              collections: [...landingForm.curatedCollections.collections, { id: Date.now().toString(), title: 'New Collection', description: '', artworkIds: [], imageUrl: '', layout: 'normal' }]
                            }
                         })}>+ Add New Collection Section</Button>
                      )}

@@ -254,35 +254,13 @@ export const Collections: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Categories */}
+                        {/* Availability */}
                         <div>
-                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Categories</h3>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Availability</h3>
                             <div className="space-y-2">
-                                {categories.map(cat => (
-                                    <button
-                                        key={cat}
-                                        onClick={() => updateCategory(cat)}
-                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-white transition-colors ${activeCategory === cat ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
-                                    >
-                                        {cat}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Medium */}
-                        <div>
-                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Medium</h3>
-                            <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
-                                {mediums.map(med => (
-                                    <button
-                                        key={med}
-                                        onClick={() => setActiveMedium(med)}
-                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-white transition-colors ${activeMedium === med ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
-                                    >
-                                        {med}
-                                    </button>
-                                ))}
+                                <RadioOption name="availability" value="all" checked={availability === 'all'} onChange={() => setAvailability('all')} label="All Artworks" />
+                                <RadioOption name="availability" value="available" checked={availability === 'available'} onChange={() => setAvailability('available')} label="Available" />
+                                <RadioOption name="availability" value="sold" checked={availability === 'sold'} onChange={() => setAvailability('sold')} label="Sold" />
                             </div>
                         </div>
 
@@ -328,6 +306,38 @@ export const Collections: React.FC = () => {
                             </div>
                         </div>
 
+                        {/* Categories */}
+                        <div>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Categories</h3>
+                            <div className="space-y-2">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => updateCategory(cat)}
+                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-white transition-colors ${activeCategory === cat ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Medium */}
+                        <div>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Medium</h3>
+                            <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
+                                {mediums.map(med => (
+                                    <button
+                                        key={med}
+                                        onClick={() => setActiveMedium(med)}
+                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-white transition-colors ${activeMedium === med ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
+                                    >
+                                        {med}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* Year Range */}
                         <div>
                             <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Year</h3>
@@ -367,16 +377,6 @@ export const Collections: React.FC = () => {
                                         />
                                     </label>
                                 </div>
-                            </div>
-                        </div>
-
-                        {/* Availability */}
-                        <div>
-                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Availability</h3>
-                            <div className="space-y-2">
-                                <RadioOption name="availability" value="all" checked={availability === 'all'} onChange={() => setAvailability('all')} label="All Artworks" />
-                                <RadioOption name="availability" value="available" checked={availability === 'available'} onChange={() => setAvailability('available')} label="Available" />
-                                <RadioOption name="availability" value="sold" checked={availability === 'sold'} onChange={() => setAvailability('sold')} label="Sold" />
                             </div>
                         </div>
 
@@ -481,36 +481,18 @@ export const Collections: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Mobile Categories */}
+                            {/* Mobile Availability */}
                             <div>
-                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Categories</h3>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {categories.map(cat => (
-                                        <button
-                                            key={cat}
-                                            onClick={() => updateCategory(cat)}
-                                            className={`p-3 border rounded-sm text-xs font-mono uppercase tracking-widest transition-all ${activeCategory === cat ? 'bg-tangerine text-void border-tangerine font-bold' : 'border-pearl/20 text-warm-gray'}`}
-                                        >
-                                            {cat}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Mobile Medium */}
-                            <div>
-                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Medium</h3>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {mediums.map(med => (
-                                        <button
-                                            key={med}
-                                            onClick={() => setActiveMedium(med)}
-                                            className={`p-3 border rounded-sm text-xs font-mono uppercase tracking-widest transition-all ${activeMedium === med ? 'bg-tangerine text-void border-tangerine font-bold' : 'border-pearl/20 text-warm-gray'}`}
-                                        >
-                                            {med}
-                                        </button>
-                                    ))}
-                                </div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Availability</h3>
+                                <select
+                                    className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 text-pearl focus:border-tangerine outline-none font-mono text-xs"
+                                    value={availability}
+                                    onChange={(e) => setAvailability(e.target.value)}
+                                >
+                                    <option value="all">All Availability</option>
+                                    <option value="available">Available Only</option>
+                                    <option value="sold">Sold Only</option>
+                                </select>
                             </div>
 
                             {/* Mobile Price Range */}
@@ -550,6 +532,38 @@ export const Collections: React.FC = () => {
                                             className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
                                         />
                                     </label>
+                                </div>
+                            </div>
+
+                            {/* Mobile Categories */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Categories</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => updateCategory(cat)}
+                                            className={`p-3 border rounded-sm text-xs font-mono uppercase tracking-widest transition-all ${activeCategory === cat ? 'bg-tangerine text-void border-tangerine font-bold' : 'border-pearl/20 text-warm-gray'}`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Mobile Medium */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Medium</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {mediums.map(med => (
+                                        <button
+                                            key={med}
+                                            onClick={() => setActiveMedium(med)}
+                                            className={`p-3 border rounded-sm text-xs font-mono uppercase tracking-widest transition-all ${activeMedium === med ? 'bg-tangerine text-void border-tangerine font-bold' : 'border-pearl/20 text-warm-gray'}`}
+                                        >
+                                            {med}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
@@ -593,30 +607,19 @@ export const Collections: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Mobile Availability & Sort */}
+                            {/* Mobile Sort */}
                             <div>
-                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Filter & Sort</h3>
-                                <div className="space-y-4">
-                                    <select
-                                        className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 text-pearl focus:border-tangerine outline-none font-mono text-xs"
-                                        value={availability}
-                                        onChange={(e) => setAvailability(e.target.value)}
-                                    >
-                                        <option value="all">All Availability</option>
-                                        <option value="available">Available Only</option>
-                                        <option value="sold">Sold Only</option>
-                                    </select>
-                                    <select
-                                        className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 text-pearl focus:border-tangerine outline-none font-mono text-xs"
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value)}
-                                    >
-                                        <option value="newest">Newest First</option>
-                                        <option value="oldest">Oldest First</option>
-                                        <option value="lowest">Price: Low to High</option>
-                                        <option value="highest">Price: High to Low</option>
-                                    </select>
-                                </div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Sort By</h3>
+                                <select
+                                    className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 text-pearl focus:border-tangerine outline-none font-mono text-xs"
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                >
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="lowest">Price: Low to High</option>
+                                    <option value="highest">Price: High to Low</option>
+                                </select>
                             </div>
 
                             <div className="flex gap-3 mt-8">
