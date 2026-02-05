@@ -51,9 +51,13 @@ const Home = () => {
     ? allArtworks.filter(a => topPaintingsConfig.artworkIds.includes(a.id))
     : [];
 
-  // Curator's Pick Logic
+  // Curator's Pick Logic - Get all artworks from curated collections
   const curatorsConfig = landingPageContent?.curatedCollections;
-  const curatedCollections = curatorsConfig?.enabled ? curatorsConfig.collections : [];
+  const curatedArtworks = curatorsConfig?.enabled
+    ? allArtworks.filter(art =>
+        curatorsConfig.collections.some(col => col.artworkIds.includes(art.id))
+      )
+    : [];
 
   // Carousel Logic
   const totalSlides = Math.ceil(latestArtworks.length / ITEMS_PER_SLIDE);
@@ -180,44 +184,32 @@ const Home = () => {
       )}
 
       {/* 3. CURATOR'S PICK - Reordered Step 3 */}
-      {curatorsConfig?.enabled && curatedCollections.length > 0 && (
+      {curatorsConfig?.enabled && curatedArtworks.length > 0 && (
         <section className="py-24 px-6 md:px-12 bg-void border-t border-pearl/10">
           <div className="max-w-[1920px] mx-auto">
-            <div className="mb-16 flex items-center gap-4 justify-end text-right">
-              <div className="flex flex-col items-end">
-                <div className="flex items-center gap-2 mb-2">
-                  <Crown className="text-tangerine" />
+            <div className="mb-16 flex items-center gap-4 justify-center text-center">
+              <div className="flex flex-col items-center">
+                <div className="flex items-center gap-3 mb-3">
+                  <Crown className="text-tangerine" size={32} />
                   <h2 className="text-4xl md:text-5xl font-display font-bold text-pearl uppercase tracking-tighter">
-                    CURATOR'S <span className="text-white/20">PICK</span>
+                    CURATOR'S <span className="text-tangerine">CHOICE</span>
                   </h2>
                 </div>
-                <p className="text-warm-gray max-w-md">Collections hand-picked by our chief curator for their exceptional narrative and technique.</p>
+                <p className="text-warm-gray max-w-2xl font-mono text-sm">Hand-selected masterpieces showcasing exceptional narrative, technique, and artistic vision.</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              {curatedCollections.map((collection: any, idx: number) => (
-                <Link
-                  key={idx}
-                  to={`/collections?category=${encodeURIComponent(collection.title)}`}
-                  className="group relative aspect-video overflow-hidden rounded-sm border border-pearl/10 cursor-pointer bg-charcoal block"
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {curatedArtworks.map((artwork, idx) => (
+                <motion.div
+                  key={artwork.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.1 }}
                 >
-                  <img
-                    src={collection.imageUrl && collection.imageUrl !== '' ? collection.imageUrl : 'https://images.unsplash.com/photo-1549887552-93f954d4393e?q=80&w=1000&auto=format&fit=crop'}
-                    alt={collection.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-100 grayscale transition-all group-hover:grayscale-0"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1549887552-93f954d4393e?q=80&w=1000&auto=format&fit=crop';
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent p-8 flex flex-col justify-end">
-                    <h3 className="text-3xl font-display text-pearl uppercase mb-2 group-hover:text-tangerine transition-colors">{collection.title}</h3>
-                    <p className="text-warm-gray line-clamp-2 mb-4 max-w-lg font-mono text-sm">{collection.description}</p>
-                    <div className="flex items-center gap-2 text-tangerine text-sm font-bold tracking-widest uppercase hover:text-white transition-colors">
-                      Explore Collection <ArrowRight size={16} />
-                    </div>
-                  </div>
-                </Link>
+                  <ArtworkCard artwork={artwork} />
+                </motion.div>
               ))}
             </div>
           </div>
