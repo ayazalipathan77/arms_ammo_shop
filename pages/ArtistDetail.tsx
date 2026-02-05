@@ -156,7 +156,7 @@ export const ArtistDetail: React.FC = () => {
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/5 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-charcoal/50 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="max-w-screen-xl mx-auto px-6 md:px-12 relative z-10">
+            <div className="max-w-[1920px] mx-auto px-6 md:px-12 relative z-10">
                 {/* Back Link */}
                 <motion.div
                     initial={{ opacity: 0, x: -20 }}
@@ -236,12 +236,12 @@ export const ArtistDetail: React.FC = () => {
                             className="flex gap-6 md:border-l border-white/10 md:pl-8"
                         >
                             <div className="text-center">
-                                <p className="text-2xl font-display text-transparent bg-clip-text bg-gradient-to-b from-pearl to-warm-gray">{totalArtworksCount}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-warm-gray/60">Works</p>
+                                <p className="text-2xl font-display text-pearl">{totalArtworksCount}</p>
+                                <p className="text-[10px] uppercase tracking-widest text-warm-gray">Works</p>
                             </div>
                             <div className="text-center">
-                                <p className="text-2xl font-display text-transparent bg-clip-text bg-gradient-to-b from-pearl to-warm-gray">{soldCount}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-warm-gray/60">Sold</p>
+                                <p className="text-2xl font-display text-pearl">{soldCount}</p>
+                                <p className="text-[10px] uppercase tracking-widest text-warm-gray">Sold</p>
                             </div>
                         </motion.div>
                     </div>
