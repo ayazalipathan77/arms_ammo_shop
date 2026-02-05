@@ -48,7 +48,7 @@ app.use(cors({
         if (!origin) return callback(null, true);
 
         const allowedOrigins = [env.CLIENT_URL, 'http://localhost:3000', 'http://localhost:5173', 'http://localhost:3001'];
-        if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost:')) {
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost:') || origin.endsWith('.onrender.com')) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
