@@ -66,7 +66,7 @@ export const Artists: React.FC = () => {
       <ParticleSystem />
 
       {/* Background Decor */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-tangerine/5 rounded-full blur-[100px]"></div>
         <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[80px]"></div>
       </div>

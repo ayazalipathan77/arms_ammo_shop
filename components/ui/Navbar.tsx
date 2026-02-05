@@ -53,10 +53,10 @@ const Navbar = () => {
     }, [scrollY]);
 
     const navItems = [
-        { name: 'WORK', path: '/work' },
-        { name: 'ARTIST', path: '/artist' },
-        { name: 'EXHIBITIONS', path: '/exhibitions' },
-        { name: 'CONTACT', path: '/contact' },
+        { name: 'WORK', path: '/exhibitions' },
+        { name: 'ARTIST', path: '/artists' },
+        { name: 'STORIES', path: '/stories' },
+        // { name: 'CONTACT', path: '/contact' },
     ];
 
     return (
