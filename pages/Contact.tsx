@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, MapPin, Phone, Send, Globe, Instagram, Facebook, MessageCircle, Sparkles } from 'lucide-react';
+import { Mail, MapPin, Phone, Send, Globe, Instagram, Facebook, MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const Contact: React.FC = () => {
@@ -64,7 +64,7 @@ export const Contact: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="flex items-center justify-center gap-3 mb-6"
           >
-            <Sparkles className="text-tangerine" size={32} />
+            <MessageCircle className="text-tangerine" size={32} />
             <h1 className="font-display text-4xl text-transparent bg-clip-text bg-gradient-to-r from-tangerine via-white to-tangerine tracking-widest uppercase">
               Get in Touch
             </h1>

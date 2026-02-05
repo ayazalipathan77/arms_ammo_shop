@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGallery } from '../context/GalleryContext';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { ArrowRight, Sparkles, Layers, Search, Filter, X, ChevronDown } from 'lucide-react';
+import { ArrowRight, Layers, Search, Filter, X, ChevronDown, AlertCircle } from 'lucide-react';
 import ArtworkCard from '../components/ui/ArtworkCard';
 import Button from '../components/ui/Button';
 
@@ -431,7 +431,7 @@ export const Collections: React.FC = () => {
                             </motion.div>
                         ) : (
                             <div className="py-20 text-center border border-dashed border-pearl/10 rounded-sm">
-                                <Sparkles className="mx-auto mb-4 text-tangerine/50" />
+                                <AlertCircle className="mx-auto mb-4 text-tangerine/50" />
                                 <h3 className="text-pearl font-display text-xl mb-2">No Artworks Found</h3>
                                 <p className="text-warm-gray font-mono text-sm max-w-md mx-auto">
                                     Try adjusting your filters or search query to find what you're looking for.

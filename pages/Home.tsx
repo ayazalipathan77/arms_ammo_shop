@@ -156,7 +156,7 @@ const Home = () => {
             <div className="mb-10 flex items-center gap-4">
               <Star className="text-tangerine fill-tangerine" />
               <h2 className="text-4xl md:text-5xl font-display font-bold text-pearl uppercase tracking-tighter">
-                TOP <span className="text-transparent bg-clip-text bg-gradient-to-r from-tangerine to-amber-500">PAINTINGS</span>
+                TRENDING <span className="text-transparent bg-clip-text bg-gradient-to-r from-tangerine to-amber-500">PAINTINGS</span>
               </h2>
             </div>
 

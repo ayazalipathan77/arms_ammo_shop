@@ -3,7 +3,7 @@ import {
    LayoutDashboard, Package, Users, DollarSign, Settings,
    Plus, Edit, Trash2, Truck, CreditCard, Check, X, Search,
    Video, Globe, MessageSquare, Save, Facebook, Instagram, Image as ImageIcon, Calendar,
-   UserCheck, UserX, Clock, Mail, Shield, AlertCircle, Loader2, Palette, Type, Sparkles
+   UserCheck, UserX, Clock, Mail, Shield, AlertCircle, Loader2, Palette, Type
 } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
 import { useTheme, PRESET_THEMES, ThemeConfig } from '../context/ThemeContext';
@@ -1616,7 +1616,7 @@ export const AdminDashboard: React.FC = () => {
                {/* Custom Color Lab */}
                <div className="bg-charcoal/30 p-6 border border-pearl/10">
                   <h3 className="text-pearl font-display text-lg mb-4 flex items-center gap-2">
-                     <Sparkles size={20} className="text-tangerine" /> Chromatic Lab
+                     <Palette size={20} className="text-tangerine" /> Chromatic Lab
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="space-y-4">

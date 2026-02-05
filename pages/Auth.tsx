@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Lock, Mail, Facebook, Chrome, ArrowRight, Phone, MapPin, Globe, Eye, EyeOff, Check, X, Loader2, Sparkles, Shield, CheckCircle, Clock } from 'lucide-react';
+import { User, Lock, Mail, Facebook, Chrome, ArrowRight, Phone, MapPin, Globe, Eye, EyeOff, Check, X, Loader2, Award, Shield, CheckCircle, Clock } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -212,7 +212,7 @@ export const Auth: React.FC = () => {
                               </label>
                               <label className={cn("cursor-pointer border p-4 text-center transition-all", role === 'ARTIST' ? "border-tangerine bg-tangerine/10 text-tangerine" : "border-pearl/10 text-warm-gray hover:border-pearl/30")}>
                                  <input type="radio" name="role" checked={role === 'ARTIST'} onChange={() => setRole('ARTIST')} className="hidden" />
-                                 <Sparkles size={20} className="mx-auto mb-2" />
+                                 <Award size={20} className="mx-auto mb-2" />
                                  <span className="text-[10px] font-bold uppercase tracking-widest">Artist</span>
                               </label>
                            </div>

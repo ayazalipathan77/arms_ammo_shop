@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGallery } from '../context/GalleryContext';
-import { Play, X, Mic, Image, Sparkles, ArrowRight, Quote } from 'lucide-react';
+import { Play, X, Mic, Image, ArrowRight, Quote } from 'lucide-react';
 import { Conversation } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/ui/Button';

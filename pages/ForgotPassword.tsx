@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, ArrowRight, ArrowLeft, Loader2, Sparkles, CheckCircle, Shield } from 'lucide-react';
+import { Mail, ArrowRight, ArrowLeft, Loader2, Star, CheckCircle, Shield } from 'lucide-react';
 import { useRecaptcha, RECAPTCHA_ACTIONS } from '../hooks/useRecaptcha';
 
 const API_URL = 'http://localhost:5000/api';
@@ -61,11 +61,11 @@ export const ForgotPassword: React.FC = () => {
             >
                <div className="text-center mb-10">
                   <div className="inline-flex items-center gap-2 mb-4">
-                     <Sparkles className="text-amber-500" size={24} />
+                     <Star className="text-amber-500" size={24} />
                      <h1 className="font-serif text-4xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
                         MURAQQA
                      </h1>
-                     <Sparkles className="text-amber-500" size={24} />
+                     <Star className="text-amber-500" size={24} />
                   </div>
                </div>
 
@@ -145,11 +145,11 @@ export const ForgotPassword: React.FC = () => {
                   transition={{ delay: 0.1 }}
                   className="inline-flex items-center gap-2 mb-4"
                >
-                  <Sparkles className="text-amber-500" size={24} />
+                  <Star className="text-amber-500" size={24} />
                   <h1 className="font-serif text-4xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
                      MURAQQA
                   </h1>
-                  <Sparkles className="text-amber-500" size={24} />
+                  <Star className="text-amber-500" size={24} />
                </motion.div>
                <p className="text-stone-500 text-sm tracking-widest uppercase">Password Recovery</p>
             </div>

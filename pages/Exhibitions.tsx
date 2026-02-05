@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGallery } from '../context/GalleryContext';
-import { Monitor, Calendar, MapPin, ArrowRight, Sparkles } from 'lucide-react';
+import { Monitor, Calendar, MapPin, ArrowRight, Award, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/ui/Button';
@@ -66,7 +66,7 @@ export const Exhibitions: React.FC = () => {
                   animate={{ opacity: 1 }}
                   className="text-center py-32 border border-dashed border-pearl/10 rounded-2xl"
                >
-                  <Sparkles className="text-warm-gray mx-auto mb-4" size={48} />
+                  <AlertCircle className="text-warm-gray mx-auto mb-4" size={48} />
                   <p className="text-pearl font-display text-2xl mb-2 high-contrast:text-black">No exhibitions {filter.toLowerCase()} yet.</p>
                </motion.div>
             ) : (
@@ -122,7 +122,7 @@ export const Exhibitions: React.FC = () => {
                            {/* Content Section */}
                            <div className="flex-1 space-y-6">
                               <div className="flex items-center gap-4 text-tangerine high-contrast:text-[#D35400]">
-                                 <Sparkles size={20} />
+                                 <Award size={20} />
                                  <span className="font-mono text-xs tracking-widest uppercase">Featured Exhibition</span>
                               </div>
 

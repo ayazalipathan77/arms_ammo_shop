@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useGallery } from '../context/GalleryContext';
-import { Filter, Search, Loader2, X, ChevronDown, Check, Sparkles, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Filter, Search, Loader2, X, ChevronDown, Check, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { artistApi } from '../services/api';
 import { Artist } from '../types';
@@ -221,7 +221,7 @@ export const Gallery: React.FC = () => {
                 transition={{ delay: 0.2, duration: 0.6 }}
                 className="flex items-center gap-3 mb-2"
               >
-                <Sparkles className="text-amber-500" size={28} />
+                <Palette className="text-amber-500" size={28} />
                 <h1 className="font-serif text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
                   Collection
                 </h1>

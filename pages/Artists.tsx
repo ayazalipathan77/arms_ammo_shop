@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, ArrowRight, Sparkles, Award, Search, X } from 'lucide-react';
+import { Loader2, ArrowRight, Award, Search, X } from 'lucide-react';
 import { artistApi, transformArtist } from '../services/api';
 import { Artist } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -78,7 +78,7 @@ export const Artists: React.FC = () => {
           <div>
             <h1 className="font-display text-5xl md:text-7xl text-pearl leading-none mb-2">The Creators</h1>
             <p className="text-tangerine font-mono text-xs uppercase tracking-[0.3em] flex items-center gap-2">
-              <Sparkles size={12} /> {filteredArtists.length} Visionaries
+              <Award size={12} /> {filteredArtists.length} Visionaries
             </p>
           </div>
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, Star, ArrowRight } from 'lucide-react';
 
 export const ArtistConfirmation: React.FC = () => {
    const [searchParams] = useSearchParams();
@@ -50,11 +50,11 @@ export const ArtistConfirmation: React.FC = () => {
             {/* Logo */}
             <div className="text-center mb-10">
                <div className="inline-flex items-center gap-2 mb-4">
-                  <Sparkles className="text-amber-500" size={24} />
+                  <Star className="text-amber-500" size={24} />
                   <h1 className="font-serif text-4xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
                      MURAQQA
                   </h1>
-                  <Sparkles className="text-amber-500" size={24} />
+                  <Star className="text-amber-500" size={24} />
                </div>
             </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, Send, X, Sparkles } from 'lucide-react';
+import { MessageSquare, Send, X, Bot } from 'lucide-react';
 import { getArtRecommendation } from '../services/geminiService';
 import { ChatMessage } from '../types';
 
@@ -40,7 +40,7 @@ export const AICurator: React.FC = () => {
           onClick={() => setIsOpen(true)}
           className="bg-amber-600 hover:bg-amber-500 text-white p-4 rounded-full shadow-lg shadow-black/50 transition-all hover:scale-105 flex items-center justify-center gap-2 group"
         >
-          <Sparkles size={20} className="group-hover:animate-spin" />
+          <Bot size={20} className="group-hover:animate-spin" />
           <span className="font-serif italic hidden group-hover:block pr-2">AI Curator</span>
         </button>
       )}
@@ -49,7 +49,7 @@ export const AICurator: React.FC = () => {
         <div className="bg-stone-900 border border-stone-700 rounded-xl shadow-2xl w-80 sm:w-96 flex flex-col h-[500px] overflow-hidden">
           <div className="bg-stone-800 p-4 border-b border-stone-700 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <Sparkles className="text-amber-500" size={18} />
+              <Bot className="text-amber-500" size={18} />
               <h3 className="font-serif text-lg text-stone-100">AI Curator</h3>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-stone-400 hover:text-white">
