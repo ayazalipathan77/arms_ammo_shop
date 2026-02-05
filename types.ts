@@ -120,6 +120,8 @@ export interface Exhibition {
   endDate?: string;
   location: string;
   imageUrl: string;
+  galleryImages?: string[];
+  videoUrl?: string;
   isVirtual: boolean;
   status: 'UPCOMING' | 'CURRENT' | 'PAST';
 }
