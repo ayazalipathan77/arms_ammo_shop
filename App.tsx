@@ -15,30 +15,33 @@ import { ArtistDetail } from './pages/ArtistDetail';
 import { ThemeProvider } from './context/ThemeContext';
 import { GalleryProvider } from './context/GalleryContext';
 import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <GalleryProvider>
-          <ThemeProvider>
-            <Routes>
-              <Route element={<Layout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/exhibitions" element={<Exhibitions />} />
-                <Route path="/stories" element={<Conversations />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/artwork/:id" element={<ArtworkDetail />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/profile" element={<UserProfile />} />
-                <Route path="/artists" element={<Artists />} />
-                <Route path="/artists/:id" element={<ArtistDetail />} />
-              </Route>
-            </Routes>
-          </ThemeProvider>
-        </GalleryProvider>
+        <CartProvider>
+          <GalleryProvider>
+            <ThemeProvider>
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/exhibitions" element={<Exhibitions />} />
+                  <Route path="/stories" element={<Conversations />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/artwork/:id" element={<ArtworkDetail />} />
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/profile" element={<UserProfile />} />
+                  <Route path="/artists" element={<Artists />} />
+                  <Route path="/artists/:id" element={<ArtistDetail />} />
+                </Route>
+              </Routes>
+            </ThemeProvider>
+          </GalleryProvider>
+        </CartProvider>
       </AuthProvider>
     </Router>
   );
