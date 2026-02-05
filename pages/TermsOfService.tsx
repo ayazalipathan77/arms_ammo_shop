@@ -173,7 +173,7 @@ export const TermsOfService: React.FC = () => {
    ];
 
    return (
-      <div className="pt-32 pb-20 min-h-screen bg-stone-950">
+      <div className="pt-32 pb-20 min-h-screen bg-void">
          <div className="max-w-4xl mx-auto px-6 md:px-12">
             {/* Back Link */}
             <motion.div
@@ -183,7 +183,7 @@ export const TermsOfService: React.FC = () => {
             >
                <Link
                   to="/"
-                  className="inline-flex items-center gap-2 text-stone-500 hover:text-amber-500 text-xs uppercase tracking-widest transition-colors mb-8"
+                  className="inline-flex items-center gap-2 text-warm-gray hover:text-tangerine text-xs uppercase tracking-widest transition-colors mb-8"
                >
                   <ArrowLeft size={14} />
                   Back to Home
@@ -195,18 +195,18 @@ export const TermsOfService: React.FC = () => {
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ duration: 0.6 }}
-               className="mb-12 border-b border-stone-800/50 pb-8"
+               className="mb-12 border-b border-pearl/10 pb-8"
             >
                <div className="flex items-center gap-3 mb-3">
-                  <FileText className="text-amber-500" size={28} />
-                  <h1 className="font-serif text-4xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
+                  <FileText className="text-tangerine" size={28} />
+                  <h1 className="font-display text-4xl md:text-5xl text-pearl uppercase tracking-tighter">
                      Terms of Service
                   </h1>
                </div>
-               <p className="text-stone-500 text-sm">
+               <p className="text-warm-gray text-sm font-mono mt-2 uppercase tracking-wide">
                   Last Updated: January 2025
                </p>
-               <p className="text-stone-400 mt-4 leading-relaxed">
+               <p className="text-warm-gray mt-6 leading-relaxed">
                   Welcome to Muraqqa Art Gallery. These Terms of Service govern your use of our website and services. By using Muraqqa, you agree to comply with and be bound by the following terms and conditions. Please read them carefully.
                </p>
             </motion.div>
@@ -220,17 +220,17 @@ export const TermsOfService: React.FC = () => {
                      animate={{ opacity: 1, y: 0 }}
                      transition={{ duration: 0.5, delay: idx * 0.05 }}
                   >
-                     <h2 className="font-serif text-2xl text-white mb-4">{section.title}</h2>
+                     <h2 className="font-display text-2xl text-pearl mb-4 uppercase tracking-wide">{section.title}</h2>
                      <div className="space-y-4">
                         {section.content.map((item, i) => (
                            <div key={i}>
                               {item.subtitle && (
-                                 <h3 className="text-amber-500/80 text-sm uppercase tracking-widest font-medium mb-2">
+                                 <h3 className="text-tangerine text-sm uppercase tracking-widest font-bold mb-2">
                                     {item.subtitle}
                                  </h3>
                               )}
                               {item.text && (
-                                 <p className="text-stone-400 leading-relaxed text-sm whitespace-pre-line">
+                                 <p className="text-warm-gray leading-relaxed text-sm whitespace-pre-line">
                                     {item.text}
                                  </p>
                               )}
