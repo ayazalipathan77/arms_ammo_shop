@@ -168,6 +168,7 @@ export interface LandingPageHero {
   subtitle: string;
   accentWord: string;
   backgroundImage: string;
+  backgroundImages?: string[];
 }
 
 export interface LandingPageFeaturedExhibition {
