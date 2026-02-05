@@ -46,7 +46,7 @@ const Hero = () => {
         if (banners.length <= 1) return;
         const timer = setInterval(() => {
             setCurrent(prev => (prev + 1) % banners.length);
-        }, 5000);
+        }, 7000);
         return () => clearInterval(timer);
     }, [banners.length]);
 
@@ -55,14 +55,20 @@ const Hero = () => {
 
             {/* Slideshow Container */}
             <div className="absolute inset-0 z-0">
-                <AnimatePresence mode="popLayout">
+                <AnimatePresence mode="wait">
                     <motion.div
                         key={current}
-                        initial={{ opacity: 0, x: 100, rotateY: 5, scale: 1.1 }}
-                        animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: -100, rotateY: -5, scale: 0.9 }}
-                        transition={{ duration: 1.2, ease: "circOut" }}
-                        className="absolute inset-0 w-full h-full perspective-1000"
+                        initial={{ opacity: 0, scale: current % 2 === 0 ? 1 : 1.15 }}
+                        animate={{
+                            opacity: 1,
+                            scale: current % 2 === 0 ? 1.15 : 1
+                        }}
+                        exit={{ opacity: 0 }}
+                        transition={{
+                            opacity: { duration: 0.6, ease: "easeInOut" },
+                            scale: { duration: 7, ease: "linear" }
+                        }}
+                        className="absolute inset-0 w-full h-full"
                     >
                         <div className="w-full h-full relative">
                             {/* Image with overlay - Dark Grayscale */}
@@ -106,7 +112,7 @@ const Hero = () => {
                                 className="h-full bg-tangerine"
                                 initial={{ width: "0%" }}
                                 animate={{ width: "100%" }}
-                                transition={{ duration: 5, ease: "linear" }}
+                                transition={{ duration: 7, ease: "linear" }}
                             />
                         )}
                         {idx < current && <div className="h-full w-full bg-white/30" />}
