@@ -65,7 +65,7 @@ export const Contact: React.FC = () => {
             className="flex items-center justify-center gap-3 mb-6"
           >
             <Sparkles className="text-tangerine" size={32} />
-            <h1 className="font-serif text-2xl text-transparent bg-clip-text bg-gradient-to-r from-tangerine via-white to-tangerine tracking-wider">
+            <h1 className="font-display text-4xl text-transparent bg-clip-text bg-gradient-to-r from-tangerine via-white to-tangerine tracking-widest uppercase">
               Get in Touch
             </h1>
           </motion.div>
@@ -73,7 +73,7 @@ export const Contact: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-warm-gray text-lg max-w-2xl mx-auto detail-text leading-relaxed"
+            className="text-warm-gray text-lg max-w-2xl mx-auto font-mono text-sm leading-relaxed"
           >
             Whether you're interested in acquiring a piece, scheduling a private viewing, or simply wish to discuss art, we'd love to hear from you.
           </motion.p>
@@ -97,7 +97,7 @@ export const Contact: React.FC = () => {
             className="lg:col-span-2 space-y-8"
           >
             <div className="bg-charcoal/30 backdrop-blur-sm border border-pearl/10 p-8 rounded-sm hover:border-tangerine/30 transition-all duration-500">
-              <h2 className="font-serif text-2xl text-pearl mb-8 tracking-wide">Visit Our Gallery</h2>
+              <h2 className="font-display text-2xl text-pearl mb-8 tracking-wide uppercase">Visit Our Gallery</h2>
 
               <div className="space-y-6">
                 <div className="flex gap-4">
@@ -105,8 +105,8 @@ export const Contact: React.FC = () => {
                     <MapPin className="w-5 h-5 text-tangerine" />
                   </div>
                   <div>
-                    <h3 className="text-pearl font-medium mb-1 tracking-wide">Address</h3>
-                    <p className="text-warm-gray text-sm detail-text leading-relaxed">
+                    <h3 className="text-pearl font-mono uppercase tracking-widest text-xs mb-1">Address</h3>
+                    <p className="text-warm-gray text-sm font-mono leading-relaxed">
                       DHA Phase 6, Lahore<br />
                       Punjab, Pakistan
                     </p>
@@ -149,7 +149,7 @@ export const Contact: React.FC = () => {
 
             {/* Gallery Hours */}
             <div className="bg-charcoal/30 backdrop-blur-sm border border-pearl/10 p-8 rounded-sm hover:border-tangerine/30 transition-all duration-500">
-              <h2 className="font-serif text-2xl text-pearl mb-6 tracking-wide">Gallery Hours</h2>
+              <h2 className="font-display text-2xl text-pearl mb-6 tracking-wide uppercase">Gallery Hours</h2>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-warm-gray">Monday - Friday</span>
@@ -168,7 +168,7 @@ export const Contact: React.FC = () => {
 
             {/* Social Media */}
             <div className="bg-charcoal/30 backdrop-blur-sm border border-pearl/10 p-8 rounded-sm hover:border-tangerine/30 transition-all duration-500">
-              <h2 className="font-serif text-2xl text-pearl mb-6 tracking-wide">Follow Us</h2>
+              <h2 className="font-display text-2xl text-pearl mb-6 tracking-wide uppercase">Follow Us</h2>
               <div className="flex gap-4">
                 <a href="#" className="w-12 h-12 rounded-full bg-charcoal hover:bg-tangerine/20 border border-pearl/10 hover:border-tangerine/50 flex items-center justify-center transition-all group">
                   <Instagram className="w-5 h-5 text-warm-gray group-hover:text-tangerine" />
@@ -191,7 +191,7 @@ export const Contact: React.FC = () => {
             className="lg:col-span-3"
           >
             <div className="bg-charcoal/30 backdrop-blur-sm border border-pearl/10 p-10 rounded-sm hover:border-tangerine/30 transition-all duration-500">
-              <h2 className="font-serif text-3xl text-pearl mb-8 tracking-wide">Send us a Message</h2>
+              <h2 className="font-display text-3xl text-pearl mb-8 tracking-wide uppercase">Send us a Message</h2>
 
               {submitted ? (
                 <div className="py-20 text-center">
@@ -205,7 +205,7 @@ export const Contact: React.FC = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-pearl text-sm mb-2 tracking-wide">Full Name</label>
+                      <label className="block text-pearl text-xs font-mono uppercase tracking-widest mb-2">Full Name</label>
                       <input
                         type="text"
                         required
@@ -216,7 +216,7 @@ export const Contact: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-pearl text-sm mb-2 tracking-wide">Email Address</label>
+                      <label className="block text-pearl text-xs font-mono uppercase tracking-widest mb-2">Email Address</label>
                       <input
                         type="email"
                         required
@@ -229,7 +229,7 @@ export const Contact: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-pearl text-sm mb-2 tracking-wide">Subject</label>
+                    <label className="block text-pearl text-xs font-mono uppercase tracking-widest mb-2">Subject</label>
                     <input
                       type="text"
                       required
@@ -241,7 +241,7 @@ export const Contact: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-pearl text-sm mb-2 tracking-wide">Message</label>
+                    <label className="block text-pearl text-xs font-mono uppercase tracking-widest mb-2">Message</label>
                     <textarea
                       required
                       rows={6}

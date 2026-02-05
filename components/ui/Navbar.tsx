@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { Menu, X, User, ShoppingBag, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, X, User, ShoppingBag, LogOut, ChevronDown, Layers } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCartContext } from '../../context/CartContext';
 
@@ -138,6 +138,17 @@ const Navbar = () => {
                                                     <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-1">Signed in as</p>
                                                     <p className="text-sm font-display font-bold text-white truncate">{user.fullName}</p>
                                                 </div>
+
+                                                {user.role === 'ADMIN' && (
+                                                    <Link
+                                                        to="/admin"
+                                                        className="flex items-center gap-3 px-4 py-3 text-sm text-tangerine hover:bg-stone-800 hover:text-amber-500 transition-colors rounded-md"
+                                                        onClick={() => setUserMenuOpen(false)}
+                                                    >
+                                                        <Layers size={16} />
+                                                        ADMIN DASHBOARD
+                                                    </Link>
+                                                )}
 
                                                 <Link
                                                     to="/profile"

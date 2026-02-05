@@ -1,52 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGallery } from '../context/GalleryContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowRight, Sparkles, Layers, ArrowLeft } from 'lucide-react';
+import { ArrowRight, Sparkles, Layers, Search, Filter, X, ChevronDown } from 'lucide-react';
 import ArtworkCard from '../components/ui/ArtworkCard';
+import Button from '../components/ui/Button';
 
 export const Collections: React.FC = () => {
     const { artworks } = useGallery();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const activeCategory = searchParams.get('category');
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    // Group artworks by category for "Collections"
-    const collections = [
-        {
-            id: 'paintings',
-            title: 'Painting',
-            description: 'Contemporary expressions on canvas.',
-            image: artworks.find(a => a.category === 'Painting')?.images[0] || 'https://images.unsplash.com/photo-1549887552-93f954d4393e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-            count: artworks.filter(a => a.category === 'Painting').length
-        },
-        {
-            id: 'digital',
-            title: 'Digital Art',
-            description: 'Pixels and code converging into visual narratives.',
-            image: artworks.find(a => a.category === 'Digital')?.images[0] || 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-            count: artworks.filter(a => a.category === 'Digital').length
-        },
-        {
-            id: 'sculpture',
-            title: 'Sculpture',
-            description: 'Three-dimensional forms defining space.',
-            image: artworks.find(a => a.category === 'Sculpture')?.images[0] || 'https://images.unsplash.com/photo-1569031023594-8178a9c27943?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-            count: artworks.filter(a => a.category === 'Sculpture').length
-        },
-        {
-            id: 'photography',
-            title: 'Photography',
-            description: 'Capturing moments, light, and perspective.',
-            image: artworks.find(a => a.category === 'Photography')?.images[0] || 'https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-            count: artworks.filter(a => a.category === 'Photography').length
+    // Filters State
+    const [activeCategory, setActiveCategory] = useState<string>('All');
+    const [availability, setAvailability] = useState<string>('all');
+    const [sortBy, setSortBy] = useState<string>('newest');
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+    // Initial Load from URL
+    useEffect(() => {
+        const cat = searchParams.get('category');
+        if (cat) setActiveCategory(cat);
+    }, [searchParams]);
+
+    // Categories
+    const categories = ['All', 'Painting', 'Digital', 'Sculpture', 'Photography', 'Mixed Media'];
+
+    // Smart Filter Logic
+    const filteredArtworks = useMemo(() => {
+        return artworks.filter(art => {
+            // Category Filter
+            if (activeCategory !== 'All' && art.category !== activeCategory) return false;
+
+            // Availability Filter
+            if (availability === 'available' && art.status !== 'available') return false;
+            if (availability === 'sold' && art.status === 'sold') return false;
+
+            // Search Query (Smart Filter)
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                const matchTitle = art.title.toLowerCase().includes(query);
+                const matchArtist = art.artistName.toLowerCase().includes(query);
+                const matchDesc = art.description?.toLowerCase().includes(query);
+                // Can add tags check here if tags exist in type
+                if (!matchTitle && !matchArtist && !matchDesc) return false;
+            }
+
+            return true;
+        }).sort((a, b) => {
+            if (sortBy === 'lowest') return a.price - b.price;
+            if (sortBy === 'highest') return b.price - a.price;
+            if (sortBy === 'oldest') return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+            // Default newest
+            return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        });
+    }, [artworks, activeCategory, availability, sortBy, searchQuery]);
+
+    const updateCategory = (cat: string) => {
+        setActiveCategory(cat);
+        if (cat === 'All') {
+            searchParams.delete('category');
+        } else {
+            searchParams.set('category', cat);
         }
-    ];
-
-    // Filter artworks if category is selected
-    const filteredArtworks = activeCategory
-        ? artworks.filter(a => a.category.toLowerCase() === activeCategory.toLowerCase() || (a.category === 'Digital' && activeCategory === 'Digital Art'))
-        : [];
+        setSearchParams(searchParams);
+    };
 
     return (
         <div className="min-h-screen bg-void pt-32 pb-20 relative overflow-hidden">
@@ -54,133 +73,234 @@ export const Collections: React.FC = () => {
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/5 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-charcoal/50 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="max-w-7xl mx-auto px-6">
-                <AnimatePresence mode="wait">
-                    {!activeCategory ? (
-                        /* COLLECTIONS OVERVIEW */
-                        <motion.div
-                            key="overview"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            {/* Header */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.8 }}
-                                className="mb-20"
-                            >
-                                <div className="flex items-center gap-3 mb-6">
-                                    <Layers className="text-tangerine" size={32} />
-                                    <h1 className="font-display text-5xl md:text-7xl text-pearl tracking-tighter uppercase">
-                                        Curated <span className="text-transparent bg-clip-text bg-gradient-to-r from-tangerine to-amber">Collections</span>
-                                    </h1>
-                                </div>
-                                <p className="text-warm-gray text-xl max-w-2xl font-light border-l-2 border-tangerine pl-6">
-                                    Explore our distinct categories of artistic expression, curated to inspire and provoke thought.
-                                </p>
-                            </motion.div>
+            <div className="max-w-[1920px] mx-auto px-6 md:px-12 relative z-10">
 
-                            {/* Collections Grid */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {collections.map((collection, index) => (
-                                    <motion.div
-                                        key={collection.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: index * 0.1, duration: 0.5 }}
-                                        className="group relative h-[400px] overflow-hidden rounded-sm cursor-pointer border border-pearl/10 bg-charcoal"
-                                        onClick={() => navigate(`/collections?category=${encodeURIComponent(collection.title)}`)}
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-pearl/10 pb-8 gap-6">
+                    <div>
+                        <h1 className="font-display text-5xl md:text-7xl text-pearl tracking-tighter uppercase mb-4">
+                            Collection <span className="text-tangerine">Archive</span>
+                        </h1>
+                        <p className="text-warm-gray font-mono text-sm max-w-xl">
+                            Explore our curated selection of contemporary masterpieces. Use the filters to refine your search.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex flex-col lg:flex-row gap-12">
+
+                    {/* Sidebar Filters (Desktop) */}
+                    <aside className="hidden lg:block w-64 space-y-8 flex-shrink-0">
+                        {/* Search */}
+                        <div className="relative">
+                            <input
+                                type="text"
+                                placeholder="Smart Filter..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 pl-10 text-pearl focus:border-tangerine outline-none transition-all font-mono text-xs"
+                            />
+                            <Search className="absolute left-3 top-3 text-warm-gray w-4 h-4" />
+                        </div>
+
+                        {/* Categories */}
+                        <div>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Categories</h3>
+                            <div className="space-y-2">
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => updateCategory(cat)}
+                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-white transition-colors ${activeCategory === cat ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
                                     >
-                                        {/* Background Image */}
-                                        <div className="absolute inset-0">
-                                            <img
-                                                src={collection.image}
-                                                alt={collection.title}
-                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                                            />
-                                            <div className="absolute inset-0 bg-void/60 group-hover:bg-void/40 transition-colors duration-500" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-void via-void/50 to-transparent opacity-90" />
-                                        </div>
-
-                                        {/* Content */}
-                                        <div className="absolute bottom-0 left-0 w-full p-8">
-                                            <div className="flex justify-between items-end mb-4">
-                                                <div>
-                                                    <h3 className="text-3xl font-display text-pearl uppercase mb-2 group-hover:text-tangerine transition-colors">
-                                                        {collection.title}
-                                                    </h3>
-                                                    <p className="text-warm-gray text-sm max-w-xs opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">
-                                                        {collection.description}
-                                                    </p>
-                                                </div>
-                                                <span className="text-6xl font-display text-white/5 absolute top-4 right-4 group-hover:text-tangerine/10 transition-colors">
-                                                    0{index + 1}
-                                                </span>
-                                            </div>
-
-                                            <div className="flex justify-between items-center border-t border-pearl/10 pt-4 mt-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Sparkles size={16} className="text-tangerine" />
-                                                    <span className="text-pearl font-mono text-sm">{collection.count} Artworks</span>
-                                                </div>
-                                                <div className="w-10 h-10 rounded-full border border-pearl/30 flex items-center justify-center group-hover:bg-tangerine group-hover:border-tangerine transition-all">
-                                                    <ArrowRight size={20} className="text-pearl group-hover:text-void -rotate-45 group-hover:rotate-0 transition-transform duration-500" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
+                                        {cat}
+                                    </button>
                                 ))}
                             </div>
-                        </motion.div>
-                    ) : (
-                        /* CATEGORY VIEW */
-                        <motion.div
-                            key="category"
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: 20 }}
-                            transition={{ duration: 0.5 }}
-                        >
-                            <button
-                                onClick={() => navigate('/collections')}
-                                className="group flex items-center gap-2 text-warm-gray hover:text-tangerine mb-8 uppercase tracking-widest text-xs font-bold transition-colors"
-                            >
-                                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:border-tangerine transition-colors">
-                                    <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-                                </div>
-                                Back to Collections
-                            </button>
+                        </div>
 
-                            <div className="mb-12 border-b border-pearl/10 pb-8">
-                                <h1 className="text-4xl md:text-6xl font-display font-bold text-pearl uppercase tracking-tighter mb-4">
-                                    {activeCategory}
-                                </h1>
-                                <p className="text-warm-gray max-w-2xl">
-                                    Browsing our curated selection of {activeCategory.toLowerCase()}.
+                        {/* Availability */}
+                        <div>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Availability</h3>
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className={`w-4 h-4 border border-pearl/20 flex items-center justify-center transition-colors ${availability === 'all' ? 'bg-tangerine border-tangerine' : ''}`}>
+                                        {availability === 'all' && <div className="w-2 h-2 bg-void" />}
+                                    </div>
+                                    <input type="radio" name="availability" className="hidden" checked={availability === 'all'} onChange={() => setAvailability('all')} />
+                                    <span className="text-warm-gray group-hover:text-white text-sm font-mono">All Artworks</span>
+                                </label>
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className={`w-4 h-4 border border-pearl/20 flex items-center justify-center transition-colors ${availability === 'available' ? 'bg-tangerine border-tangerine' : ''}`}>
+                                        {availability === 'available' && <div className="w-2 h-2 bg-void" />}
+                                    </div>
+                                    <input type="radio" name="availability" className="hidden" checked={availability === 'available'} onChange={() => setAvailability('available')} />
+                                    <span className="text-warm-gray group-hover:text-white text-sm font-mono">Available</span>
+                                </label>
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className={`w-4 h-4 border border-pearl/20 flex items-center justify-center transition-colors ${availability === 'sold' ? 'bg-tangerine border-tangerine' : ''}`}>
+                                        {availability === 'sold' && <div className="w-2 h-2 bg-void" />}
+                                    </div>
+                                    <input type="radio" name="availability" className="hidden" checked={availability === 'sold'} onChange={() => setAvailability('sold')} />
+                                    <span className="text-warm-gray group-hover:text-white text-sm font-mono">Sold</span>
+                                </label>
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* Mobile Filter Toggle */}
+                    <div className="lg:hidden mb-6">
+                        <Button variant="outline" onClick={() => setMobileFiltersOpen(true)} className="w-full flex justify-between items-center">
+                            <span>FILTERS / SORT</span>
+                            <Filter size={16} />
+                        </Button>
+                    </div>
+
+                    {/* Main Grid */}
+                    <div className="flex-1">
+                        {/* Sorting and Results Count */}
+                        <div className="flex justify-between items-center mb-6">
+                            <p className="text-warm-gray font-mono text-xs">{filteredArtworks.length} RESULTS</p>
+                            <div className="flex gap-4">
+                                <select
+                                    className="bg-transparent text-pearl font-mono text-xs uppercase outline-none cursor-pointer hover:text-tangerine"
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                >
+                                    <option value="newest" className="bg-void">Newest First</option>
+                                    <option value="oldest" className="bg-void">Oldest First</option>
+                                    <option value="lowest" className="bg-void">Price: Low to High</option>
+                                    <option value="highest" className="bg-void">Price: High to Low</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {filteredArtworks.length > 0 ? (
+                            <motion.div
+                                layout
+                                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"
+                            >
+                                <AnimatePresence>
+                                    {filteredArtworks.map((art) => (
+                                        <motion.div
+                                            key={art.id}
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.9 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            {/* Adjusted Artcard for smaller size by wrapper className handled in grid cols, internal aspect ratio stays */}
+                                            <ArtworkCard artwork={art} />
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </motion.div>
+                        ) : (
+                            <div className="py-20 text-center border border-dashed border-pearl/10 rounded-sm">
+                                <Sparkles className="mx-auto mb-4 text-tangerine/50" />
+                                <h3 className="text-pearl font-display text-xl mb-2">No Artworks Found</h3>
+                                <p className="text-warm-gray font-mono text-sm max-w-md mx-auto">
+                                    Try adjusting your filters or search query to find what you're looking for.
                                 </p>
+                                <Button
+                                    variant="secondary"
+                                    className="mt-6"
+                                    onClick={() => {
+                                        setActiveCategory('All');
+                                        setAvailability('all');
+                                        setSearchQuery('');
+                                    }}
+                                >
+                                    CLEAR FILTERS
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Filters Modal */}
+            <AnimatePresence>
+                {mobileFiltersOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-void/90 backdrop-blur-md z-50 p-6 overflow-y-auto"
+                    >
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-2xl font-display font-bold text-pearl">Refine</h2>
+                            <button onClick={() => setMobileFiltersOpen(false)} className="text-pearl hover:text-tangerine">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-8">
+                            {/* Mobile Search */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Search</h3>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Smart Filter..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 pl-10 text-pearl focus:border-tangerine outline-none transition-all font-mono text-xs"
+                                    />
+                                    <Search className="absolute left-3 top-3 text-warm-gray w-4 h-4" />
+                                </div>
                             </div>
 
-                            {filteredArtworks.length > 0 ? (
-                                <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
-                                    {filteredArtworks.map((art) => (
-                                        <div key={art.id} className="break-inside-avoid">
-                                            <ArtworkCard artwork={art} />
-                                        </div>
+                            {/* Mobile Categories */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Categories</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {categories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => updateCategory(cat)}
+                                            className={`p-3 border rounded-sm text-xs font-mono uppercase tracking-widest transition-all ${activeCategory === cat ? 'bg-tangerine text-void border-tangerine font-bold' : 'border-pearl/20 text-warm-gray'}`}
+                                        >
+                                            {cat}
+                                        </button>
                                     ))}
                                 </div>
-                            ) : (
-                                <div className="py-20 text-center text-warm-gray border border-white/5 rounded-lg bg-charcoal">
-                                    <Sparkles className="mx-auto mb-4 text-tangerine/50" />
-                                    <p>No artworks found in this collection.</p>
+                            </div>
+
+                            {/* Mobile Availability & Sort */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Filter & Sort</h3>
+                                <div className="space-y-4">
+                                    <select
+                                        className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 text-pearl focus:border-tangerine outline-none font-mono text-xs"
+                                        value={availability}
+                                        onChange={(e) => setAvailability(e.target.value)}
+                                    >
+                                        <option value="all">All Availability</option>
+                                        <option value="available">Available Only</option>
+                                        <option value="sold">Sold Only</option>
+                                    </select>
+                                    <select
+                                        className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 text-pearl focus:border-tangerine outline-none font-mono text-xs"
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value)}
+                                    >
+                                        <option value="newest">Newest First</option>
+                                        <option value="oldest">Oldest First</option>
+                                        <option value="lowest">Price: Low to High</option>
+                                        <option value="highest">Price: High to Low</option>
+                                    </select>
                                 </div>
-                            )}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+                            </div>
+
+                            <Button onClick={() => setMobileFiltersOpen(false)} className="w-full mt-8">
+                                VIEW RESULTS
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
