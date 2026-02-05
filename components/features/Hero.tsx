@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
+import { useGallery } from '../../context/GalleryContext';
 
-// Placeholder Banner Images 
-const banners = [
+// Default Fallback Images
+const DEFAULT_BANNERS = [
     {
         id: 1,
         image: 'https://images.unsplash.com/photo-1549887552-93f954d4393e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
@@ -25,14 +26,29 @@ const banners = [
 ];
 
 const Hero = () => {
+    const { landingPageContent } = useGallery();
     const [current, setCurrent] = useState(0);
 
+    // Determine content source
+    const heroConfig = landingPageContent?.hero;
+    const hasDynamicContent = heroConfig?.enabled && heroConfig?.backgroundImages && heroConfig.backgroundImages.length > 0;
+
+    const banners = hasDynamicContent
+        ? heroConfig.backgroundImages.map((img, idx) => ({
+            id: idx,
+            image: img,
+            title: heroConfig.title || 'MURAQQA',
+            subtitle: heroConfig.subtitle || 'CONTEMPORARY ART'
+        }))
+        : DEFAULT_BANNERS;
+
     useEffect(() => {
+        if (banners.length <= 1) return;
         const timer = setInterval(() => {
             setCurrent(prev => (prev + 1) % banners.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [banners.length]);
 
     return (
         <section className="relative h-screen w-full bg-void overflow-hidden">
