@@ -101,7 +101,7 @@ export const Artists: React.FC = () => {
 
         {/* Grid */}
         <div className="w-full max-w-[1920px] mx-auto px-6 md:px-12">
-          {filteredArtists.length > 0 ? (
+          {filteredArtists.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <AnimatePresence>
                 {filteredArtists.map((artist, i) => (
@@ -137,8 +137,9 @@ export const Artists: React.FC = () => {
                 ))}
               </AnimatePresence>
             </div>
+          )}
 
-        {filteredArtists.length === 0 && (
+          {filteredArtists.length === 0 && (
             <div className="py-20 text-center border border-dashed border-pearl/10">
               <p className="font-display text-2xl text-warm-gray mb-2">No Artists Found</p>
               <button onClick={() => setSearchTerm('')} className="text-tangerine text-xs uppercase tracking-widest hover:underline">Clear Filters</button>
