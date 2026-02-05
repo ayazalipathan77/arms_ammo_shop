@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useCart, useCurrency } from '../App';
+import { useCartContext } from '../context/CartContext';
 import { useGallery } from '../context/GalleryContext';
 import { ARView } from '../components/ARView';
 import { ShieldCheck, Truck, Box, CreditCard, Share2, Star, FileText, X, Loader2, ArrowLeft, Heart, Maximize2 } from 'lucide-react';
 import { CartItem, Artwork } from '../types';
 import { artworkApi, transformArtwork } from '../services/api';
+import { formatCurrency, cn } from '../lib/utils';
+import Button from '../components/ui/Button';
 
 export const ArtworkDetail: React.FC = () => {
    const { id } = useParams<{ id: string }>();
    const navigate = useNavigate();
-   const { addToCart } = useCart();
-   const { convertPrice } = useCurrency();
+   const { addToCart } = useCartContext(); // Updated hook
    const { artworks } = useGallery();
 
    const [artwork, setArtwork] = useState<Artwork | null>(null);
@@ -68,8 +69,8 @@ export const ArtworkDetail: React.FC = () => {
       }
    }, [hasPrints, purchaseType]);
 
-   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-stone-950"><Loader2 className="w-8 h-8 text-amber-500 animate-spin" /></div>;
-   if (error || !artwork) return <div className="min-h-screen flex items-center justify-center bg-stone-950 text-white">{error || 'Artwork not found'}</div>;
+   if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-void"><Loader2 className="w-8 h-8 text-tangerine animate-spin" /></div>;
+   if (error || !artwork) return <div className="min-h-screen flex items-center justify-center bg-void text-pearl">{error || 'Artwork not found'}</div>;
 
    const relatedArtworks = artworks.filter(art => art.id !== id && art.artistName === artwork.artistName).slice(0, 4);
 
@@ -89,34 +90,34 @@ export const ArtworkDetail: React.FC = () => {
    };
 
    return (
-      <div className="min-h-screen bg-stone-950 pb-12">
+      <div className="min-h-screen bg-void pb-12">
          {showAR && <ARView artwork={artwork} onClose={() => setShowAR(false)} />}
 
          {/* Fullscreen Zoom Lightbox */}
          {showZoom && (
-            <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center" onClick={() => setShowZoom(false)}>
+            <div className="fixed inset-0 z-[100] bg-void/90 backdrop-blur-md flex items-center justify-center" onClick={() => setShowZoom(false)}>
                <button
                   onClick={() => setShowZoom(false)}
-                  className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors z-10"
+                  className="absolute top-6 right-6 text-pearl hover:text-white transition-colors z-10"
                >
                   <X size={28} />
                </button>
                <img
                   src={artwork.imageUrl}
                   alt={artwork.title}
-                  className="max-w-[95vw] max-h-[95vh] object-contain cursor-zoom-out"
+                  className="max-w-[95vw] max-h-[95vh] object-contain cursor-zoom-out shadow-2xl"
                   onClick={(e) => { e.stopPropagation(); setShowZoom(false); }}
                />
                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
-                  <p className="font-serif text-lg text-white/80">{artwork.title}</p>
-                  <p className="text-stone-500 text-xs uppercase tracking-widest mt-1">{artwork.artistName} • {artwork.year}</p>
+                  <p className="font-display text-lg text-pearl">{artwork.title}</p>
+                  <p className="text-warm-gray text-xs uppercase tracking-widest mt-1 font-mono">{artwork.artistName} • {artwork.year}</p>
                </div>
             </div>
          )}
 
          {/* Navigation Bar */}
          <div className="fixed top-24 left-0 w-full z-40 px-6 md:px-12 pointer-events-none">
-            <Link to="/gallery" className="inline-flex items-center gap-2 text-stone-500 hover:text-white uppercase tracking-widest text-xs pointer-events-auto transition-colors bg-stone-950/50 backdrop-blur px-3 py-1 rounded-full">
+            <Link to="/" className="inline-flex items-center gap-2 text-pearl hover:text-tangerine uppercase tracking-widest text-xs pointer-events-auto transition-colors bg-void/50 backdrop-blur-md border border-pearl/10 px-4 py-2 rounded-full font-bold">
                <ArrowLeft size={14} /> Back to Collection
             </Link>
          </div>
@@ -124,8 +125,11 @@ export const ArtworkDetail: React.FC = () => {
          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-screen">
 
             {/* Left: Immersive Image (Taking majority of screen on desktop) */}
-            <div className="lg:col-span-8 lg:h-screen lg:sticky lg:top-0 bg-stone-900 flex items-center justify-center p-8 md:p-20 relative group">
-               <div className="relative w-full h-full max-h-[85vh] flex items-center justify-center">
+            <div className="lg:col-span-8 lg:h-screen lg:sticky lg:top-0 bg-charcoal/30 flex items-center justify-center p-8 md:p-20 relative group overflow-hidden">
+               {/* Ambient Glow */}
+               <div className="absolute inset-0 bg-gradient-to-b from-void/0 via-void/0 to-void/50 z-10 pointer-events-none"></div>
+
+               <div className="relative w-full h-full max-h-[85vh] flex items-center justify-center z-20">
                   <img
                      src={artwork.imageUrl}
                      alt={artwork.title}
@@ -133,10 +137,10 @@ export const ArtworkDetail: React.FC = () => {
                   />
                   {/* Image Controls */}
                   <div className="absolute bottom-8 right-8 flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                     <button onClick={() => setShowAR(true)} className="bg-stone-950/80 backdrop-blur text-white p-3 hover:text-amber-500 transition-colors rounded-full" title="View in AR">
+                     <button onClick={() => setShowAR(true)} className="bg-void/80 backdrop-blur text-pearl p-3 hover:text-tangerine transition-colors rounded-full border border-pearl/10" title="View in AR">
                         <Box size={20} />
                      </button>
-                     <button onClick={() => setShowZoom(true)} className="bg-stone-950/80 backdrop-blur text-white p-3 hover:text-amber-500 transition-colors rounded-full" title="Zoom">
+                     <button onClick={() => setShowZoom(true)} className="bg-void/80 backdrop-blur text-pearl p-3 hover:text-tangerine transition-colors rounded-full border border-pearl/10" title="Zoom">
                         <Maximize2 size={20} />
                      </button>
                   </div>
@@ -144,45 +148,45 @@ export const ArtworkDetail: React.FC = () => {
             </div>
 
             {/* Right: Details Panel */}
-            <div className="lg:col-span-4 bg-stone-950 px-8 md:px-12 py-10 lg:py-16 space-y-8 overflow-y-auto">
+            <div className="lg:col-span-4 bg-void px-8 md:px-12 py-10 lg:py-16 space-y-8 overflow-y-auto border-l border-pearl/5">
 
                {/* Header */}
                <div className="space-y-4">
                   <div className="flex justify-between items-start">
-                     <Link to={`/artists/${artwork.artistId}`} className="text-amber-500 uppercase tracking-[0.2em] text-sm hover:text-white transition-colors block mb-2">
+                     <Link to={`/artists/${artwork.artistId}`} className="text-tangerine uppercase tracking-[0.2em] text-xs font-bold hover:text-white transition-colors block mb-2">
                         {artwork.artistName}
                      </Link>
                      <button
                         onClick={() => setIsSaved(!isSaved)}
-                        className={`transition-colors ${isSaved ? 'text-red-500' : 'text-stone-500 hover:text-red-500'}`}
+                        className={`transition-colors ${isSaved ? 'text-red-500' : 'text-warm-gray hover:text-red-500'}`}
                      >
                         <Heart size={20} fill={isSaved ? "currentColor" : "none"} />
                      </button>
                   </div>
-                  <h1 className="font-serif text-4xl md:text-5xl text-white leading-tight">{artwork.title}</h1>
-                  <p className="text-stone-500 text-sm uppercase tracking-widest">{artwork.year} • {artwork.medium}</p>
+                  <h1 className="font-display text-4xl md:text-5xl text-pearl leading-tight">{artwork.title}</h1>
+                  <p className="text-warm-gray text-xs uppercase tracking-widest font-mono">{artwork.year} • {artwork.medium}</p>
                </div>
 
                {/* Description */}
                <div className="prose prose-invert prose-stone">
-                  <p className="font-light text-stone-300 leading-relaxed text-lg">{artwork.description}</p>
+                  <p className="font-light text-pearl/80 leading-relaxed text-lg">{artwork.description}</p>
                </div>
 
                {/* Commerce Section */}
-               <div className="space-y-5 pt-6 border-t border-stone-800">
+               <div className="space-y-6 pt-8 border-t border-pearl/10">
 
                   {/* Type Selection - Only show tabs if prints available */}
                   {hasPrints && (
-                     <div className="flex items-center gap-1 bg-stone-900 p-1 rounded-lg w-fit">
+                     <div className="flex items-center gap-1 bg-charcoal p-1 rounded-sm w-fit border border-pearl/10">
                         <button
                            onClick={() => { setPurchaseType('ORIGINAL'); setPrintQuantity(1); }}
-                           className={`px-6 py-2 text-xs uppercase tracking-widest rounded-md transition-all ${purchaseType === 'ORIGINAL' ? 'bg-stone-800 text-white shadow' : 'text-stone-500 hover:text-stone-300'}`}
+                           className={cn("px-6 py-2 text-xs uppercase tracking-widest transition-all font-bold", purchaseType === 'ORIGINAL' ? "bg-white text-void" : "text-warm-gray hover:text-pearl")}
                         >
                            Original
                         </button>
                         <button
                            onClick={() => setPurchaseType('PRINT')}
-                           className={`px-6 py-2 text-xs uppercase tracking-widest rounded-md transition-all ${purchaseType === 'PRINT' ? 'bg-stone-800 text-white shadow' : 'text-stone-500 hover:text-stone-300'}`}
+                           className={cn("px-6 py-2 text-xs uppercase tracking-widest transition-all font-bold", purchaseType === 'PRINT' ? "bg-white text-void" : "text-warm-gray hover:text-pearl")}
                         >
                            Print
                         </button>
@@ -190,56 +194,50 @@ export const ArtworkDetail: React.FC = () => {
                   )}
 
                   {purchaseType === 'PRINT' && hasPrints && (
-                     <div className="space-y-4">
+                     <div className="space-y-4 animate-fade-in">
                         {/* Fabric Canvas Notice */}
-                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
-                           <p className="text-amber-500/90 text-xs leading-relaxed">
+                        <div className="bg-tangerine/5 border border-tangerine/20 p-4">
+                           <p className="text-tangerine text-xs leading-relaxed font-mono">
                               Printed on high-end fabric canvas — the same material used for the original painting. Colors may differ slightly from the original artwork.
                            </p>
                         </div>
 
                         {/* Size Selection */}
                         <div className="space-y-3">
-                           <span className="text-stone-500 text-xs uppercase tracking-widest">Select Size</span>
+                           <span className="text-warm-gray text-xs uppercase tracking-widest font-bold">Select Size</span>
                            <div className="flex flex-col gap-2">
                               {printSizes.map(size => (
                                  <button
                                     key={size.name}
                                     onClick={() => setSelectedPrintSize(size.name)}
-                                    className={`flex items-center justify-between px-4 py-3 border rounded-lg text-xs transition-all ${selectedPrintSize === size.name ? 'border-amber-500 bg-amber-500/5 text-white' : 'border-stone-800 text-stone-500 hover:border-stone-600'}`}
+                                    className={cn("flex items-center justify-between px-4 py-3 border transition-all", selectedPrintSize === size.name ? "border-tangerine bg-tangerine/5 text-pearl" : "border-pearl/10 text-warm-gray hover:border-pearl/30")}
                                  >
                                     <div className="flex flex-col items-start gap-0.5">
-                                       <span className="font-medium uppercase tracking-wider">{size.name}</span>
-                                       <span className="text-stone-600 text-[10px]">{size.dimensions}</span>
+                                       <span className="font-bold uppercase tracking-wider text-xs">{size.name}</span>
+                                       <span className="text-warm-gray/70 text-[10px] font-mono">{size.dimensions}</span>
                                     </div>
-                                    <span className={`font-medium ${selectedPrintSize === size.name ? 'text-amber-500' : ''}`}>
-                                       {convertPrice(size.price)}
+                                    <span className={cn("font-mono text-sm", selectedPrintSize === size.name ? "text-tangerine" : "")}>
+                                       {formatCurrency(size.price)}
                                     </span>
                                  </button>
                               ))}
                            </div>
                         </div>
 
-                        {/* Medium Label */}
-                        <div className="flex items-center gap-2 text-stone-600 text-[10px] uppercase tracking-widest">
-                           <div className="w-2 h-2 rounded-full bg-amber-500/40"></div>
-                           Medium: Fabric Canvas
-                        </div>
-
                         {/* Quantity Selector */}
                         <div className="space-y-2">
-                           <span className="text-stone-500 text-xs uppercase tracking-widest">Quantity</span>
+                           <span className="text-warm-gray text-xs uppercase tracking-widest font-bold">Quantity</span>
                            <div className="flex items-center gap-3">
                               <button
                                  onClick={() => setPrintQuantity(Math.max(1, printQuantity - 1))}
-                                 className="w-10 h-10 border border-stone-800 text-stone-400 hover:border-stone-600 hover:text-white flex items-center justify-center rounded-lg transition-colors text-lg"
+                                 className="w-10 h-10 border border-pearl/20 text-pearl hover:border-tangerine hover:text-tangerine flex items-center justify-center transition-colors text-lg"
                               >
                                  −
                               </button>
-                              <span className="text-white text-lg w-8 text-center font-medium">{printQuantity}</span>
+                              <span className="text-pearl text-lg w-8 text-center font-mono">{printQuantity}</span>
                               <button
                                  onClick={() => setPrintQuantity(printQuantity + 1)}
-                                 className="w-10 h-10 border border-stone-800 text-stone-400 hover:border-stone-600 hover:text-white flex items-center justify-center rounded-lg transition-colors text-lg"
+                                 className="w-10 h-10 border border-pearl/20 text-pearl hover:border-tangerine hover:text-tangerine flex items-center justify-center transition-colors text-lg"
                               >
                                  +
                               </button>
@@ -249,37 +247,38 @@ export const ArtworkDetail: React.FC = () => {
                   )}
 
                   {/* Price & Add */}
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                      <div>
-                        <p className="font-serif text-4xl text-white">{convertPrice(finalPricePKR)}</p>
+                        <p className="font-display text-4xl text-pearl">{formatCurrency(finalPricePKR)}</p>
                         {purchaseType === 'PRINT' && printQuantity > 1 && selectedSizeOption && (
-                           <p className="text-stone-500 text-xs mt-1">{convertPrice(printUnitPrice)} each × {printQuantity}</p>
+                           <p className="text-warm-gray text-xs mt-1 font-mono">{formatCurrency(printUnitPrice)} each × {printQuantity}</p>
                         )}
                      </div>
                      {artwork.inStock ? (
-                        <button
+                        <Button
                            onClick={handleAddToCart}
-                           className="w-full bg-white text-stone-950 hover:bg-stone-200 py-4 uppercase tracking-widest text-xs font-bold transition-all"
+                           variant="primary"
+                           className="w-full py-4 text-sm"
                         >
                            Add to Collection
-                        </button>
+                        </Button>
                      ) : (
-                        <button disabled className="w-full bg-stone-800 text-stone-500 py-4 uppercase tracking-widest text-xs cursor-not-allowed">
+                        <button disabled className="w-full bg-charcoal text-warm-gray py-4 uppercase tracking-widest text-xs cursor-not-allowed border border-pearl/5">
                            Sold Out
                         </button>
                      )}
-                     <p className="text-center text-[10px] text-stone-500 uppercase tracking-widest mt-1">
+                     <p className="text-center text-[10px] text-warm-gray uppercase tracking-widest mt-1">
                         Free insured shipping worldwide
                      </p>
                   </div>
                </div>
 
                {/* Collapsible Meta */}
-               <div className="space-y-3 pt-6 border-t border-stone-800">
-                  <div className="flex items-center gap-3 text-stone-400 text-xs uppercase tracking-widest">
-                     <ShieldCheck size={14} /> Certificate of Authenticity Included
+               <div className="space-y-3 pt-6 border-t border-pearl/10">
+                  <div className="flex items-center gap-3 text-warm-gray text-xs uppercase tracking-widest">
+                     <ShieldCheck size={14} className="text-tangerine" /> Certificate of Authenticity Included
                   </div>
-                  <button onClick={() => setShowProvenance(true)} className="flex items-center gap-2 text-amber-500 hover:text-amber-400 text-xs uppercase tracking-widest">
+                  <button onClick={() => setShowProvenance(true)} className="flex items-center gap-2 text-tangerine hover:text-white text-xs uppercase tracking-widest transition-colors font-bold">
                      <FileText size={14} /> View Provenance Record
                   </button>
                </div>
@@ -288,41 +287,41 @@ export const ArtworkDetail: React.FC = () => {
 
          {/* More from this Artist */}
          {relatedArtworks.length > 0 && (
-            <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-16 border-t border-stone-800 mt-8 bg-stone-950">
+            <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-16 border-t border-pearl/10 mt-8 bg-void">
                <div className="flex items-end justify-between mb-8">
                   <div>
-                     <p className="text-amber-500 text-xs uppercase tracking-[0.3em] mb-2">Collection</p>
-                     <h3 className="font-serif text-3xl text-white">More from <span className="italic text-amber-500">{artwork.artistName}</span></h3>
+                     <p className="text-tangerine text-xs uppercase tracking-[0.3em] mb-2 font-bold">Collection</p>
+                     <h3 className="font-display text-3xl text-pearl">More from <span className="italic text-tangerine">{artwork.artistName}</span></h3>
                   </div>
-                  <Link to={`/artists/${artwork.artistId}`} className="text-stone-500 hover:text-amber-500 text-xs uppercase tracking-[0.2em] transition-colors hidden md:block">
+                  <Link to={`/artists/${artwork.artistId}`} className="text-warm-gray hover:text-tangerine text-xs uppercase tracking-[0.2em] transition-colors hidden md:block font-bold">
                      View All Works →
                   </Link>
                </div>
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   {relatedArtworks.map((art) => (
                      <Link key={art.id} to={`/artwork/${art.id}`} className="group block">
-                        <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-900 to-neutral-950 rounded-2xl border border-stone-800/30 shadow-2xl group-hover:shadow-amber-900/20 transition-all duration-500 mb-4">
-                           <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100" />
+                        <div className="relative aspect-[3/4] overflow-hidden bg-charcoal rounded-sm border border-pearl/10 shadow-2xl group-hover:border-tangerine/50 transition-all duration-500 mb-4">
+                           <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-80 group-hover:opacity-100 grayscale group-hover:grayscale-0" />
                            {!art.inStock && (
-                              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center rounded-2xl">
-                                 <span className="text-white border border-white px-4 py-2 rounded-full uppercase tracking-[0.3em] text-[10px] font-medium">Sold</span>
+                              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
+                                 <span className="text-white border border-white px-4 py-2 uppercase tracking-[0.3em] text-[10px] font-medium">Sold</span>
                               </div>
                            )}
-                           <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500 rounded-b-2xl">
-                              <span className="text-amber-500 text-xs uppercase tracking-[0.3em] font-medium">View Details</span>
+                           <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-void via-void/50 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                              <span className="text-tangerine text-xs uppercase tracking-[0.3em] font-bold">View Details</span>
                            </div>
                         </div>
-                        <div className="space-y-2 px-2">
-                           <h4 className="font-serif text-lg text-white group-hover:text-amber-500 transition-colors truncate tracking-wide">{art.title}</h4>
-                           <div className="flex justify-between items-center pt-2 border-t border-stone-800/30">
-                              <span className="text-amber-500/80 text-sm font-medium">{convertPrice(art.price)}</span>
-                              <span className="text-stone-600 text-[10px] uppercase tracking-wider">{art.year}</span>
+                        <div className="space-y-2 px-1">
+                           <h4 className="font-display text-lg text-pearl group-hover:text-tangerine transition-colors truncate tracking-wide">{art.title}</h4>
+                           <div className="flex justify-between items-center pt-2 border-t border-pearl/10">
+                              <span className="text-tangerine text-sm font-mono">{formatCurrency(art.price)}</span>
+                              <span className="text-warm-gray text-[10px] uppercase tracking-wider font-mono">{art.year}</span>
                            </div>
                         </div>
                      </Link>
                   ))}
                </div>
-               <Link to={`/artists/${artwork.artistId}`} className="block text-center text-stone-500 hover:text-amber-500 text-xs uppercase tracking-[0.2em] transition-colors mt-8 md:hidden">
+               <Link to={`/artists/${artwork.artistId}`} className="block text-center text-warm-gray hover:text-tangerine text-xs uppercase tracking-[0.2em] transition-colors mt-8 md:hidden font-bold">
                   View All Works →
                </Link>
             </div>

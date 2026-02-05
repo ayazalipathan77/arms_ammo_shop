@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useCart, useCurrency } from '../App';
 import { useCartContext } from '../context/CartContext';
 import { useGallery } from '../context/GalleryContext';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Trash2, CheckCircle, FileText, AlertCircle, Lock, Loader2 } from 'lucide-react';
-import { orderApi, paymentApi, shippingApi, userApi } from '../services/api'; // Import shippingApi
+import { Trash2, CheckCircle, FileText, AlertCircle, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { orderApi, paymentApi, shippingApi, userApi } from '../services/api';
 import { StripeCheckout } from '../components/StripeCheckout';
+import { formatCurrency, cn } from '../lib/utils';
+import ParticleSystem from '../components/features/ParticleSystem';
 
 export const Cart: React.FC = () => {
-   const { cart, removeFromCart, clearCart } = useCart();
-   const { isLoading: cartLoading, error: cartError } = useCartContext();
-   const { convertPrice } = useCurrency();
+   const { cart, removeFromCart, clearCart, isLoading: cartLoading, error: cartError } = useCartContext();
    const { addOrder } = useGallery();
    const { token, user } = useAuth();
    const navigate = useNavigate();
@@ -131,7 +130,6 @@ export const Cart: React.FC = () => {
          return;
       }
 
-      // Enhanced validation to match backend requirements
       if (!shippingDetails.firstName || !shippingDetails.address || !shippingDetails.city) {
          setPaymentError('Please fill in all shipping details');
          return;
@@ -156,23 +154,12 @@ export const Cart: React.FC = () => {
       setPaymentError('');
 
       try {
-         // Create order via API
          const orderItems = cart.map(item => ({
             artworkId: item.id,
             quantity: item.quantity || 1,
             type: (item.selectedPrintSize === 'ORIGINAL' ? 'ORIGINAL' : 'PRINT') as 'ORIGINAL' | 'PRINT',
             printSize: item.selectedPrintSize !== 'ORIGINAL' ? item.selectedPrintSize : undefined,
          }));
-
-         // Debug logging
-         console.log('Creating order with payload:', {
-            items: orderItems,
-            shippingAddress: shippingDetails.address,
-            shippingCity: shippingDetails.city,
-            shippingCountry: shippingDetails.country,
-            paymentMethod: paymentMethod,
-            currency: 'PKR',
-         });
 
          const response = await orderApi.createOrder({
             items: orderItems,
@@ -184,7 +171,6 @@ export const Cart: React.FC = () => {
             notes: selectedRateId ? `Shipping: ${selectedRate?.service} (${selectedRate?.provider})` : undefined
          });
 
-         // Also add to local state for invoice view compatibility
          const newOrder = {
             id: response.order.id,
             customerName: `${shippingDetails.firstName} ${shippingDetails.lastName}`,
@@ -206,11 +192,9 @@ export const Cart: React.FC = () => {
          setPendingOrderId(response.order.id);
 
          if (paymentMethod === 'BANK') {
-            // For bank transfer, go directly to success with pending status
             setStep('SUCCESS');
             await clearCart();
          } else {
-            // For Stripe, show payment form
             setStep('PAYMENT');
          }
       } catch (error: any) {
@@ -221,18 +205,15 @@ export const Cart: React.FC = () => {
       }
    };
 
-   // Handle Stripe payment success
    const handlePaymentSuccess = async () => {
       setStep('SUCCESS');
       await clearCart();
    };
 
-   // Handle Stripe payment error
    const handlePaymentError = (error: string) => {
       setPaymentError(error);
    };
 
-   // Redirect to login if not authenticated and trying to checkout
    const handleProceedToShipping = () => {
       if (!token) {
          navigate('/auth');
@@ -243,374 +224,351 @@ export const Cart: React.FC = () => {
 
    if (cartLoading) {
       return (
-         <div className="min-h-screen flex flex-col items-center justify-center text-stone-500">
-            <Loader2 className="w-8 h-8 animate-spin text-amber-500 mb-4" />
-            <p>Loading your cart...</p>
+         <div className="min-h-screen flex flex-col items-center justify-center bg-void text-pearl">
+            <Loader2 className="w-8 h-8 animate-spin text-tangerine mb-4" />
+            <p className="font-mono text-xs uppercase tracking-widest">Loading Cart...</p>
          </div>
       );
    }
 
    if (cart.length === 0 && step !== 'SUCCESS') {
       return (
-         <div className="min-h-screen flex flex-col items-center justify-center text-stone-500">
-            <h2 className="text-3xl font-serif mb-4 text-stone-300">Your collection is empty</h2>
-            {cartError && <p className="text-red-400 mb-4">{cartError}</p>}
-            <Link to="/gallery" className="text-amber-500 hover:underline uppercase tracking-widest text-sm">Browse Artworks</Link>
+         <div className="min-h-screen pt-32 pb-20 flex flex-col items-center justify-center bg-void text-pearl px-4 relative overflow-hidden">
+            <ParticleSystem />
+            <div className="relative z-10 text-center">
+               <h2 className="text-4xl font-display mb-4 text-pearl">Your Collection is Empty</h2>
+               {cartError && <p className="text-red-500 mb-4 font-mono text-xs">{cartError}</p>}
+               <Link to="/exhibitions" className="inline-block bg-tangerine text-void px-8 py-3 text-xs uppercase tracking-[0.2em] font-bold hover:bg-white transition-colors">
+                  Browse Exhibitions
+               </Link>
+            </div>
          </div>
       );
    }
 
    return (
-      <div className="pt-32 pb-20 max-w-6xl mx-auto px-4">
+      <div className="min-h-screen pt-32 pb-20 bg-void text-pearl px-4 relative overflow-hidden">
+         <ParticleSystem />
+         <div className="max-w-6xl mx-auto relative z-10">
 
-         {/* Stepper */}
-         <div className="flex justify-center mb-8 text-xs uppercase tracking-widest">
-            <div className={`px-4 border-b-2 pb-2 ${step === 'CART' ? 'border-amber-500 text-white' : 'border-stone-800 text-stone-600'}`}>1. Cart</div>
-            <div className={`px-4 border-b-2 pb-2 ${step === 'SHIPPING' ? 'border-amber-500 text-white' : 'border-stone-800 text-stone-600'}`}>2. Details</div>
-            <div className={`px-4 border-b-2 pb-2 ${step === 'PAYMENT' ? 'border-amber-500 text-white' : 'border-stone-800 text-stone-600'}`}>3. Payment</div>
-            <div className={`px-4 border-b-2 pb-2 ${step === 'SUCCESS' ? 'border-amber-500 text-white' : 'border-stone-800 text-stone-600'}`}>4. Invoice</div>
-         </div>
-
-         {step === 'SUCCESS' ? (
-            <div className="text-center max-w-lg mx-auto bg-gradient-to-br from-stone-900 to-stone-950 p-12 rounded-3xl border border-stone-800/50 shadow-2xl animate-fade-in">
-               <CheckCircle size={64} className="text-green-500 mx-auto mb-6" />
-               <h2 className="font-serif text-4xl text-white mb-2">
-                  {paymentMethod === 'BANK' ? 'Order Placed' : 'Order Confirmed'}
-               </h2>
-               <p className="text-stone-400 mb-8">
-                  {paymentMethod === 'BANK'
-                     ? 'Thank you for your order. Please complete the bank transfer to process your order.'
-                     : 'Thank you for collecting with Muraqqa. An invoice has been emailed to you.'}
-               </p>
-               {whatsappNotify && <p className="text-green-400 text-sm mb-8">You will receive WhatsApp updates.</p>}
-
-               <div className="space-y-3">
-                  <Link
-                     to={createdOrderId ? `/invoice/${createdOrderId}` : '#'}
-                     target="_blank"
-                     className="flex items-center justify-center gap-2 w-full bg-amber-600 hover:bg-amber-500 px-6 py-3 text-sm text-white transition-colors uppercase tracking-wider font-bold rounded-xl"
-                  >
-                     <FileText size={16} /> View & Print Invoice
-                  </Link>
-
-                  <Link
-                     to="/gallery"
-                     className="flex items-center justify-center gap-2 w-full bg-stone-800 hover:bg-stone-700 px-6 py-3 text-sm text-stone-300 hover:text-white transition-colors uppercase tracking-wider rounded-xl"
-                  >
-                     Continue Shopping
-                  </Link>
-
-                  <Link
-                     to="/"
-                     className="flex items-center justify-center gap-2 w-full border border-stone-700 hover:border-stone-600 px-6 py-3 text-sm text-stone-400 hover:text-stone-300 transition-colors uppercase tracking-wider rounded-xl"
-                  >
-                     Back to Home
-                  </Link>
+            {/* Stepper */}
+            <div className="flex justify-center mb-16">
+               <div className="flex items-center gap-4 text-[10px] md:text-xs uppercase tracking-widest">
+                  <div className={cn("px-4 pb-2 border-b-2 transition-colors", step === 'CART' ? "border-tangerine text-tangerine font-bold" : "border-pearl/5 text-warm-gray")}>01 Collection</div>
+                  <div className={cn("px-4 pb-2 border-b-2 transition-colors", step === 'SHIPPING' ? "border-tangerine text-tangerine font-bold" : "border-pearl/5 text-warm-gray")}>02 Details</div>
+                  <div className={cn("px-4 pb-2 border-b-2 transition-colors", step === 'PAYMENT' ? "border-tangerine text-tangerine font-bold" : "border-pearl/5 text-warm-gray")}>03 Payment</div>
+                  <div className={cn("px-4 pb-2 border-b-2 transition-colors", step === 'SUCCESS' ? "border-tangerine text-tangerine font-bold" : "border-pearl/5 text-warm-gray")}>04 Confirmation</div>
                </div>
             </div>
-         ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-               {/* Left Column: Form/Items */}
-               <div className="lg:col-span-2 space-y-6">
+            {step === 'SUCCESS' ? (
+               <div className="text-center max-w-lg mx-auto bg-charcoal/50 p-12 backdrop-blur-md border border-pearl/10 shadow-2xl animate-fade-in relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-tangerine to-amber-500"></div>
+                  <CheckCircle size={64} className="text-green-500 mx-auto mb-6" />
+                  <h2 className="font-display text-4xl text-pearl mb-2">
+                     {paymentMethod === 'BANK' ? 'Order Placed' : 'Order Confirmed'}
+                  </h2>
+                  <p className="text-warm-gray mb-8 font-mono text-sm leading-relaxed">
+                     {paymentMethod === 'BANK'
+                        ? 'Thank you. Please complete the bank transfer to process your order.'
+                        : 'Thank you for collecting with Muraqqa. An invoice has been emailed to you.'}
+                  </p>
+                  {whatsappNotify && <p className="text-green-400 text-xs mb-8 uppercase tracking-widest">WhatsApp updates enabled</p>}
 
-                  {step === 'CART' && (
-                     <div className="space-y-6">
-                        {cart.map((item, idx) => (
-                           <div key={`${item.id}-${idx}`} className="flex gap-6 bg-gradient-to-br from-stone-900/80 to-stone-950/80 p-6 rounded-2xl border border-stone-800/50 backdrop-blur-sm items-center hover:border-stone-700 transition-all">
-                              <img src={item.imageUrl} alt={item.title} className="w-20 h-24 object-cover rounded-lg" />
-                              <div className="flex-1">
-                                 <h3 className="text-xl text-white font-serif">{item.title}</h3>
-                                 <p className="text-amber-500 text-xs uppercase tracking-wider">{item.artistName}</p>
-                                 <p className="text-stone-500 text-xs mt-2">
-                                    {item.selectedPrintSize === 'ORIGINAL' || !item.selectedPrintSize
-                                       ? 'Original Artwork'
-                                       : `Print: ${item.selectedPrintSize} (Fabric Canvas)`}
-                                 </p>
-                                 {item.quantity > 1 && (
-                                    <p className="text-stone-600 text-[10px] mt-1">Qty: {item.quantity}</p>
-                                 )}
+                  <div className="space-y-3">
+                     <Link
+                        to={createdOrderId ? `/invoice/${createdOrderId}` : '#'}
+                        target="_blank"
+                        className="flex items-center justify-center gap-2 w-full bg-tangerine hover:bg-white text-void px-6 py-4 text-xs font-bold transition-colors uppercase tracking-[0.2em]"
+                     >
+                        <FileText size={16} /> View Invoice
+                     </Link>
+
+                     <Link
+                        to="/"
+                        className="flex items-center justify-center gap-2 w-full border border-pearl/10 hover:border-pearl/30 px-6 py-4 text-xs text-warm-gray hover:text-pearl transition-colors uppercase tracking-[0.2em]"
+                     >
+                        Return Home
+                     </Link>
+                  </div>
+               </div>
+            ) : (
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+                  {/* Left Column: Form/Items */}
+                  <div className="lg:col-span-2 space-y-8">
+
+                     {step === 'CART' && (
+                        <div className="space-y-6">
+                           {cart.map((item, idx) => (
+                              <div key={`${item.id}-${idx}`} className="flex gap-6 bg-charcoal/30 p-6 border border-pearl/10 backdrop-blur-sm group hover:border-tangerine/30 transition-all">
+                                 <div className="w-24 h-32 bg-black overflow-hidden relative">
+                                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                 </div>
+                                 <div className="flex-1 flex flex-col justify-between py-1">
+                                    <div>
+                                       <h3 className="text-2xl font-display text-pearl">{item.title}</h3>
+                                       <p className="text-tangerine text-[10px] uppercase tracking-[0.2em] font-bold mt-1">{item.artistName}</p>
+                                       <p className="text-warm-gray text-xs mt-3 font-mono">
+                                          {item.selectedPrintSize === 'ORIGINAL' || !item.selectedPrintSize
+                                             ? 'Original Artwork'
+                                             : `Print: ${item.selectedPrintSize} (Fabric Canvas)`}
+                                       </p>
+                                       {item.quantity > 1 && (
+                                          <p className="text-pearl text-[10px] mt-1 font-mono">Qty: {item.quantity}</p>
+                                       )}
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                       <p className="text-pearl font-mono text-lg">{formatCurrency(item.finalPrice)}</p>
+                                       <button onClick={() => removeFromCart(item.id)} className="text-warm-gray hover:text-red-500 transition-colors uppercase text-[10px] tracking-widest font-bold flex items-center gap-2">
+                                          <Trash2 size={14} /> Remove
+                                       </button>
+                                    </div>
+                                 </div>
                               </div>
-                              <div className="text-right">
-                                 <p className="text-white font-mono mb-2">{convertPrice(item.finalPrice)}</p>
-                                 <button onClick={() => removeFromCart(item.id)} className="text-stone-600 hover:text-red-500 transition-colors">
-                                    <Trash2 size={16} />
+                           ))}
+                        </div>
+                     )}
+
+                     {step === 'SHIPPING' && (
+                        <div className="bg-charcoal/30 p-8 border border-pearl/10 backdrop-blur-sm space-y-8 animate-fade-in relative">
+                           <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-tangerine to-amber-500"></div>
+                           <h3 className="font-display text-3xl text-pearl mb-6">Shipping Details</h3>
+
+                           <div className="grid grid-cols-2 gap-6">
+                              <input type="text" placeholder="FIRST NAME" value={shippingDetails.firstName} onChange={e => setShippingDetails({ ...shippingDetails, firstName: e.target.value })} className="bg-void border border-pearl/20 p-4 text-pearl focus:border-tangerine outline-none text-xs font-mono placeholder:text-warm-gray/50" />
+                              <input type="text" placeholder="LAST NAME" value={shippingDetails.lastName} onChange={e => setShippingDetails({ ...shippingDetails, lastName: e.target.value })} className="bg-void border border-pearl/20 p-4 text-pearl focus:border-tangerine outline-none text-xs font-mono placeholder:text-warm-gray/50" />
+                           </div>
+                           <div>
+                              <input type="text" placeholder="STREET ADDRESS (MIN 10 CHARS)" value={shippingDetails.address} onChange={e => setShippingDetails({ ...shippingDetails, address: e.target.value })} className="w-full bg-void border border-pearl/20 p-4 text-pearl focus:border-tangerine outline-none text-xs font-mono placeholder:text-warm-gray/50" />
+                              {shippingDetails.address && shippingDetails.address.length < 10 && (
+                                 <p className="text-red-500 text-[10px] mt-1 font-mono">Address too short</p>
+                              )}
+                           </div>
+                           <div className="grid grid-cols-2 gap-6">
+                              <div>
+                                 <input type="text" placeholder="CITY" value={shippingDetails.city} onChange={e => setShippingDetails({ ...shippingDetails, city: e.target.value })} className="w-full bg-void border border-pearl/20 p-4 text-pearl focus:border-tangerine outline-none text-xs font-mono placeholder:text-warm-gray/50" />
+                              </div>
+                              <div>
+                                 <select
+                                    value={shippingDetails.country}
+                                    onChange={(e) => setShippingDetails({ ...shippingDetails, country: e.target.value })}
+                                    className="w-full bg-void border border-pearl/20 p-4 text-pearl focus:border-tangerine outline-none text-xs font-mono"
+                                 >
+                                    <option value="Pakistan">Pakistan</option>
+                                    <option value="USA">United States</option>
+                                    <option value="UK">United Kingdom</option>
+                                    <option value="UAE">UAE</option>
+                                 </select>
+                              </div>
+                           </div>
+
+                           {/* Shipping Method Selection */}
+                           <div className="pt-8 border-t border-pearl/10">
+                              <h4 className="font-display text-xl text-pearl mb-4">Select Shipping</h4>
+                              {loadingRates ? (
+                                 <p className="text-warm-gray text-xs font-mono animate-pulse">Calculating rates...</p>
+                              ) : (
+                                 <div className="space-y-3">
+                                    {shippingRates.map(rate => (
+                                       <div
+                                          key={rate.id}
+                                          onClick={() => setSelectedRateId(rate.id)}
+                                          className={cn("flex items-center justify-between p-4 border cursor-pointer transition-all", selectedRateId === rate.id ? "border-tangerine bg-tangerine/5" : "border-pearl/10 hover:border-pearl/30")}
+                                       >
+                                          <div>
+                                             <p className="text-pearl text-xs font-bold uppercase tracking-wider">{rate.service}</p>
+                                             <p className="text-warm-gray text-[10px] uppercase font-mono mt-1">{rate.provider} • {rate.estimatedDays}</p>
+                                          </div>
+                                          <p className="text-tangerine font-mono text-sm">{formatCurrency(rate.price)}</p>
+                                       </div>
+                                    ))}
+                                 </div>
+                              )}
+                           </div>
+
+
+                           {/* Payment Method Selection */}
+                           <div className="pt-8 border-t border-pearl/10">
+                              <h4 className="font-display text-xl text-pearl mb-4">Payment Method</h4>
+                              <div className="flex gap-4">
+                                 <button
+                                    onClick={() => setPaymentMethod('STRIPE')}
+                                    disabled={!stripeEnabled}
+                                    className={cn("flex-1 py-4 border text-center transition-all text-xs uppercase tracking-widest font-bold", paymentMethod === 'STRIPE' ? "border-tangerine bg-tangerine/5 text-pearl" : "border-pearl/10 text-warm-gray hover:text-pearl", !stripeEnabled && "opacity-50 cursor-not-allowed")}
+                                 >
+                                    Credit Card
+                                    {!stripeEnabled && <span className="block text-[8px] mt-1 normal-case font-medium opacity-50">(Unavailable)</span>}
+                                 </button>
+                                 <button
+                                    onClick={() => setPaymentMethod('BANK')}
+                                    className={cn("flex-1 py-4 border text-center transition-all text-xs uppercase tracking-widest font-bold", paymentMethod === 'BANK' ? "border-tangerine bg-tangerine/5 text-pearl" : "border-pearl/10 text-warm-gray hover:text-pearl")}
+                                 >
+                                    Bank Transfer
                                  </button>
                               </div>
                            </div>
-                        ))}
-                     </div>
-                  )}
 
-                  {step === 'SHIPPING' && (
-                     <div className="bg-gradient-to-br from-stone-900/80 to-stone-950/80 p-8 rounded-2xl border border-stone-800/50 backdrop-blur-sm space-y-6 animate-fade-in">
-                        <h3 className="font-serif text-2xl text-white mb-4">Shipping Address</h3>
-                        <div className="grid grid-cols-2 gap-4">
-                           <input type="text" placeholder="First Name" value={shippingDetails.firstName} onChange={e => setShippingDetails({ ...shippingDetails, firstName: e.target.value })} className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
-                           <input type="text" placeholder="Last Name" value={shippingDetails.lastName} onChange={e => setShippingDetails({ ...shippingDetails, lastName: e.target.value })} className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
-                        </div>
-                        <div>
-                           <input type="text" placeholder="Address Line 1 (minimum 10 characters)" value={shippingDetails.address} onChange={e => setShippingDetails({ ...shippingDetails, address: e.target.value })} className="w-full bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
-                           {shippingDetails.address && shippingDetails.address.length < 10 && (
-                              <p className="text-red-400 text-xs mt-1">Address must be at least 10 characters ({shippingDetails.address.length}/10)</p>
-                           )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                           <div>
-                              <input type="text" placeholder="City (minimum 2 characters)" value={shippingDetails.city} onChange={e => setShippingDetails({ ...shippingDetails, city: e.target.value })} className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all" />
-                              {shippingDetails.city && shippingDetails.city.length < 2 && (
-                                 <p className="text-red-400 text-xs mt-1">City must be at least 2 characters</p>
-                              )}
-                           </div>
-                           <div>
-                              <select
-                                 value={shippingDetails.country}
-                                 onChange={(e) => setShippingDetails({ ...shippingDetails, country: e.target.value })}
-                                 className="bg-stone-950/50 border border-stone-700/50 p-3 text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-xl transition-all w-full"
-                              >
-                                 <option value="Pakistan">Pakistan</option>
-                                 <option value="USA">United States</option>
-                                 <option value="UK">United Kingdom</option>
-                                 <option value="UAE">UAE</option>
-                              </select>
-                           </div>
-                        </div>
-
-                        {/* Shipping Method Selection */}
-                        <div className="pt-4 border-t border-stone-800">
-                           <h4 className="font-serif text-xl text-white mb-3">Shipping Method</h4>
-                           {loadingRates ? (
-                              <p className="text-stone-500 text-sm">Calculating rates...</p>
-                           ) : (
-                              <div className="space-y-3">
-                                 {shippingRates.map(rate => (
-                                    <div
-                                       key={rate.id}
-                                       onClick={() => setSelectedRateId(rate.id)}
-                                       className={`flex items-center justify-between p-4 border cursor-pointer transition-colors ${selectedRateId === rate.id ? 'border-amber-500 bg-amber-900/10' : 'border-stone-700 hover:border-stone-600'}`}
-                                    >
-                                       <div>
-                                          <p className="text-white text-sm font-bold">{rate.service}</p>
-                                          <p className="text-stone-500 text-xs">{rate.provider} • {rate.estimatedDays}</p>
-                                       </div>
-                                       <p className="text-white font-mono text-sm">PKR {rate.price.toLocaleString()}</p>
-                                    </div>
-                                 ))}
-                              </div>
-                           )}
-                        </div>
-
-
-                        {/* Payment Method Selection */}
-                        <div className="pt-4 border-t border-stone-800">
-                           <h4 className="font-serif text-xl text-white mb-3">Payment Method</h4>
-                           <div className="flex gap-4">
-                              <button
-                                 onClick={() => setPaymentMethod('STRIPE')}
-                                 disabled={!stripeEnabled}
-                                 className={`flex-1 py-4 border text-center transition-colors ${paymentMethod === 'STRIPE'
-                                    ? 'border-amber-500 bg-amber-900/10 text-white'
-                                    : 'border-stone-700 text-stone-400 hover:border-stone-500'
-                                    } ${!stripeEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                              >
-                                 Card Payment (Stripe)
-                                 {!stripeEnabled && <span className="block text-xs mt-1">(Not configured)</span>}
-                              </button>
-                              <button
-                                 onClick={() => setPaymentMethod('BANK')}
-                                 className={`flex-1 py-4 border text-center transition-colors ${paymentMethod === 'BANK' ? 'border-amber-500 bg-amber-900/10 text-white' : 'border-stone-700 text-stone-400 hover:border-stone-500'}`}
-                              >
-                                 Direct Bank Transfer
-                              </button>
-                           </div>
-                        </div>
-
-                        <label className="flex items-center gap-2 text-stone-400 text-sm cursor-pointer mt-4">
-                           <input
-                              type="checkbox"
-                              checked={whatsappNotify}
-                              onChange={(e) => setWhatsappNotify(e.target.checked)}
-                              className="w-4 h-4 accent-amber-500"
-                           />
-                           Get real-time order updates via WhatsApp
-                        </label>
-
-                        {paymentError && (
-                           <div className="flex items-center gap-2 text-red-500 text-sm bg-red-900/20 p-3 rounded border border-red-900/50">
-                              <AlertCircle size={16} />
-                              {paymentError}
-                           </div>
-                        )}
-                     </div>
-                  )}
-
-                  {step === 'PAYMENT' && pendingOrderId && (
-                     <div className="space-y-6 animate-fade-in">
-                        <div className="bg-stone-900 p-8 border border-stone-800">
-                           <h3 className="font-serif text-2xl text-white mb-4">Complete Payment</h3>
-
-                           {paymentMethod === 'STRIPE' ? (
-                              <div className="space-y-4">
-                                 <StripeCheckout
-                                    orderId={pendingOrderId}
-                                    amount={totalPKR}
-                                    currency="pkr"
-                                    onSuccess={handlePaymentSuccess}
-                                    onError={handlePaymentError}
-                                 />
-
-                                 <p className="text-[10px] text-stone-500 text-center flex items-center justify-center gap-1 mt-4">
-                                    <Lock size={10} /> Payments are encrypted and secured by Stripe.
-                                 </p>
-                              </div>
-                           ) : (
-                              <div className="bg-stone-950 p-6 border border-stone-700 text-sm text-stone-300 rounded">
-                                 <p className="font-bold text-white mb-2 text-lg">Meezan Bank</p>
-                                 <div className="space-y-1 font-mono text-xs text-stone-400">
-                                    <p>Account Title: <span className="text-white">Muraqqa Gallery</span></p>
-                                    <p>Account No:    <span className="text-white">PK00 MEZN 0000 0000 1234 5678</span></p>
-                                    <p>Branch Code:   <span className="text-white">0201</span></p>
-                                 </div>
-                                 <p className="mt-4 italic text-stone-500 border-t border-stone-800 pt-3">
-                                    Please upload proof of payment via email (orders@muraqqa.art) after checkout. Your order will be processed once funds are received.
-                                 </p>
-                              </div>
-                           )}
+                           <label className="flex items-center gap-3 text-warm-gray text-xs cursor-pointer mt-4 select-none group">
+                              <input
+                                 type="checkbox"
+                                 checked={whatsappNotify}
+                                 onChange={(e) => setWhatsappNotify(e.target.checked)}
+                                 className="accent-tangerine w-4 h-4"
+                              />
+                              <span className="group-hover:text-pearl transition-colors uppercase tracking-wider text-[10px] font-bold">Get WhatsApp Updates</span>
+                           </label>
 
                            {paymentError && (
-                              <div className="flex items-center gap-2 text-red-500 text-sm bg-red-900/20 p-3 rounded border border-red-900/50 mt-4">
-                                 <AlertCircle size={16} />
+                              <div className="flex items-center gap-2 text-red-500 text-xs bg-red-500/10 p-4 border border-red-500/20 font-mono">
+                                 <AlertCircle size={14} />
                                  {paymentError}
                               </div>
                            )}
                         </div>
-                     </div>
-                  )}
-               </div>
-
-               {/* Right Column: Summary */}
-               <div className="lg:col-span-1">
-                  <div className="bg-gradient-to-br from-stone-900 to-stone-950 p-6 rounded-2xl border border-stone-800/50 backdrop-blur-sm sticky top-24 shadow-xl">
-                     <h3 className="font-serif text-xl text-white mb-4">Order Summary</h3>
-
-                     <div className="space-y-3 text-sm text-stone-400 border-b border-stone-800/50 pb-4 mb-4">
-                        <div className="flex justify-between">
-                           <span>Subtotal</span>
-                           <span className="text-white font-medium">{convertPrice(subtotalPKR)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                           <span className="flex items-center gap-1">Shipping</span>
-                           <span className="text-white font-medium">{convertPrice(shippingCostPKR)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                           <span>Tax / Duty {shippingDetails.country !== 'Pakistan' && '(5%)'}</span>
-                           <span className="text-white font-medium">{convertPrice(taxPKR)}</span>
-                        </div>
-                        {discountApplied > 0 && (
-                           <div className="flex justify-between text-green-400">
-                              <span>Discount</span>
-                              <span className="font-medium">- {convertPrice(discountApplied)}</span>
-                           </div>
-                        )}
-                     </div>
-
-                     {/* Promo Code */}
-                     <div className="flex gap-2 mb-4">
-                        <input
-                           type="text"
-                           value={discountCode}
-                           onChange={(e) => setDiscountCode(e.target.value)}
-                           placeholder="Discount Code"
-                           className="flex-1 bg-stone-950/50 border border-stone-700/50 px-3 py-2 text-sm text-white focus:border-amber-500 focus:bg-stone-900/50 outline-none rounded-lg transition-all"
-                        />
-                        <button onClick={handleApplyDiscount} className="bg-stone-800 text-stone-300 px-4 py-2 text-xs hover:bg-stone-700 rounded-lg transition-all font-medium">Apply</button>
-                     </div>
-
-                     <div className="flex justify-between text-xl font-serif text-white mb-4 bg-stone-950/30 p-4 rounded-xl">
-                        <span>Total</span>
-                        <span className="text-amber-500">{convertPrice(totalPKR)}</span>
-                     </div>
-
-                     {step === 'CART' && (
-                        <>
-                           <button
-                              onClick={handleProceedToShipping}
-                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl uppercase tracking-widest text-sm font-bold shadow-lg shadow-amber-900/20 transition-all"
-                           >
-                              {token ? 'Proceed to Details' : 'Login to Checkout'}
-                           </button>
-                           <Link
-                              to="/gallery"
-                              className="block w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors text-center rounded-xl"
-                           >
-                              ← Continue Shopping
-                           </Link>
-                        </>
                      )}
-                     {step === 'SHIPPING' && (
-                        <>
-                           <button
-                              onClick={handleProceedToPayment}
-                              disabled={
-                                 isProcessing ||
-                                 !shippingDetails.firstName ||
-                                 !shippingDetails.address ||
-                                 !shippingDetails.city ||
-                                 shippingDetails.address.length < 10 ||
-                                 shippingDetails.city.length < 2 ||
-                                 !selectedRateId
-                              }
-                              className="w-full bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl uppercase tracking-widest text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-900/20 transition-all flex items-center justify-center gap-2"
-                           >
-                              {isProcessing ? (
-                                 <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    Creating Order...
-                                 </>
+
+                     {step === 'PAYMENT' && pendingOrderId && (
+                        <div className="space-y-6 animate-fade-in">
+                           <div className="bg-charcoal/30 p-8 border border-pearl/10 backdrop-blur-sm">
+                              <h3 className="font-display text-2xl text-pearl mb-6">Complete Payment</h3>
+
+                              {paymentMethod === 'STRIPE' ? (
+                                 <div className="space-y-4">
+                                    <StripeCheckout
+                                       orderId={pendingOrderId}
+                                       amount={totalPKR}
+                                       currency="pkr"
+                                       onSuccess={handlePaymentSuccess}
+                                       onError={handlePaymentError}
+                                    />
+                                    <p className="text-[10px] text-warm-gray text-center flex items-center justify-center gap-1 mt-4 uppercase tracking-wider">
+                                       <Lock size={10} /> Secure SSL Encrypted Payment
+                                    </p>
+                                 </div>
                               ) : (
-                                 `Continue to Payment`
+                                 <div className="bg-void p-6 border border-pearl/20 text-sm text-pearl font-mono">
+                                    <p className="font-bold text-tangerine mb-4 text-base uppercase tracking-widest">Meezan Bank</p>
+                                    <div className="space-y-2 text-xs">
+                                       <p className="flex justify-between border-b border-pearl/10 pb-2"><span>Account Title:</span> <span className="text-white">Muraqqa Gallery</span></p>
+                                       <p className="flex justify-between border-b border-pearl/10 pb-2"><span>Account No:</span> <span className="text-white">PK00 MEZN 0000 0000 1234 5678</span></p>
+                                       <p className="flex justify-between border-b border-pearl/10 pb-2"><span>Branch Code:</span> <span className="text-white">0201</span></p>
+                                    </div>
+                                    <p className="mt-4 italic text-warm-gray/70 text-[10px]">
+                                       Please upload proof of payment via email (orders@muraqqa.art) after checkout.
+                                    </p>
+                                 </div>
                               )}
-                           </button>
 
-                           {/* Validation Helper */}
-                           {(!shippingDetails.firstName || !shippingDetails.address || !shippingDetails.city ||
-                             shippingDetails.address.length < 10 || shippingDetails.city.length < 2 || !selectedRateId) && (
-                              <div className="mt-3 text-stone-400 text-xs space-y-1 bg-stone-900/30 p-3 rounded-lg border border-stone-800/50">
-                                 <p className="font-semibold text-stone-300">Please complete the following:</p>
-                                 {!shippingDetails.firstName && <p>• Enter first name</p>}
-                                 {!shippingDetails.address && <p>• Enter shipping address</p>}
-                                 {shippingDetails.address && shippingDetails.address.length < 10 && <p>• Address must be at least 10 characters ({shippingDetails.address.length}/10)</p>}
-                                 {!shippingDetails.city && <p>• Enter city</p>}
-                                 {shippingDetails.city && shippingDetails.city.length < 2 && <p>• City must be at least 2 characters</p>}
-                                 {!selectedRateId && <p>• Select a shipping method</p>}
-                              </div>
-                           )}
-                        </>
-                     )}
-
-                     {/* Back buttons for each step */}
-                     {step === 'SHIPPING' && (
-                        <button
-                           onClick={() => setStep('CART')}
-                           disabled={isProcessing}
-                           className="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 rounded-xl"
-                        >
-                           ← Back to Cart
-                        </button>
-                     )}
-                     {step === 'PAYMENT' && (
-                        <button
-                           onClick={() => setStep('SHIPPING')}
-                           disabled={isProcessing}
-                           className="w-full mt-3 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white py-2 text-sm uppercase tracking-wider transition-colors disabled:opacity-50 rounded-xl"
-                        >
-                           ← Back to Shipping Details
-                        </button>
+                              {paymentError && (
+                                 <div className="flex items-center gap-2 text-red-500 text-xs bg-red-500/10 p-4 border border-red-500/20 font-mono mt-4">
+                                    <AlertCircle size={14} />
+                                    {paymentError}
+                                 </div>
+                              )}
+                           </div>
+                        </div>
                      )}
                   </div>
+
+                  {/* Right Column: Summary */}
+                  <div className="lg:col-span-1">
+                     <div className="bg-charcoal/50 p-6 border border-pearl/10 sticky top-32 backdrop-blur-xl shadow-2xl">
+                        <h3 className="font-display text-xl text-pearl mb-6">Summary</h3>
+
+                        <div className="space-y-4 text-xs text-warm-gray pb-6 mb-6 border-b border-pearl/10 font-mono">
+                           <div className="flex justify-between">
+                              <span>Subtotal</span>
+                              <span className="text-pearl">{formatCurrency(subtotalPKR)}</span>
+                           </div>
+                           <div className="flex justify-between">
+                              <span>Shipping</span>
+                              <span className="text-pearl">{formatCurrency(shippingCostPKR)}</span>
+                           </div>
+                           <div className="flex justify-between">
+                              <span>Tax {shippingDetails.country !== 'Pakistan' && '(5%)'}</span>
+                              <span className="text-pearl">{formatCurrency(taxPKR)}</span>
+                           </div>
+                           {discountApplied > 0 && (
+                              <div className="flex justify-between text-green-400">
+                                 <span>Discount</span>
+                                 <span>- {formatCurrency(discountApplied)}</span>
+                              </div>
+                           )}
+                        </div>
+
+                        {/* Promo Code */}
+                        <div className="flex gap-2 mb-6">
+                           <input
+                              type="text"
+                              value={discountCode}
+                              onChange={(e) => setDiscountCode(e.target.value)}
+                              placeholder="CODE"
+                              className="flex-1 bg-void border border-pearl/20 px-3 py-2 text-xs text-pearl focus:border-tangerine outline-none font-mono placeholder:text-warm-gray/30"
+                           />
+                           <button onClick={handleApplyDiscount} className="bg-pearl/10 text-pearl hover:bg-tangerine hover:text-void px-4 py-2 text-[10px] uppercase tracking-widest font-bold transition-all">Apply</button>
+                        </div>
+
+                        <div className="flex justify-between text-2xl font-display text-pearl mb-8 bg-void p-4 border border-pearl/10">
+                           <span>Total</span>
+                           <span className="text-tangerine">{formatCurrency(totalPKR)}</span>
+                        </div>
+
+                        {step === 'CART' && (
+                           <>
+                              <button
+                                 onClick={handleProceedToShipping}
+                                 className="w-full bg-tangerine hover:bg-white text-void py-4 uppercase tracking-[0.2em] text-xs font-bold transition-all shadow-[4px_4px_0px_#ffffff]"
+                              >
+                                 {token ? 'Checkout' : 'Login to Checkout'}
+                              </button>
+                              <Link
+                                 to="/exhibitions"
+                                 className="block w-full mt-4 text-warm-gray hover:text-tangerine py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
+                              >
+                                 Continue Shopping
+                              </Link>
+                           </>
+                        )}
+                        {step === 'SHIPPING' && (
+                           <>
+                              <button
+                                 onClick={handleProceedToPayment}
+                                 disabled={
+                                    isProcessing ||
+                                    !shippingDetails.firstName ||
+                                    !shippingDetails.address ||
+                                    !shippingDetails.city ||
+                                    shippingDetails.address.length < 10 ||
+                                    shippingDetails.city.length < 2 ||
+                                    !selectedRateId
+                                 }
+                                 className="w-full bg-tangerine hover:bg-white text-void py-4 uppercase tracking-[0.2em] text-xs font-bold transition-all shadow-[4px_4px_0px_#ffffff] disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                              >
+                                 {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : 'Proceed'}
+                              </button>
+
+                              <button
+                                 onClick={() => setStep('CART')}
+                                 className="w-full mt-4 text-warm-gray hover:text-pearl py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
+                              >
+                                 Back
+                              </button>
+                           </>
+                        )}
+                        {step === 'PAYMENT' && (
+                           <button
+                              onClick={() => setStep('SHIPPING')}
+                              className="w-full mt-4 text-warm-gray hover:text-pearl py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
+                           >
+                              Back
+                           </button>
+                        )}
+                     </div>
+                  </div>
                </div>
-            </div>
-         )}
+            )}
+         </div>
       </div>
    );
 };
