@@ -102,7 +102,7 @@ export const Artists: React.FC = () => {
         {/* Grid */}
         <div className="w-full max-w-[1920px] mx-auto px-6 md:px-12">
           {filteredArtists.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               <AnimatePresence>
                 {filteredArtists.map((artist, i) => (
                   <motion.div
@@ -113,7 +113,7 @@ export const Artists: React.FC = () => {
                     transition={{ delay: i * 0.1 }}
                   >
                     <Link to={`/artists/${artist.id}`} className="group block">
-                      <div className="relative aspect-square bg-charcoal mb-4 overflow-hidden rounded-full border-2 border-pearl/10 group-hover:border-tangerine transition-all duration-500">
+                      <div className="relative aspect-square bg-charcoal mb-3 overflow-hidden rounded-full border border-pearl/10 group-hover:border-tangerine transition-all duration-500">
                         <img
                           src={artist.imageUrl}
                           alt={artist.name}
@@ -122,15 +122,15 @@ export const Artists: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-radial from-transparent via-void/20 to-void/60 opacity-60 group-hover:opacity-40 transition-opacity duration-500"></div>
 
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <span className="bg-tangerine text-void text-[10px] font-bold uppercase tracking-widest px-4 py-2 shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                          <span className="bg-tangerine text-void text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
                             View
                           </span>
                         </div>
                       </div>
 
                       <div className="text-center">
-                        <h2 className="font-display text-lg text-pearl leading-tight mb-1 group-hover:text-tangerine transition-colors">{artist.name}</h2>
-                        <p className="text-warm-gray text-[10px] font-mono uppercase tracking-wider">{artist.specialty}</p>
+                        <h2 className="font-display text-base text-pearl leading-tight mb-0.5 group-hover:text-tangerine transition-colors">{artist.name}</h2>
+                        <p className="text-warm-gray text-[9px] font-mono uppercase tracking-wider">{artist.specialty}</p>
                       </div>
                     </Link>
                   </motion.div>
