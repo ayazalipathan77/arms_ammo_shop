@@ -1,87 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Inter:wght@300;400;500;600&family=Mrs+Saint+Delafield&display=swap');
+
+@import "tailwindcss";
 
 @layer base {
   html {
     scroll-behavior: smooth;
+    @apply bg-void text-pearl;
   }
 
   body {
-    @apply bg-black text-stone-200 antialiased;
-    font-family: 'Montserrat', 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: "cv11", "ss01";
-    letter-spacing: 0.01em;
+    @apply antialiased overflow-x-hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
-  /* Royal Typography */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cinzel', 'Cormorant Garamond', serif;
-    @apply tracking-wide text-white;
-    letter-spacing: 0.05em;
-    font-weight: 600;
+  /* Typography Overrides */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Monument Extended', 'Syne', sans-serif;
+    @apply uppercase tracking-tighter;
   }
 
-  /* Elegant font for labels and UI */
-  label, button, input, select, textarea {
-    font-family: 'Montserrat', sans-serif;
-    letter-spacing: 0.02em;
+  /* Custom Selection */
+  ::selection {
+    @apply bg-tangerine text-void;
+  }
+}
+
+@layer utilities {
+  .text-stroke {
+    -webkit-text-stroke: 1px currentColor;
+    color: transparent;
   }
 
-  /* Details and descriptions */
-  .detail-text {
-    font-family: 'Cormorant Garamond', serif;
-    font-weight: 400;
-    letter-spacing: 0.01em;
+  .text-stroke-sm {
+    -webkit-text-stroke: 0.5px currentColor;
   }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-stone-950;
+  @apply bg-void;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-stone-800 rounded-full;
+  @apply bg-charcoal border border-void;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-stone-700;
-}
-
-/* Utilities for animations */
-.animate-enter {
-  animation: enter 0.6s ease-out forwards;
-}
-
-@keyframes enter {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Hide scrollbar for carousel */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  @apply bg-tangerine;
 }
