@@ -39,9 +39,9 @@ const Footer = () => {
                     <h3 className="font-display text-sm font-bold uppercase tracking-widest mb-6 text-tangerine">Support</h3>
                     <ul className="space-y-4 font-mono text-xs">
                         <li><Link to="/cart" className="text-warm-gray hover:text-pearl transition-colors">Cart</Link></li>
-                        <li><Link to="#" className="text-warm-gray hover:text-pearl transition-colors">Shipping Policy</Link></li>
-                        <li><Link to="#" className="text-warm-gray hover:text-pearl transition-colors">Terms of Service</Link></li>
-                        <li><Link to="#" className="text-warm-gray hover:text-pearl transition-colors">Privacy Policy</Link></li>
+                        <li><Link to="/contact" className="text-warm-gray hover:text-pearl transition-colors">Shipping Policy</Link></li>
+                        <li><Link to="/terms-of-service" className="text-warm-gray hover:text-pearl transition-colors">Terms of Service</Link></li>
+                        <li><Link to="/privacy-policy" className="text-warm-gray hover:text-pearl transition-colors">Privacy Policy</Link></li>
                     </ul>
                 </div>
 

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Upload, DollarSign, Image as ImageIcon, X, Save, Eye, Edit2, Trash2, MoreHorizontal, CheckCircle, Plus } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
-import { useCurrency } from '../App';
 import { Artwork, PrintSizeOption, PrintOptions } from '../types';
 import { uploadApi, artistApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
+const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
+
 export const ArtistDashboard: React.FC = () => {
    const { artworks, addArtwork, updateArtwork, deleteArtwork } = useGallery();
-   const { convertPrice } = useCurrency();
    const { user } = useAuth();
 
    // Local State

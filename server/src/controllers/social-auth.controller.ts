@@ -79,7 +79,7 @@ export const findOrCreateSocialUser = async (profile: SocialProfile) => {
 export const googleCallback = (req: Request, res: Response): void => {
     const user = req.user;
     if (!user) {
-        res.redirect(`${env.CLIENT_URL}/#/auth?error=google_failed`);
+        res.redirect(`${env.CLIENT_URL}/auth?error=google_failed`);
         return;
     }
 
@@ -90,14 +90,14 @@ export const googleCallback = (req: Request, res: Response): void => {
         fullName: user.fullName,
     });
 
-    res.redirect(`${env.CLIENT_URL}/#/auth/social-callback?token=${token}`);
+    res.redirect(`${env.CLIENT_URL}/auth/social-callback?token=${token}`);
 };
 
 // Facebook OAuth callback handler
 export const facebookCallback = (req: Request, res: Response): void => {
     const user = req.user;
     if (!user) {
-        res.redirect(`${env.CLIENT_URL}/#/auth?error=facebook_failed`);
+        res.redirect(`${env.CLIENT_URL}/auth?error=facebook_failed`);
         return;
     }
 
@@ -108,5 +108,5 @@ export const facebookCallback = (req: Request, res: Response): void => {
         fullName: user.fullName,
     });
 
-    res.redirect(`${env.CLIENT_URL}/#/auth/social-callback?token=${token}`);
+    res.redirect(`${env.CLIENT_URL}/auth/social-callback?token=${token}`);
 };

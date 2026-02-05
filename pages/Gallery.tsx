@@ -2,15 +2,15 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useGallery } from '../context/GalleryContext';
 import { Filter, Search, Loader2, X, ChevronDown, Check, Sparkles, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
-import { useCurrency } from '../App';
 import { artistApi } from '../services/api';
 import { Artist } from '../types';
 import { motion } from 'framer-motion';
 
 const ITEMS_PER_PAGE = 20;
 
+const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
+
 export const Gallery: React.FC = () => {
-  const { convertPrice } = useCurrency();
   const {
     artworks,
     isLoading,

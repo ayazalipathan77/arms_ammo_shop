@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, ArrowRight, Loader2 } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
 import { Link } from 'react-router-dom';
-import { useCurrency } from '../App';
+const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
 
 interface SearchOverlayProps {
     isOpen: boolean;
@@ -11,7 +11,6 @@ interface SearchOverlayProps {
 
 export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose }) => {
     const { artworks, availableCategories } = useGallery();
-    const { convertPrice } = useCurrency();
     const [query, setQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);

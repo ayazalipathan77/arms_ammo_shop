@@ -34,8 +34,8 @@ export const Collections: React.FC = () => {
             if (activeCategory !== 'All' && art.category !== activeCategory) return false;
 
             // Availability Filter
-            if (availability === 'available' && art.status !== 'available') return false;
-            if (availability === 'sold' && art.status === 'sold') return false;
+            if (availability === 'available' && !art.inStock) return false;
+            if (availability === 'sold' && art.inStock) return false;
 
             // Search Query (Smart Filter)
             if (searchQuery) {
@@ -51,9 +51,9 @@ export const Collections: React.FC = () => {
         }).sort((a, b) => {
             if (sortBy === 'lowest') return a.price - b.price;
             if (sortBy === 'highest') return b.price - a.price;
-            if (sortBy === 'oldest') return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+            if (sortBy === 'oldest') return (a.year || 0) - (b.year || 0);
             // Default newest
-            return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+            return (b.year || 0) - (a.year || 0);
         });
     }, [artworks, activeCategory, availability, sortBy, searchQuery]);
 

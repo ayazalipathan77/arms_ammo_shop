@@ -20,6 +20,128 @@ const generateConfirmationToken = (): string => {
     return crypto.randomBytes(32).toString('hex');
 };
 
+// Create order from cart (User)
+export const createOrder = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authentication required' });
+            return;
+        }
+
+        const { shippingAddress, paymentMethod } = req.body;
+
+        if (!shippingAddress) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Shipping address is required' });
+            return;
+        }
+
+        // Get cart items
+        const cartItems = await prisma.cartItem.findMany({
+            where: { userId },
+            include: { artwork: true },
+        });
+
+        if (cartItems.length === 0) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Cart is empty' });
+            return;
+        }
+
+        // Calculate total
+        let totalAmount = 0;
+        for (const item of cartItems) {
+            totalAmount += Number(item.artwork.price) * item.quantity;
+        }
+
+        // Create order with items
+        const order = await prisma.order.create({
+            data: {
+                userId,
+                totalAmount,
+                shippingAddress: typeof shippingAddress === 'string' ? shippingAddress : JSON.stringify(shippingAddress),
+                paymentMethod: paymentMethod || 'STRIPE',
+                items: {
+                    create: cartItems.map(item => ({
+                        artworkId: item.artworkId,
+                        quantity: item.quantity,
+                        priceAtPurchase: item.artwork.price,
+                        type: item.type,
+                        printSize: item.printSize,
+                    })),
+                },
+            },
+            include: {
+                items: {
+                    include: { artwork: true },
+                },
+                user: {
+                    select: { id: true, fullName: true, email: true },
+                },
+            },
+        });
+
+        // Clear cart after order creation
+        await prisma.cartItem.deleteMany({ where: { userId } });
+
+        res.status(StatusCodes.CREATED).json({ order });
+    } catch (error) {
+        console.error('Create order error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create order' });
+    }
+};
+
+// Get user's own orders
+export const getUserOrders = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) {
+            res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authentication required' });
+            return;
+        }
+
+        const page = typeof req.query.page === 'string' ? req.query.page : '1';
+        const limit = typeof req.query.limit === 'string' ? req.query.limit : '20';
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [orders, total] = await Promise.all([
+            prisma.order.findMany({
+                where: { userId },
+                include: {
+                    items: {
+                        include: {
+                            artwork: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    imageUrl: true,
+                                    price: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: parseInt(limit),
+            }),
+            prisma.order.count({ where: { userId } }),
+        ]);
+
+        res.status(StatusCodes.OK).json({
+            orders,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                totalPages: Math.ceil(total / parseInt(limit)),
+            },
+        });
+    } catch (error) {
+        console.error('Get user orders error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to fetch orders' });
+    }
+};
+
 // Get all orders (Admin)
 export const getAllOrders = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -315,7 +437,7 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
             );
 
             // Redirect to success page
-            res.redirect(`${env.CLIENT_URL}/#/artist-confirmation?status=confirmed&order=${order.id.slice(-8)}`);
+            res.redirect(`${env.CLIENT_URL}/artist-confirmation?status=confirmed&order=${order.id.slice(-8)}`);
         } else if (action === 'decline') {
             // Update order status to cancelled
             await prisma.order.update({
@@ -340,7 +462,7 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
             );
 
             // Redirect to decline confirmation page
-            res.redirect(`${env.CLIENT_URL}/#/artist-confirmation?status=declined&order=${order.id.slice(-8)}`);
+            res.redirect(`${env.CLIENT_URL}/artist-confirmation?status=declined&order=${order.id.slice(-8)}`);
         } else {
             res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid action' });
         }
@@ -700,7 +822,7 @@ export const sendOrderConfirmationEmails = async (orderId: string): Promise<void
         );
 
         // 2. Send copy to admin with action button
-        const requestArtistUrl = `${env.CLIENT_URL}/#/admin?action=request-artist&order=${order.id}`;
+        const requestArtistUrl = `${env.CLIENT_URL}/admin?action=request-artist&order=${order.id}`;
         const adminEmail = getAdminOrderCopyTemplate(order as any, requestArtistUrl);
         await sendEmail(
             env.SMTP_USER || 'admin@muraqqa.art',

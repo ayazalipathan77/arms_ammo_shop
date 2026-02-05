@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import {
+    createOrder,
+    getUserOrders,
     getAllOrders,
     getOrderById,
     requestArtistConfirmation,
@@ -16,6 +18,10 @@ const router = Router();
 
 // Public route for artist confirmation (via email link)
 router.get('/artist-confirm', artistConfirmAvailability);
+
+// User routes (must be before /:id to avoid conflict)
+router.post('/', authenticate, createOrder);
+router.get('/my-orders', authenticate, getUserOrders);
 
 // Protected admin routes
 router.get('/', authenticate, authorizeRole('ADMIN'), getAllOrders);

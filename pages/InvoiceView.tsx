@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGallery } from '../context/GalleryContext';
-import { useCurrency } from '../App';
 import { Printer, ArrowLeft, Mail, MapPin, Globe, Loader2 } from 'lucide-react';
 import { orderApi } from '../services/api';
 import type { Order } from '../types';
 
+const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
+
 export const InvoiceView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { orders } = useGallery();
-  const { convertPrice } = useCurrency();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
