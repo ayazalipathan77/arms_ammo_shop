@@ -7,11 +7,13 @@ export interface ThemeColors {
     amber: string;
     pearl: string;
     warmGray: string;
+    border: string;
 }
 
 export interface ThemeFonts {
     display: string;
     body: string;
+    urdu: string;
 }
 
 export interface ThemeConfig {
@@ -29,11 +31,13 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             tangerine: '#FF6B35',
             amber: '#F7931E',
             pearl: '#F5F5F5',
-            warmGray: '#9A9A9A'
+            warmGray: '#9A9A9A',
+            border: 'rgba(245, 245, 245, 0.1)'
         },
         fonts: {
             display: "'Monument Extended', 'Syne', sans-serif",
-            body: "'Inter', 'Satoshi', sans-serif"
+            body: "'Inter', 'Satoshi', sans-serif",
+            urdu: "'Noto Nastaliq Urdu', serif"
         }
     },
     'DEEP_BURGUNDY': {
@@ -44,11 +48,13 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             tangerine: '#D4AF37',
             amber: '#C5A028',
             pearl: '#FAF0E6',
-            warmGray: '#B8860B'
+            warmGray: '#B8860B',
+            border: 'rgba(250, 240, 230, 0.15)'
         },
         fonts: {
             display: "'Playfair Display', serif",
-            body: "'Lora', serif"
+            body: "'Lora', serif",
+            urdu: "'Noto Nastaliq Urdu', serif"
         }
     },
     'PEACH_AQUA': {
@@ -59,11 +65,13 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             tangerine: '#FFCCB0',
             amber: '#E0FFFF',
             pearl: '#F0F8FF',
-            warmGray: '#87CEEB'
+            warmGray: '#87CEEB',
+            border: 'rgba(255, 204, 176, 0.15)'
         },
         fonts: {
             display: "'Outfit', sans-serif",
-            body: "'Quicksand', sans-serif"
+            body: "'Quicksand', sans-serif",
+            urdu: "'Noto Nastaliq Urdu', serif"
         }
     },
     'LEMON_VIOLET': {
@@ -74,11 +82,13 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             tangerine: '#FFFACD',
             amber: '#E0B0FF',
             pearl: '#FFFFFF',
-            warmGray: '#D8BFD8'
+            warmGray: '#D8BFD8',
+            border: 'rgba(255, 250, 205, 0.2)'
         },
         fonts: {
             display: "'Space Grotesk', sans-serif",
-            body: "'DM Sans', sans-serif"
+            body: "'DM Sans', sans-serif",
+            urdu: "'Noto Nastaliq Urdu', serif"
         }
     },
     'PUMPKIN_CHARCOAL': {
@@ -89,11 +99,13 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             tangerine: '#FF7518',
             amber: '#E65100',
             pearl: '#EEEEEE',
-            warmGray: '#A9A9A9'
+            warmGray: '#A9A9A9',
+            border: 'rgba(238, 238, 238, 0.1)'
         },
         fonts: {
             display: "'Anton', sans-serif",
-            body: "'Roboto', sans-serif"
+            body: "'Roboto', sans-serif",
+            urdu: "'Noto Nastaliq Urdu', serif"
         }
     },
     'CLOUDY_OCEAN': {
@@ -104,11 +116,13 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             tangerine: '#87CEEB',
             amber: '#4682B4',
             pearl: '#E0F2F7',
-            warmGray: '#B0C4DE'
+            warmGray: '#B0C4DE',
+            border: 'rgba(224, 242, 247, 0.15)'
         },
         fonts: {
             display: "'Montserrat', sans-serif",
-            body: "'Open Sans', sans-serif"
+            body: "'Open Sans', sans-serif",
+            urdu: "'Noto Nastaliq Urdu', serif"
         }
     },
     'SAGE_OLIVE': {
@@ -119,11 +133,13 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             tangerine: '#9CAF88',
             amber: '#556B2F',
             pearl: '#F5FFFA',
-            warmGray: '#8FBC8F'
+            warmGray: '#8FBC8F',
+            border: 'rgba(245, 255, 250, 0.12)'
         },
         fonts: {
             display: "'Cinzel', serif",
-            body: "'Cormorant Garamond', serif"
+            body: "'Cormorant Garamond', serif",
+            urdu: "'Noto Nastaliq Urdu', serif"
         }
     }
 };
@@ -163,9 +179,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         root.style.setProperty('--color-amber', theme.colors.amber);
         root.style.setProperty('--color-pearl', theme.colors.pearl);
         root.style.setProperty('--color-warm-gray', theme.colors.warmGray);
+        root.style.setProperty('--color-border', theme.colors.border);
 
         root.style.setProperty('--font-display', theme.fonts.display);
         root.style.setProperty('--font-body', theme.fonts.body);
+        root.style.setProperty('--font-urdu', theme.fonts.urdu);
 
         if (save) {
             localStorage.setItem('muraqqa_theme', JSON.stringify(theme));

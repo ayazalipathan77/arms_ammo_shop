@@ -88,10 +88,13 @@ const Navbar = () => {
                 <div className="w-full flex justify-between items-center max-w-[1920px] mx-auto">
                     {/* Logo */}
                     <Link to="/" className="relative z-50 group">
-                        <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-widest relative">
-                            MURAQQA<span className="text-tangerine">ART</span>
+                        <div className="flex items-center gap-2 relative">
+                            <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-widest">
+                                MURAQQA
+                            </h1>
+                            <span className="text-xl md:text-2xl text-tangerine" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
                             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-tangerine transition-all duration-300 group-hover:w-full"></span>
-                        </h1>
+                        </div>
                     </Link>
 
                     {/* Desktop Links */}

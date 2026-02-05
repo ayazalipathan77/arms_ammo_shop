@@ -183,7 +183,10 @@ export const Auth: React.FC = () => {
 
          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative z-10 w-full max-w-md">
             <div className="text-center mb-8">
-               <h1 className="font-display text-5xl font-bold text-pearl tracking-tight mb-2">MURAQQA</h1>
+               <div className="flex items-center justify-center gap-3 mb-2">
+                  <h1 className="font-display text-5xl font-bold text-pearl tracking-tight">MURAQQA</h1>
+                  <span className="text-4xl text-tangerine" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
+               </div>
                <p className="text-tangerine font-mono text-xs uppercase tracking-[0.3em]">Access Your Collections</p>
             </div>
 

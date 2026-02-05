@@ -120,10 +120,13 @@ export const InvoiceView: React.FC = () => {
                <div className="space-y-6">
                   {/* Logo */}
                   <div className="flex flex-col">
-                     <h1 className="font-display text-5xl tracking-tight leading-none text-black selection:bg-black selection:text-white">
-                        MURAQQA
-                     </h1>
-                     <span className="text-[10px] uppercase tracking-[0.3em] font-medium mt-2 ml-1 text-black">Art Gallery</span>
+                     <div className="flex items-center gap-3">
+                        <h1 className="font-display text-5xl tracking-tight leading-none text-black selection:bg-black selection:text-white">
+                           MURAQQA
+                        </h1>
+                        <span className="text-3xl text-amber-600" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
+                     </div>
+                     <span className="text-[10px] uppercase tracking-[0.3em] font-medium mt-2 ml-1 text-black">Contemporary Art Gallery</span>
                   </div>
 
                   <div className="text-xs font-mono space-y-1 mt-8 opacity-60">

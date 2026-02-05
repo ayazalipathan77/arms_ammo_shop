@@ -1701,6 +1701,128 @@ export const AdminDashboard: React.FC = () => {
                               readOnly
                            />
                         </div>
+
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block mt-6">Border Color (Separators & Lines)</label>
+                        <div className="space-y-3">
+                           {/* Color Picker with Opacity Slider */}
+                           <div className="flex gap-4 items-start">
+                              <div className="space-y-2 flex-1">
+                                 <div className="flex gap-4 items-center">
+                                    <input
+                                       type="color"
+                                       value={(() => {
+                                          // Extract RGB from rgba string
+                                          const match = themeBuilder.colors.border.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                                          if (match) {
+                                             const r = parseInt(match[1]).toString(16).padStart(2, '0');
+                                             const g = parseInt(match[2]).toString(16).padStart(2, '0');
+                                             const b = parseInt(match[3]).toString(16).padStart(2, '0');
+                                             return `#${r}${g}${b}`;
+                                          }
+                                          return '#f5f5f5';
+                                       })()}
+                                       onChange={(e) => {
+                                          // Convert hex to rgb and combine with existing alpha
+                                          const hex = e.target.value;
+                                          const r = parseInt(hex.slice(1, 3), 16);
+                                          const g = parseInt(hex.slice(3, 5), 16);
+                                          const b = parseInt(hex.slice(5, 7), 16);
+                                          const alphaMatch = themeBuilder.colors.border.match(/,\s*([\d.]+)\)/);
+                                          const alpha = alphaMatch ? alphaMatch[1] : '0.1';
+                                          const newBorder = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                                          const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, border: newBorder } };
+                                          setThemeBuilder(newTheme);
+                                          applyTheme(newTheme);
+                                       }}
+                                       className="w-12 h-12 border-none bg-transparent cursor-pointer"
+                                    />
+                                    <div className="flex-1">
+                                       <label className="text-[10px] text-warm-gray uppercase tracking-widest mb-2 block">Opacity</label>
+                                       <input
+                                          type="range"
+                                          min="0"
+                                          max="1"
+                                          step="0.05"
+                                          value={(() => {
+                                             const alphaMatch = themeBuilder.colors.border.match(/,\s*([\d.]+)\)/);
+                                             return alphaMatch ? alphaMatch[1] : '0.1';
+                                          })()}
+                                          onChange={(e) => {
+                                             // Update only the alpha value
+                                             const match = themeBuilder.colors.border.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                                             if (match) {
+                                                const r = match[1];
+                                                const g = match[2];
+                                                const b = match[3];
+                                                const newBorder = `rgba(${r}, ${g}, ${b}, ${e.target.value})`;
+                                                const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, border: newBorder } };
+                                                setThemeBuilder(newTheme);
+                                                applyTheme(newTheme);
+                                             }
+                                          }}
+                                          className="w-full accent-tangerine"
+                                       />
+                                       <div className="flex justify-between text-[10px] text-warm-gray/60 mt-1">
+                                          <span>0%</span>
+                                          <span className="text-tangerine font-mono">{Math.round(parseFloat((() => {
+                                             const alphaMatch = themeBuilder.colors.border.match(/,\s*([\d.]+)\)/);
+                                             return alphaMatch ? alphaMatch[1] : '0.1';
+                                          })()) * 100)}%</span>
+                                          <span>100%</span>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+
+                           {/* Preview & Value Display */}
+                           <div className="bg-charcoal border border-pearl/20 p-3 rounded">
+                              <div className="flex items-center gap-3 mb-2">
+                                 <div className="w-16 h-8 border-2" style={{ borderColor: themeBuilder.colors.border, backgroundColor: themeBuilder.colors.void }}></div>
+                                 <span className="text-[10px] text-warm-gray uppercase tracking-widest">Preview</span>
+                              </div>
+                              <input
+                                 type="text"
+                                 value={themeBuilder.colors.border}
+                                 className="w-full bg-void border border-pearl/20 p-2 text-pearl font-mono text-xs"
+                                 readOnly
+                              />
+                           </div>
+
+                           {/* Quick Presets */}
+                           <div className="flex gap-2 flex-wrap">
+                              <button
+                                 onClick={() => {
+                                    const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, border: 'rgba(245, 245, 245, 0.1)' } };
+                                    setThemeBuilder(newTheme);
+                                    applyTheme(newTheme);
+                                 }}
+                                 className="px-3 py-1 bg-charcoal border border-pearl/20 text-pearl text-xs hover:border-tangerine transition-colors"
+                              >
+                                 Light (10%)
+                              </button>
+                              <button
+                                 onClick={() => {
+                                    const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, border: 'rgba(245, 245, 245, 0.2)' } };
+                                    setThemeBuilder(newTheme);
+                                    applyTheme(newTheme);
+                                 }}
+                                 className="px-3 py-1 bg-charcoal border border-pearl/20 text-pearl text-xs hover:border-tangerine transition-colors"
+                              >
+                                 Medium (20%)
+                              </button>
+                              <button
+                                 onClick={() => {
+                                    const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, border: 'rgba(245, 245, 245, 0.3)' } };
+                                    setThemeBuilder(newTheme);
+                                    applyTheme(newTheme);
+                                 }}
+                                 className="px-3 py-1 bg-charcoal border border-pearl/20 text-pearl text-xs hover:border-tangerine transition-colors"
+                              >
+                                 Bold (30%)
+                              </button>
+                           </div>
+                        </div>
                      </div>
                   </div>
                </div>
@@ -1710,7 +1832,7 @@ export const AdminDashboard: React.FC = () => {
                   <h3 className="text-pearl font-display text-lg mb-4 flex items-center gap-2">
                      <Type size={20} className="text-tangerine" /> Typography System
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                      <div>
                         <label className="text-xs text-warm-gray uppercase tracking-widest mb-4 block">Display Font (Headings)</label>
                         <select
@@ -1758,6 +1880,29 @@ export const AdminDashboard: React.FC = () => {
                         </select>
                         <p className="mt-4 text-sm leading-relaxed" style={{ fontFamily: themeBuilder.fonts.body }}>
                            The quick brown fox jumps over the lazy dog. Contemporary art requires a canvas that breathes.
+                        </p>
+                     </div>
+
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-4 block">Urdu Font (مرقع)</label>
+                        <select
+                           className="w-full bg-void border border-pearl/20 p-4 text-pearl"
+                           value={themeBuilder.fonts.urdu}
+                           onChange={(e) => {
+                              const newTheme = { ...themeBuilder, fonts: { ...themeBuilder.fonts, urdu: e.target.value } };
+                              setThemeBuilder(newTheme);
+                              applyTheme(newTheme);
+                           }}
+                        >
+                           <option value="'Noto Nastaliq Urdu', serif">Noto Nastaliq Urdu (Traditional)</option>
+                           <option value="'Amiri', serif">Amiri (Classic Arabic/Urdu)</option>
+                           <option value="'Aref Ruqaa', serif">Aref Ruqaa (Calligraphic)</option>
+                           <option value="'Scheherazade New', serif">Scheherazade New (Elegant)</option>
+                           <option value="'Markazi Text', serif">Markazi Text (Modern)</option>
+                           <option value="'Lateef', serif">Lateef (Clean Nastaliq)</option>
+                        </select>
+                        <p className="mt-4 text-3xl text-tangerine" style={{ fontFamily: themeBuilder.fonts.urdu }}>
+                           مرقع
                         </p>
                      </div>
                   </div>

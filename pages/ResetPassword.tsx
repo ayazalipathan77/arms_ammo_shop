@@ -103,6 +103,7 @@ export const ResetPassword: React.FC = () => {
                      <h1 className="font-serif text-4xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
                         MURAQQA
                      </h1>
+                     <span className="text-3xl text-amber-400" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
                      <Star className="text-amber-500" size={24} />
                   </div>
                </div>
@@ -148,6 +149,7 @@ export const ResetPassword: React.FC = () => {
                      <h1 className="font-serif text-4xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
                         MURAQQA
                      </h1>
+                     <span className="text-3xl text-amber-400" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
                      <Star className="text-amber-500" size={24} />
                   </div>
                </div>
@@ -214,6 +216,7 @@ export const ResetPassword: React.FC = () => {
                   <h1 className="font-serif text-4xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
                      MURAQQA
                   </h1>
+                  <span className="text-3xl text-amber-400" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
                   <Star className="text-amber-500" size={24} />
                </motion.div>
                <p className="text-stone-500 text-sm tracking-widest uppercase">Reset Your Password</p>
