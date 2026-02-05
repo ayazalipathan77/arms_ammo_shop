@@ -68,7 +68,7 @@ const Footer = () => {
             {/* Bottom */}
             <div className="border-t border-pearl/10 pt-10 flex flex-col md:flex-row justify-between items-center text-[10px] font-mono uppercase tracking-widest text-warm-gray/50">
                 <p>&copy; {new Date().getFullYear()} Muraqqa <span className="text-sm" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>. All Rights Reserved.</p>
-                <p className="mt-4 md:mt-0">Karachi • Lahore • Islamabad</p>
+                <p className="mt-4 md:mt-0">Developed by Ayaz Ali • 03453662534</p>
             </div>
         </footer>
     );

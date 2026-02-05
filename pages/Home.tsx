@@ -82,8 +82,13 @@ const Home = () => {
       <Hero />
 
       {/* 1. LATEST WORKS SECTION - Reordered Step 1 */}
-      <section className="py-16 px-6 md:px-12 relative z-10 bg-void">
-        <div className="max-w-[1920px] mx-auto">
+      <section className="py-16 px-6 md:px-12 relative z-10 overflow-hidden bg-gradient-to-br from-void via-charcoal to-void">
+        {/* Gradient Orbs */}
+        <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-tangerine/25 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber/20 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 right-1/4 w-[450px] h-[450px] bg-pearl/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="max-w-[1920px] mx-auto relative z-10">
           <div className="mb-8 border-b border-pearl/10 pb-6 flex justify-between items-end">
             <div>
               <h2 className="text-4xl md:text-6xl font-display font-bold text-pearl">
@@ -149,8 +154,11 @@ const Home = () => {
 
       {/* 2. TOP 5 PAINTINGS - Reordered Step 2 */}
       {topPaintingsConfig?.enabled && topPaintings.length > 0 && (
-        <section className="py-16 px-6 md:px-12 bg-charcoal relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-tangerine/5 rounded-full blur-3xl pointer-events-none" />
+        <section className="py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-tr from-charcoal via-void to-charcoal border-t border-pearl/10">
+          {/* Multiple Gradient Orbs */}
+          <div className="absolute top-0 right-0 w-[700px] h-[700px] bg-tangerine/20 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-amber/18 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-0 right-1/3 w-[450px] h-[450px] bg-pearl/12 rounded-full blur-[100px] pointer-events-none" />
 
           <div className="max-w-[1920px] mx-auto relative z-10">
             <div className="mb-10 flex items-center gap-4">
@@ -185,8 +193,13 @@ const Home = () => {
 
       {/* 3. CURATOR'S PICK - Reordered Step 3 */}
       {curatorsConfig?.enabled && curatedArtworks.length > 0 && (
-        <section className="py-16 px-6 md:px-12 bg-void border-t border-pearl/10">
-          <div className="max-w-[1920px] mx-auto">
+        <section className="py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-bl from-void via-charcoal to-void border-t border-pearl/10">
+          {/* Gradient Orbs */}
+          <div className="absolute top-1/4 right-0 w-[650px] h-[650px] bg-tangerine/22 rounded-full blur-[130px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[550px] h-[550px] bg-amber/18 rounded-full blur-[110px] pointer-events-none" />
+          <div className="absolute top-1/2 left-1/3 w-[400px] h-[400px] bg-pearl/10 rounded-full blur-[90px] pointer-events-none" />
+
+          <div className="max-w-[1920px] mx-auto relative z-10">
             <div className="mb-10 flex items-center gap-4 justify-center text-center">
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-3 mb-3">
@@ -217,7 +230,12 @@ const Home = () => {
       )}
 
       {/* 4. EXHIBITIONS (NEW) - Reordered Step 4 */}
-      <section className="py-16 px-6 md:px-12 bg-charcoal relative overflow-hidden border-t border-pearl/5">
+      <section className="py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-tl from-charcoal via-void to-charcoal border-t border-pearl/10">
+        {/* Multiple Gradient Orbs */}
+        <div className="absolute top-0 left-1/4 w-[700px] h-[700px] bg-tangerine/20 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute bottom-1/4 right-0 w-[550px] h-[550px] bg-amber/18 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-1/2 left-0 w-[450px] h-[450px] bg-pearl/12 rounded-full blur-[100px] pointer-events-none" />
+
         <div className="max-w-[1920px] mx-auto relative z-10">
           <div className="mb-10 flex justify-between items-end">
             <div>

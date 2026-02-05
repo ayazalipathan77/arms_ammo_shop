@@ -241,8 +241,8 @@ export const Cart: React.FC = () => {
             <div className="relative z-10 text-center">
                <h2 className="text-4xl font-display mb-4 text-pearl">Your Collection is Empty</h2>
                {cartError && <p className="text-red-500 mb-4 font-mono text-xs">{cartError}</p>}
-               <Link to="/exhibitions" className="inline-block bg-tangerine text-void px-8 py-3 text-xs uppercase tracking-[0.2em] font-bold hover:bg-white transition-colors">
-                  Browse Exhibitions
+               <Link to="/collections" className="inline-block bg-tangerine text-void px-8 py-3 text-xs uppercase tracking-[0.2em] font-bold hover:bg-white transition-colors">
+                  Browse Collections
                </Link>
             </div>
          </div>
