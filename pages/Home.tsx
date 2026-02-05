@@ -223,6 +223,130 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
         </section>
       )}
 
+      {/* Top Paintings - Horizontal Carousel */}
+      {landingPageContent?.topPaintings?.enabled && topPaintings.length > 0 && (
+        <section className="py-20 bg-gradient-to-b from-stone-950 via-stone-900/50 to-stone-950 border-t border-stone-800/50 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-900/5 via-transparent to-transparent"></div>
+
+          <div className="relative z-10 px-6 md:px-12 max-w-screen-2xl mx-auto">
+            <div className="flex items-center justify-between mb-10">
+              <div>
+                <h2 className="font-serif text-4xl md:text-5xl text-white mb-1">Top Paintings</h2>
+                <p className="text-stone-500 uppercase tracking-widest text-xs">Handpicked Masterpieces</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (carouselRef.current) {
+                      carouselRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+                    }
+                  }}
+                  className="bg-stone-900/80 hover:bg-stone-800 border border-stone-700/50 p-3 rounded-full transition-all hover:scale-110 backdrop-blur-sm"
+                >
+                  <ChevronLeft className="w-5 h-5 text-amber-500" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (carouselRef.current) {
+                      carouselRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+                    }
+                  }}
+                  className="bg-stone-900/80 hover:bg-stone-800 border border-stone-700/50 p-3 rounded-full transition-all hover:scale-110 backdrop-blur-sm"
+                >
+                  <ChevronRight className="w-5 h-5 text-amber-500" />
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={carouselRef}
+              className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-8"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
+              {/* Duplicate items for seamless loop */}
+              {[...topPaintings, ...topPaintings].map((artwork, index) => (
+                <Link
+                  key={`${artwork.id}-${index}`}
+                  to={`/artwork/${artwork.id}`}
+                  className="group flex-shrink-0 w-80"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden bg-stone-900 rounded-2xl mb-3 border border-stone-800/50 shadow-2xl">
+                    <img
+                      src={artwork.imageUrl}
+                      alt={artwork.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                      <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        <div className="flex items-center justify-between">
+                          <span className="text-amber-500 text-sm font-medium">View Details</span>
+                          <ArrowRight className="w-4 h-4 text-amber-500" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="px-2">
+                    <h3 className="font-serif text-xl text-white mb-1 group-hover:text-amber-500 transition-colors line-clamp-1">
+                      {artwork.title}
+                    </h3>
+                    <p className="text-stone-500 text-sm mb-1">{artwork.artistName}</p>
+                    <p className="text-amber-500 text-sm font-medium">PKR {artwork.price.toLocaleString()}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Curator's Picks (Asymmetric Grid) */}
+      {landingPageContent?.curatedCollections?.enabled && curatedCollections.length > 0 && (
+        <section className="py-16 bg-gradient-to-br from-zinc-900 via-stone-900 to-neutral-950 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/3 via-transparent to-transparent"></div>
+          <div className="max-w-screen-2xl mx-auto px-6 md:px-12">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
+              <div>
+                <h3 className="font-serif text-3xl text-white mb-2">Curator's Picks</h3>
+                <p className="text-stone-500">Handpicked selections by our curators.</p>
+              </div>
+              <Link to="/gallery" className="text-amber-500 hover:text-white uppercase tracking-widest text-xs transition-colors">
+                View All Collections
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+              {curatedCollections.map((collection, idx) => (
+                <Link
+                  key={idx}
+                  to="/gallery"
+                  className={`group relative overflow-hidden rounded-2xl border border-stone-800/50 shadow-2xl hover:shadow-amber-900/20 transition-shadow duration-500 ${
+                    collection.layout === 'large' ? 'md:col-span-2 aspect-[16/9]' :
+                    collection.layout === 'tall' ? 'aspect-[3/4]' :
+                    'aspect-[4/3]'
+                  }`}
+                >
+                  <img
+                    src={collection.image}
+                    alt={collection.title}
+                    className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${
+                      collection.layout === 'large' ? 'grayscale group-hover:grayscale-0' : ''
+                    }`}
+                  />
+                  <div className="absolute bottom-0 left-0 p-8 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                    <h4 className="font-serif text-2xl text-white group-hover:text-amber-500 transition-colors">{collection.title}</h4>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Featured Exhibition (Editorial Layout) */}
       {landingPageContent?.featuredExhibition?.enabled && (
         <section className="py-20 px-6 md:px-12 max-w-screen-2xl mx-auto relative bg-gradient-to-b from-stone-950 via-zinc-950 to-stone-950">
@@ -361,130 +485,6 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
               <div className="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-amber-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-tr-2xl"></div>
               <div className="absolute bottom-0 left-0 w-20 h-20 border-b-2 border-l-2 border-amber-500/30 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-bl-2xl"></div>
             </motion.div>
-          </div>
-        </section>
-      )}
-
-      {/* Curated Collections (Asymmetric Grid) */}
-      {landingPageContent?.curatedCollections?.enabled && curatedCollections.length > 0 && (
-        <section className="py-16 bg-gradient-to-br from-zinc-900 via-stone-900 to-neutral-950 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-900/3 via-transparent to-transparent"></div>
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-12">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
-              <div>
-                <h3 className="font-serif text-3xl text-white mb-2">Curated Collections</h3>
-                <p className="text-stone-500">Handpicked selections by our curators.</p>
-              </div>
-              <Link to="/gallery" className="text-amber-500 hover:text-white uppercase tracking-widest text-xs transition-colors">
-                View All Collections
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-              {curatedCollections.map((collection, idx) => (
-                <Link
-                  key={idx}
-                  to="/gallery"
-                  className={`group relative overflow-hidden rounded-2xl border border-stone-800/50 shadow-2xl hover:shadow-amber-900/20 transition-shadow duration-500 ${
-                    collection.layout === 'large' ? 'md:col-span-2 aspect-[16/9]' :
-                    collection.layout === 'tall' ? 'aspect-[3/4]' :
-                    'aspect-[4/3]'
-                  }`}
-                >
-                  <img
-                    src={collection.image}
-                    alt={collection.title}
-                    className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${
-                      collection.layout === 'large' ? 'grayscale group-hover:grayscale-0' : ''
-                    }`}
-                  />
-                  <div className="absolute bottom-0 left-0 p-8 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                    <h4 className="font-serif text-2xl text-white group-hover:text-amber-500 transition-colors">{collection.title}</h4>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Curator's Picks - Horizontal Carousel */}
-      {landingPageContent?.topPaintings?.enabled && topPaintings.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-stone-950 via-stone-900/50 to-stone-950 border-t border-stone-800/50 relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-900/5 via-transparent to-transparent"></div>
-
-          <div className="relative z-10 px-6 md:px-12 max-w-screen-2xl mx-auto">
-            <div className="flex items-center justify-between mb-10">
-              <div>
-                <h2 className="font-serif text-4xl md:text-5xl text-white mb-1">Curator's Picks</h2>
-                <p className="text-stone-500 uppercase tracking-widest text-xs">Handpicked Masterpieces</p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    if (carouselRef.current) {
-                      carouselRef.current.scrollBy({ left: -400, behavior: 'smooth' });
-                    }
-                  }}
-                  className="bg-stone-900/80 hover:bg-stone-800 border border-stone-700/50 p-3 rounded-full transition-all hover:scale-110 backdrop-blur-sm"
-                >
-                  <ChevronLeft className="w-5 h-5 text-amber-500" />
-                </button>
-                <button
-                  onClick={() => {
-                    if (carouselRef.current) {
-                      carouselRef.current.scrollBy({ left: 400, behavior: 'smooth' });
-                    }
-                  }}
-                  className="bg-stone-900/80 hover:bg-stone-800 border border-stone-700/50 p-3 rounded-full transition-all hover:scale-110 backdrop-blur-sm"
-                >
-                  <ChevronRight className="w-5 h-5 text-amber-500" />
-                </button>
-              </div>
-            </div>
-
-            <div
-              ref={carouselRef}
-              className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-8"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-              }}
-              onMouseEnter={() => setIsPaused(true)}
-              onMouseLeave={() => setIsPaused(false)}
-            >
-              {/* Duplicate items for seamless loop */}
-              {[...topPaintings, ...topPaintings].map((artwork, index) => (
-                <Link
-                  key={`${artwork.id}-${index}`}
-                  to={`/artwork/${artwork.id}`}
-                  className="group flex-shrink-0 w-80"
-                >
-                  <div className="relative aspect-[3/4] overflow-hidden bg-stone-900 rounded-2xl mb-3 border border-stone-800/50 shadow-2xl">
-                    <img
-                      src={artwork.imageUrl}
-                      alt={artwork.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                        <div className="flex items-center justify-between">
-                          <span className="text-amber-500 text-sm font-medium">View Details</span>
-                          <ArrowRight className="w-4 h-4 text-amber-500" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="px-2">
-                    <h3 className="font-serif text-xl text-white mb-1 group-hover:text-amber-500 transition-colors line-clamp-1">
-                      {artwork.title}
-                    </h3>
-                    <p className="text-stone-500 text-sm mb-1">{artwork.artistName}</p>
-                    <p className="text-amber-500 text-sm font-medium">PKR {artwork.price.toLocaleString()}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
           </div>
         </section>
       )}
