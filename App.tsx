@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import { Exhibitions } from './pages/Exhibitions';
 import { Conversations } from './pages/Conversations';
+import { Contact } from './pages/Contact';
 import { Auth } from './pages/Auth';
 import { ArtworkDetail } from './pages/ArtworkDetail';
 import { AdminDashboard } from './pages/AdminDashboard';
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/exhibitions" element={<Exhibitions />} />
                 <Route path="/stories" element={<Conversations />} />
+                <Route path="/contact" element={<Contact />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/artwork/:id" element={<ArtworkDetail />} />
                 <Route path="/admin" element={<AdminDashboard />} />

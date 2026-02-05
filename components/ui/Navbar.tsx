@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const ScrambleText = ({ text }: { text: string }) => {
     const [display, setDisplay] = useState(text);
@@ -45,6 +46,7 @@ const Navbar = () => {
     const { scrollY } = useScroll();
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { user } = useAuth();
 
     useEffect(() => {
         return scrollY.onChange((latest) => {
@@ -56,7 +58,7 @@ const Navbar = () => {
         { name: 'WORK', path: '/exhibitions' },
         { name: 'ARTIST', path: '/artists' },
         { name: 'STORIES', path: '/stories' },
-        // { name: 'CONTACT', path: '/contact' },
+        { name: 'CONTACT', path: '/contact' },
     ];
 
     return (
@@ -74,7 +76,7 @@ const Navbar = () => {
                     {/* Logo */}
                     <Link to="/" className="relative z-50 group">
                         <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-widest relative">
-                            BANDAH<span className="text-tangerine">ALI</span>
+                            MURAQQA<span className="text-tangerine">ART</span>
                             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-tangerine transition-all duration-300 group-hover:w-full"></span>
                         </h1>
                     </Link>
@@ -86,6 +88,11 @@ const Navbar = () => {
                                 <ScrambleText text={item.name} />
                             </Link>
                         ))}
+
+                        {/* Auth Icon */}
+                        <Link to={user ? "/profile" : "/auth"} className="text-pearl hover:text-tangerine transition-colors">
+                            <User size={20} />
+                        </Link>
                     </div>
 
                     {/* Mobile Menu Toggle */}
@@ -128,6 +135,25 @@ const Navbar = () => {
                             </Link>
                         </motion.div>
                     ))}
+
+                    {/* Mobile Auth Link */}
+                    <motion.div
+                        initial={{ y: 40, opacity: 0 }}
+                        animate={{
+                            y: mobileMenuOpen ? 0 : 40,
+                            opacity: mobileMenuOpen ? 1 : 0
+                        }}
+                        transition={{ delay: 0.6 }}
+                    >
+                        <Link
+                            to={user ? "/profile" : "/auth"}
+                            className="text-2xl font-mono text-pearl hover:text-tangerine transition-colors flex items-center gap-2 justify-center"
+                            onClick={() => setMobileMenuOpen(false)}
+                        >
+                            <User size={24} />
+                            {user ? "PROFILE" : "LOGIN"}
+                        </Link>
+                    </motion.div>
                 </div>
             </motion.div>
         </>

@@ -10,7 +10,7 @@ const Footer = () => {
                 <div className="md:col-span-1">
                     <Link to="/" className="block mb-6">
                         <h2 className="font-display text-3xl font-bold tracking-widest text-white">
-                            BANDAH<span className="text-tangerine">ALI</span>
+                            MURAQQA<span className="text-tangerine">ART</span>
                         </h2>
                     </Link>
                     <p className="font-mono text-xs text-warm-gray leading-relaxed mb-6">

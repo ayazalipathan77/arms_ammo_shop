@@ -83,7 +83,7 @@ const Hero = () => {
                             </h1>
                             <div className="flex gap-4">
                                 <Button variant="primary">VIEW COLLECTION</Button>
-                                <Button variant="outline">ARTIST PROFILE</Button>
+                                <Button variant="outline">EXHIBITIONS</Button>
                             </div>
                         </motion.div>
                     </AnimatePresence>
