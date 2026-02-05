@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Artwork } from '../../types';
@@ -13,8 +13,10 @@ interface ArtworkCardProps {
 }
 
 const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
+    const location = useLocation();
+
     return (
-        <Link to={`/artwork/${artwork.id}`} className="block w-full h-full">
+        <Link to={`/artwork/${artwork.id}`} state={{ from: location.pathname + location.search }} className="block w-full h-full">
             <motion.div
                 className={cn("group relative w-full aspect-[3/4] cursor-pointer perspective-1000", className)}
                 whileHover="hover"

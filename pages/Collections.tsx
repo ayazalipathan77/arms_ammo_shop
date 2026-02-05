@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGallery } from '../context/GalleryContext';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowRight, Sparkles, Layers, Search, Filter, X, ChevronDown } from 'lucide-react';
 import ArtworkCard from '../components/ui/ArtworkCard';
 import Button from '../components/ui/Button';
@@ -46,20 +46,87 @@ export const Collections: React.FC = () => {
         return { min: Math.min(...years), max: Math.max(...years) };
     }, [artworks]);
 
-    // Initialize price/year ranges when bounds change
-    useEffect(() => {
-        setPriceRange([priceBounds.min, priceBounds.max]);
-    }, [priceBounds.min, priceBounds.max]);
+    // Track initialization state
+    const filtersInitialized = useRef(false);
+    const initialUrlParams = useRef(new URLSearchParams(window.location.search));
+    const isFirstSync = useRef(true);
 
+    // Combined initialization: restore from URL params or use bounds defaults
     useEffect(() => {
-        setYearRange([yearBounds.min, yearBounds.max]);
-    }, [yearBounds.min, yearBounds.max]);
+        if (filtersInitialized.current) {
+            // Bounds changed after init — clamp existing ranges
+            setPriceRange(prev => [
+                Math.max(prev[0], priceBounds.min),
+                Math.min(prev[1], priceBounds.max)
+            ]);
+            setYearRange(prev => [
+                Math.max(prev[0], yearBounds.min),
+                Math.min(prev[1], yearBounds.max)
+            ]);
+            return;
+        }
 
-    // Initial Load from URL
-    useEffect(() => {
-        const cat = searchParams.get('category');
+        // Wait for artworks to load so bounds are real
+        if (artworks.length === 0) return;
+
+        const params = initialUrlParams.current;
+
+        // Simple filters
+        const cat = params.get('category');
         if (cat) setActiveCategory(cat);
-    }, [searchParams]);
+        const med = params.get('medium');
+        if (med) setActiveMedium(med);
+        const avail = params.get('availability');
+        if (avail) setAvailability(avail);
+        const sort = params.get('sort');
+        if (sort) setSortBy(sort);
+        const search = params.get('search');
+        if (search) setSearchQuery(search);
+
+        // Price range — restore from URL or default to full bounds
+        if (params.has('priceMin') || params.has('priceMax')) {
+            setPriceRange([
+                Number(params.get('priceMin')) || priceBounds.min,
+                Number(params.get('priceMax')) || priceBounds.max
+            ]);
+        } else {
+            setPriceRange([priceBounds.min, priceBounds.max]);
+        }
+
+        // Year range
+        if (params.has('yearMin') || params.has('yearMax')) {
+            setYearRange([
+                Number(params.get('yearMin')) || yearBounds.min,
+                Number(params.get('yearMax')) || yearBounds.max
+            ]);
+        } else {
+            setYearRange([yearBounds.min, yearBounds.max]);
+        }
+
+        filtersInitialized.current = true;
+    }, [artworks.length, priceBounds.min, priceBounds.max, yearBounds.min, yearBounds.max]);
+
+    // Sync filter state → URL search params (skip first render)
+    useEffect(() => {
+        if (isFirstSync.current) {
+            isFirstSync.current = false;
+            return;
+        }
+        if (!filtersInitialized.current) return;
+
+        const params = new URLSearchParams();
+        if (activeCategory !== 'All') params.set('category', activeCategory);
+        if (activeMedium !== 'All') params.set('medium', activeMedium);
+        if (availability !== 'all') params.set('availability', availability);
+        if (sortBy !== 'newest') params.set('sort', sortBy);
+        if (searchQuery) params.set('search', searchQuery);
+        if (priceRange[0] > priceBounds.min) params.set('priceMin', String(priceRange[0]));
+        if (priceRange[1] < priceBounds.max) params.set('priceMax', String(priceRange[1]));
+        if (yearRange[0] > yearBounds.min) params.set('yearMin', String(yearRange[0]));
+        if (yearRange[1] < yearBounds.max) params.set('yearMax', String(yearRange[1]));
+
+        setSearchParams(params, { replace: true });
+    }, [activeCategory, activeMedium, availability, sortBy, searchQuery, priceRange, yearRange]);
 
     // Active filter count
     const activeFilterCount = [
@@ -112,12 +179,6 @@ export const Collections: React.FC = () => {
 
     const updateCategory = (cat: string) => {
         setActiveCategory(cat);
-        if (cat === 'All') {
-            searchParams.delete('category');
-        } else {
-            searchParams.set('category', cat);
-        }
-        setSearchParams(searchParams);
     };
 
     const clearAllFilters = () => {
@@ -125,10 +186,9 @@ export const Collections: React.FC = () => {
         setActiveMedium('All');
         setAvailability('all');
         setSearchQuery('');
+        setSortBy('newest');
         setPriceRange([priceBounds.min, priceBounds.max]);
         setYearRange([yearBounds.min, yearBounds.max]);
-        searchParams.delete('category');
-        setSearchParams(searchParams);
     };
 
     // Radio button component for reuse

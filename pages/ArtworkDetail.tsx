@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useCartContext } from '../context/CartContext';
 import { useGallery } from '../context/GalleryContext';
 import { ARView } from '../components/ARView';
@@ -12,8 +12,14 @@ import Button from '../components/ui/Button';
 export const ArtworkDetail: React.FC = () => {
    const { id } = useParams<{ id: string }>();
    const navigate = useNavigate();
+   const location = useLocation();
    const { addToCart } = useCartContext(); // Updated hook
    const { artworks } = useGallery();
+
+   // Preserve collections URL with filters for "Back" navigation
+   const backTo = (location.state as any)?.from?.startsWith('/collections')
+      ? (location.state as any).from
+      : '/collections';
 
    const [artwork, setArtwork] = useState<Artwork | null>(null);
    const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +123,7 @@ export const ArtworkDetail: React.FC = () => {
 
          {/* Navigation Bar */}
          <div className="fixed top-24 left-0 w-full z-40 px-6 md:px-12 pointer-events-none">
-            <Link to="/" className="inline-flex items-center gap-2 text-pearl hover:text-tangerine uppercase tracking-widest text-xs pointer-events-auto transition-colors bg-void/50 backdrop-blur-md border border-pearl/10 px-4 py-2 rounded-full font-bold">
+            <Link to={backTo} className="inline-flex items-center gap-2 text-pearl hover:text-tangerine uppercase tracking-widest text-xs pointer-events-auto transition-colors bg-void/50 backdrop-blur-md border border-pearl/10 px-4 py-2 rounded-full font-bold">
                <ArrowLeft size={14} /> Back to Collection
             </Link>
          </div>
@@ -299,7 +305,7 @@ export const ArtworkDetail: React.FC = () => {
                </div>
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   {relatedArtworks.map((art) => (
-                     <Link key={art.id} to={`/artwork/${art.id}`} className="group block">
+                     <Link key={art.id} to={`/artwork/${art.id}`} state={{ from: (location.state as any)?.from }} className="group block">
                         <div className="relative aspect-[3/4] overflow-hidden bg-charcoal rounded-sm border border-pearl/10 shadow-2xl group-hover:border-tangerine/50 transition-all duration-500 mb-4">
                            <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-80 group-hover:opacity-100 grayscale group-hover:grayscale-0" />
                            {!art.inStock && (
