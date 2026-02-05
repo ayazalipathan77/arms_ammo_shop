@@ -480,7 +480,10 @@ export const AdminDashboard: React.FC = () => {
          }
          setIsExhModalOpen(false);
          setEditingExhId(null);
-         setNewExh({ title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING' });
+         setNewExh({
+            title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '',
+            isVirtual: false, status: 'UPCOMING', galleryImages: [], videoUrl: ''
+         });
       } catch (err) {
          alert(`Failed to ${editingExhId ? 'update' : 'add'} exhibition`);
       }
@@ -496,7 +499,9 @@ export const AdminDashboard: React.FC = () => {
          location: ex.location,
          imageUrl: ex.imageUrl,
          isVirtual: ex.isVirtual,
-         status: ex.status
+         status: ex.status,
+         galleryImages: ex.galleryImages || [],
+         videoUrl: ex.videoUrl || ''
       });
       setIsExhModalOpen(true);
    };
