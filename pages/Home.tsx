@@ -188,7 +188,7 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
             <p className="text-stone-300 uppercase tracking-[0.3em] text-xs md:text-sm mb-6 animate-fade-in">
               {hero.subtitle}
             </p>
-            <h1 className="font-serif text-2xl text-white mb-8 leading-[1.1] animate-enter">
+            <h1 className="font-serif text-7xl text-white mb-8 leading-[1.1] animate-enter">
               {hero.title.split(hero.accentWord)[0]}
               {hero.accentWord && (
                 <>
@@ -324,18 +324,16 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
                 <Link
                   key={idx}
                   to="/gallery"
-                  className={`group relative overflow-hidden rounded-2xl border border-stone-800/50 shadow-2xl hover:shadow-amber-900/20 transition-shadow duration-500 ${
-                    collection.layout === 'large' ? 'md:col-span-2 aspect-[16/9]' :
-                    collection.layout === 'tall' ? 'aspect-[3/4]' :
-                    'aspect-[4/3]'
-                  }`}
+                  className={`group relative overflow-hidden rounded-2xl border border-stone-800/50 shadow-2xl hover:shadow-amber-900/20 transition-shadow duration-500 ${collection.layout === 'large' ? 'md:col-span-2 aspect-[16/9]' :
+                      collection.layout === 'tall' ? 'aspect-[3/4]' :
+                        'aspect-[4/3]'
+                    }`}
                 >
                   <img
                     src={collection.image}
                     alt={collection.title}
-                    className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${
-                      collection.layout === 'large' ? 'grayscale group-hover:grayscale-0' : ''
-                    }`}
+                    className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${collection.layout === 'large' ? 'grayscale group-hover:grayscale-0' : ''
+                      }`}
                   />
                   <div className="absolute bottom-0 left-0 p-8 w-full bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                     <h4 className="font-serif text-2xl text-white group-hover:text-amber-500 transition-colors">{collection.title}</h4>
@@ -507,11 +505,10 @@ export const Home: React.FC<HomeProps> = ({ lang }) => {
                     alt={conv.title}
                   />
                 </div>
-                <p className={`text-xs uppercase tracking-widest mb-2 ${
-                  conv.category === 'WATCH' ? 'text-blue-500' :
-                  conv.category === 'LISTEN' ? 'text-purple-500' :
-                  'text-green-500'
-                }`}>
+                <p className={`text-xs uppercase tracking-widest mb-2 ${conv.category === 'WATCH' ? 'text-blue-500' :
+                    conv.category === 'LISTEN' ? 'text-purple-500' :
+                      'text-green-500'
+                  }`}>
                   {conv.category}
                 </p>
                 <h3 className="font-serif text-2xl text-white mb-2 group-hover:underline decoration-stone-600 underline-offset-4">
