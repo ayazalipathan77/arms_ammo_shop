@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import { Exhibitions } from './pages/Exhibitions';
+import { ExhibitionDetail } from './pages/ExhibitionDetail';
 import { Conversations } from './pages/Conversations';
 import { Contact } from './pages/Contact';
 import { Auth } from './pages/Auth';
@@ -69,6 +70,7 @@ function App() {
                   {/* Public routes */}
                   <Route path="/" element={<Home />} />
                   <Route path="/exhibitions" element={<Exhibitions />} />
+                  <Route path="/exhibitions/:id" element={<ExhibitionDetail />} />
                   <Route path="/stories" element={<Conversations />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/auth" element={<Auth />} />

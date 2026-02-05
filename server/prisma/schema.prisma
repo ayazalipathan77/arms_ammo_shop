@@ -241,6 +241,8 @@ model Exhibition {
   endDate     DateTime?
   location    String
   imageUrl    String
+  galleryImages String[] @default([])
+  videoUrl    String?
   isVirtual   Boolean  @default(false)
   status      String   @default("UPCOMING") // UPCOMING, CURRENT, PAST
   createdAt   DateTime @default(now())

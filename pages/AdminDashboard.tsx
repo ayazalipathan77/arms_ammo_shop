@@ -1466,22 +1466,94 @@ export const AdminDashboard: React.FC = () => {
                         <textarea className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" rows={3} placeholder="Description" value={newExh.description} onChange={e => setNewExh({ ...newExh, description: e.target.value })} />
                      </div>
 
-                     {/* Image & Options */}
-                     <div className="flex items-center gap-4">
-                        <div className="flex-1 border border-pearl/20 p-3 flex items-center justify-between">
-                           <span className="text-warm-gray text-sm">Exhibition Poster</span>
-                           <label className="cursor-pointer text-tangerine text-xs uppercase font-bold hover:text-white transition-colors">
-                              {isUploadingExhImage ? 'Uploading...' : 'Select File'}
-                              <input type="file" className="hidden" onChange={handleExhibitionImageUpload} />
-                           </label>
+                     {/* Main Image */}
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Cover Image</label>
+                        <div className="flex gap-4 items-center">
+                           {newExh.imageUrl ? (
+                              <div className="relative w-32 h-20 group">
+                                 <img src={newExh.imageUrl} alt="Cover" className="w-full h-full object-cover border border-pearl/20" />
+                                 <button onClick={() => setNewExh({ ...newExh, imageUrl: '' })} className="absolute top-1 right-1 bg-red-500/80 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
+                              </div>
+                           ) : (
+                              <label className="w-32 h-20 border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-pearl hover:border-pearl cursor-pointer">
+                                 <Upload size={20} className="mb-1" />
+                                 <span className="text-[10px] uppercase">Upload</span>
+                                 <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                       try {
+                                          setIsUploadingExhImage(true);
+                                          const url = await uploadApi.uploadImage(file);
+                                          setNewExh({ ...newExh, imageUrl: url });
+                                       } catch (err: any) {
+                                          alert(err.message || 'Upload failed');
+                                       } finally {
+                                          setIsUploadingExhImage(false);
+                                       }
+                                    }
+                                 }} />
+                              </label>
+                           )}
                         </div>
-                        <label className="flex items-center gap-2 cursor-pointer border border-pearl/20 p-3">
-                           <input type="checkbox" checked={newExh.isVirtual} onChange={e => setNewExh({ ...newExh, isVirtual: e.target.checked })} className="accent-tangerine w-4 h-4" />
-                           <span className="text-pearl text-xs uppercase tracking-widest">Virtual Event</span>
-                        </label>
                      </div>
 
-                     <Button variant="primary" onClick={handleAddExhibition} className="w-full">{editingExhId ? 'Update' : 'Launch'} Exhibition</Button>
+                     {/* Gallery Images (Multi-select) */}
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Exhibition Gallery</label>
+                        <div className="grid grid-cols-4 gap-4 mb-2">
+                           {(newExh.galleryImages || []).map((url, idx) => (
+                              <div key={idx} className="relative w-full aspect-square group bg-void">
+                                 <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover border border-pearl/20" />
+                                 <button onClick={() => setNewExh({ ...newExh, galleryImages: newExh.galleryImages!.filter((_, i) => i !== idx) })} className="absolute top-1 right-1 bg-red-500/80 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
+                              </div>
+                           ))}
+                           <label className="w-full aspect-square border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-pearl hover:border-pearl cursor-pointer bg-void/50">
+                              <Upload size={20} className="mb-1" />
+                              <span className="text-[10px] uppercase text-center px-1">Add Photos</span>
+                              <input type="file" className="hidden" accept="image/*" multiple onChange={async (e) => {
+                                 const files = Array.from(e.target.files || []);
+                                 if (files.length > 0) {
+                                    try {
+                                       // Parallel uploads
+                                       const promises = files.map(file => uploadApi.uploadImage(file));
+                                       const urls = await Promise.all(promises);
+                                       setNewExh(prev => ({ ...prev, galleryImages: [...(prev.galleryImages || []), ...urls] }));
+                                    } catch (err: any) {
+                                       alert(err.message || 'One or more uploads failed');
+                                    }
+                                 }
+                              }} />
+                           </label>
+                        </div>
+                     </div>
+
+                     {/* Youtube Video URL */}
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">YouTube Video URL</label>
+                        <input
+                           className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none"
+                           placeholder="https://www.youtube.com/watch?v=..."
+                           value={newExh.videoUrl || ''}
+                           onChange={e => setNewExh({ ...newExh, videoUrl: e.target.value })}
+                        />
+                        {newExh.videoUrl && (
+                           <p className="text-[10px] text-warm-gray mt-1 flex items-center gap-1">
+                              <span className="text-tangerine">●</span> Video will appear in the exhibition details
+                           </p>
+                        )}
+                     </div>
+
+                     {/* Virtual & Actions */}
+                     <div className="flex justify-between items-center pt-4 border-t border-pearl/10">
+                        <label className="flex items-center gap-2 text-sm text-pearl cursor-pointer">
+                           <input type="checkbox" checked={newExh.isVirtual} onChange={e => setNewExh({ ...newExh, isVirtual: e.target.checked })} className="accent-tangerine" />
+                           Virtual Exhibition
+                        </label>
+                        <Button variant="primary" onClick={handleAddExhibition} className="w-full max-w-[200px]">
+                           {editingExhId ? 'Update' : 'Launch'} Exhibition
+                        </Button>
+                     </div>
                   </div>
                </div>
             </div>
