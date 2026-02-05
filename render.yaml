@@ -26,7 +26,7 @@ services:
           property: url
 
   # FRONTEND SERVICE
-  - type: static
+  - type: site
     name: muraqqa-frontend
     root: .
     buildCommand: npm install && npm run build
