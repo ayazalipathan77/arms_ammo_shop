@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../../context/ThemeContext';
+import { Sun } from 'lucide-react';
 
 const ChromaticClock = () => {
     // State for Pakistan time
     const [time, setTime] = useState(new Date());
+    const { toggleTheme } = useTheme();
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -46,8 +49,11 @@ const ChromaticClock = () => {
             </div>
 
             {/* Coordinates / Meta */}
-            <div className="hidden md:block">
-                LAT: 24.8607° N | LONG: 67.0011° E
+            <div className="hidden md:flex items-center gap-4">
+                <span>LAT: 24.8607° N | LONG: 67.0011° E</span>
+                <button onClick={toggleTheme} className="hover:text-tangerine transition-colors">
+                    <Sun size={14} />
+                </button>
             </div>
         </div>
     );

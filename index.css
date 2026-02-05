@@ -2,10 +2,58 @@
 
 @import "tailwindcss";
 
+@theme {
+  --color-void: #0A0A0A;
+  --color-charcoal: #1A1A1A;
+  --color-tangerine: #FF6B35;
+  --color-amber: #F7931E;
+  --color-pearl: #F5F5F5;
+  --color-warm-gray: #9A9A9A;
+
+  --font-display: 'Monument Extended', 'Syne', sans-serif;
+  --font-body: 'Inter', 'Satoshi', sans-serif;
+  --font-accent: 'Mrs Saint Delafield', cursive;
+
+  --animate-scramble: scramble 0.3s ease-out;
+  --animate-pulse-slow: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes scramble {
+    0% {
+      opacity: 0;
+      transform: translateY(10%);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
     @apply bg-void text-pearl;
+  }
+
+  /* High Contrast Mode Override */
+  html.high-contrast body {
+    background-color: #F5F5DC !important;
+    /* Cream */
+    color: #000000 !important;
+  }
+
+  html.high-contrast h1,
+  html.high-contrast h2,
+  html.high-contrast h3,
+  html.high-contrast h4,
+  html.high-contrast h5,
+  html.high-contrast h6 {
+    color: #000000 !important;
+  }
+
+  html.high-contrast .text-stroke {
+    -webkit-text-stroke: 1px #000 !important;
   }
 
   body {

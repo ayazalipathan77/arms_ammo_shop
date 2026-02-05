@@ -3,15 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
-
-export interface Artwork {
-    id: string;
-    title: string;
-    artist: string;
-    image: string; // URL
-    year: string;
-    category?: string;
-}
+import { Artwork } from '../../types';
 
 interface ArtworkCardProps {
     artwork: Artwork;
@@ -52,7 +44,7 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
                     <div className="absolute inset-0 border-0 border-tangerine transition-all duration-300 group-hover:border-[6px] z-20 pointer-events-none opacity-0 group-hover:opacity-100 mix-blend-screen" />
 
                     <img
-                        src={artwork.image}
+                        src={artwork.imageUrl}
                         alt={artwork.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[20%] group-hover:grayscale-0"
                         loading="lazy"
@@ -74,7 +66,7 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
             >
                 <h3 className="text-lg font-display font-bold uppercase tracking-tight">{artwork.title}</h3>
                 <p className="text-xs font-mono text-void/70 uppercase flex justify-between gap-4">
-                    <span>{artwork.artist}</span>
+                    <span>{artwork.artistName}</span>
                     <span>{artwork.year}</span>
                 </p>
             </motion.div>

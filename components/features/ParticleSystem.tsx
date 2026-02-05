@@ -4,11 +4,14 @@ import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
 const Dust = (props: any) => {
-    const ref = useRef<any>();
+    const ref = useRef<THREE.Points>(null!);
 
     // Create particles
     const [positions, colors] = useMemo(() => {
-        const count = 2000;
+        // Reduce count for mobile / better performance
+        const isMobile = window.innerWidth < 768;
+        const count = isMobile ? 500 : 2000;
+
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
         const color = new THREE.Color();
@@ -47,10 +50,12 @@ const Dust = (props: any) => {
             ref.current.rotation.x -= delta / 15;
             ref.current.rotation.y -= delta / 20;
 
-            // Mouse interaction (subtle)
-            const mouse = state.mouse;
-            ref.current.rotation.x += (mouse.y * 0.05 - ref.current.rotation.x) * 0.05;
-            ref.current.rotation.y += (mouse.x * 0.05 - ref.current.rotation.y) * 0.05;
+            // Mouse interaction (subtle) - Only on desktop
+            if (window.innerWidth > 768) {
+                const mouse = state.mouse;
+                ref.current.rotation.x += (mouse.y * 0.05 - ref.current.rotation.x) * 0.05;
+                ref.current.rotation.y += (mouse.x * 0.05 - ref.current.rotation.y) * 0.05;
+            }
         }
     });
 
@@ -71,9 +76,14 @@ const Dust = (props: any) => {
 };
 
 const ParticleSystem = () => {
+    // Disable if reduced motion is preferred
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) return null;
+
     return (
         <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none opacity-60">
-            <Canvas camera={{ position: [0, 0, 5], fov: 60 }}>
+            <Canvas camera={{ position: [0, 0, 5], fov: 60 }} dpr={[1, 2]}>
                 <Dust />
             </Canvas>
         </div>
