@@ -640,7 +640,7 @@ export const AdminDashboard: React.FC = () => {
 
          {/* Tabs */}
          <div className="flex flex-wrap gap-2 mb-12 border-b border-pearl/10 pb-8 overflow-x-auto">
-            {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'FINANCE', 'CONTENT', 'EXHIBITIONS', 'LANDING PAGE'].map(tab => (
+            {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'FINANCE', 'CONTENT', 'EXHIBITIONS', 'LANDING PAGE', 'THEME'].map(tab => (
                <TabButton key={tab} tab={tab} active={activeTab === tab} onClick={() => setActiveTab(tab as any)} />
             ))}
          </div>
@@ -1010,20 +1010,24 @@ export const AdminDashboard: React.FC = () => {
                                  </span>
                               </td>
                               <td className="p-4">
-                                 {userSubTab === 'PENDING' ? (
-                                    <span className="text-amber-500 text-xs">Pending Approval</span>
+                                 {(u.artistStatus === 'PENDING' || userSubTab === 'PENDING') ? (
+                                    <span className="text-amber-500 text-xs font-bold uppercase tracking-wider">Pending Approval</span>
                                  ) : (
-                                    <span className="text-green-500 text-xs">Active</span>
+                                    <span className="text-green-500 text-xs font-bold uppercase tracking-wider">Active</span>
                                  )}
                               </td>
                               <td className="p-4 text-warm-gray font-mono text-xs">
                                  {u.createdAt ? format(new Date(u.createdAt), 'MMM d, yyyy') : '-'}
                               </td>
                               <td className="p-4">
-                                 {userSubTab === 'PENDING' ? (
+                                 {(u.artistStatus === 'PENDING' || userSubTab === 'PENDING') ? (
                                     <div className="flex gap-2">
-                                       <button onClick={() => handleApproveArtist(u.id)} className="text-green-500 hover:text-green-400" title="Approve"><Check size={16} /></button>
-                                       <button onClick={() => handleRejectArtist(u.id)} className="text-red-500 hover:text-red-400" title="Reject"><X size={16} /></button>
+                                       <button onClick={() => handleApproveArtist(u.id)} className="p-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors" title="Approve">
+                                          <Check size={16} />
+                                       </button>
+                                       <button onClick={() => handleRejectArtist(u.id)} className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Reject">
+                                          <X size={16} />
+                                       </button>
                                     </div>
                                  ) : (
                                     <button className="text-warm-gray hover:text-pearl"><Settings size={16} /></button>
