@@ -31,29 +31,36 @@ export const InvoiceView: React.FC = () => {
 
          try {
             const { order: apiOrder } = await orderApi.getOrderById(id);
+
+            if (!apiOrder) {
+               throw new Error('Order not found');
+            }
+
             const transformedOrder: Order = {
-               id: apiOrder.id,
-               customerName: apiOrder.user?.fullName || 'Customer',
-               customerEmail: apiOrder.user?.email || '',
-               items: apiOrder.items.map(item => ({
-                  id: item.artwork.id,
-                  title: item.artwork.title,
-                  artistName: item.artwork.artistName || 'Unknown Artist',
-                  imageUrl: item.artwork.imageUrl,
-                  finalPrice: item.price,
+               id: apiOrder.id || id,
+               customerName: apiOrder.user?.fullName || apiOrder.customerName || 'Customer',
+               customerEmail: apiOrder.user?.email || apiOrder.customerEmail || '',
+               items: (apiOrder.items || []).map((item: any) => ({
+                  id: item.artwork?.id || item.artworkId || '',
+                  title: item.artwork?.title || item.title || 'Untitled',
+                  artistName: item.artwork?.artistName || item.artistName || 'Unknown Artist',
+                  imageUrl: item.artwork?.imageUrl || item.imageUrl || '',
+                  finalPrice: item.price || item.finalPrice || 0,
                   selectedPrintSize: item.type === 'ORIGINAL' ? 'ORIGINAL' : item.printSize || undefined,
-                  dimensions: item.artwork.dimensions || '',
-                  medium: item.artwork.medium || '',
-                  quantity: item.quantity
+                  dimensions: item.artwork?.dimensions || item.dimensions || '',
+                  medium: item.artwork?.medium || item.medium || '',
+                  quantity: item.quantity || 1
                })),
-               totalAmount: apiOrder.totalAmount,
-               currency: apiOrder.currency as any,
-               status: apiOrder.status as any,
-               date: new Date(apiOrder.createdAt),
-               shippingAddress: `${apiOrder.shippingAddress}, ${apiOrder.shippingCity}`,
-               shippingCountry: apiOrder.shippingCountry,
+               totalAmount: apiOrder.totalAmount || 0,
+               currency: (apiOrder.currency || 'PKR') as any,
+               status: (apiOrder.status || 'PENDING') as any,
+               date: apiOrder.createdAt ? new Date(apiOrder.createdAt) : new Date(),
+               shippingAddress: apiOrder.shippingAddress
+                  ? `${apiOrder.shippingAddress}${apiOrder.shippingCity ? ', ' + apiOrder.shippingCity : ''}`
+                  : 'N/A',
+               shippingCountry: apiOrder.shippingCountry || 'N/A',
                trackingNumber: apiOrder.trackingNumber || undefined,
-               paymentMethod: apiOrder.paymentMethod as any,
+               paymentMethod: (apiOrder.paymentMethod || 'CARD') as any,
                transactionId: apiOrder.transactionId || undefined,
             };
             setOrder(transformedOrder);

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, ArrowLeft, Loader2, Globe, Sparkles, ArrowRight, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, ArrowLeft, Loader2, Globe, Award, ArrowRight, Palette, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import { artistApi, artworkApi, transformArtwork, PaginationInfo } from '../services/api';
 import { Artist, Artwork } from '../types';
 import { formatCurrency } from '../lib/utils';
 import { motion } from 'framer-motion';
+import ArtworkCard from '../components/ui/ArtworkCard';
 
 const ARTWORKS_PER_PAGE = 12;
 
@@ -139,7 +140,7 @@ export const ArtistDetail: React.FC = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center"
                 >
-                    <Sparkles className="text-warm-gray mx-auto mb-4" size={48} />
+                    <AlertCircle className="text-warm-gray mx-auto mb-4" size={48} />
                     <p className="text-stone-400 mb-6">{error || 'Artist not found'}</p>
                     <Link to="/artists" className="text-tangerine hover:text-amber-400 transition-colors flex items-center gap-2 justify-center text-xs uppercase tracking-widest">
                         <ArrowLeft size={14} /> Back to Artists
@@ -193,7 +194,7 @@ export const ArtistDetail: React.FC = () => {
                                 transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
                                 className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-tangerine flex items-center justify-center shadow-lg border-4 border-void"
                             >
-                                <Sparkles size={16} className="text-void" />
+                                <Award size={16} className="text-void" />
                             </motion.div>
                         </motion.div>
 
@@ -291,12 +292,12 @@ export const ArtistDetail: React.FC = () => {
                             </div>
                         ) : artworks.length === 0 ? (
                             <div className="text-center py-16 border border-dashed border-white/10 rounded-sm bg-charcoal">
-                                <Sparkles className="text-warm-gray mx-auto mb-4" size={40} />
+                                <AlertCircle className="text-warm-gray mx-auto mb-4" size={40} />
                                 <p className="text-warm-gray font-mono text-lg">No artworks currently available.</p>
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                                     {artworks.map((art, idx) => (
                                         <motion.div
                                             key={art.id}
@@ -304,39 +305,7 @@ export const ArtistDetail: React.FC = () => {
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: 0.05 * idx }}
                                         >
-                                            <Link to={`/artwork/${art.id}`} className="group block">
-                                                <motion.div
-                                                    whileHover={{ y: -4 }}
-                                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                                    className="bg-charcoal border border-white/5 rounded-sm overflow-hidden hover:border-tangerine/50 transition-all duration-500"
-                                                >
-                                                    <div className="relative aspect-[3/4] overflow-hidden">
-                                                        <img
-                                                            src={art.imageUrl}
-                                                            alt={art.title}
-                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                                                        />
-                                                        {!art.inStock && (
-                                                            <div className="absolute inset-0 bg-void/80 backdrop-blur-sm flex items-center justify-center">
-                                                                <span className="border border-pearl/50 text-pearl px-3 py-1 rounded-full uppercase text-[10px] tracking-widest font-bold">Sold</span>
-                                                            </div>
-                                                        )}
-                                                        <div className="absolute inset-0 bg-gradient-to-t from-void/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                                            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                                                                <span className="text-tangerine text-xs font-bold uppercase tracking-widest">View</span>
-                                                                <ArrowRight size={14} className="text-tangerine" />
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="p-3">
-                                                        <h4 className="font-display text-sm text-pearl group-hover:text-tangerine transition-colors truncate uppercase">{art.title}</h4>
-                                                        <div className="flex items-center justify-between mt-1">
-                                                            <p className="text-warm-gray text-[10px] uppercase tracking-wider">{art.year}</p>
-                                                            <p className="text-tangerine text-xs font-bold">{formatCurrency(art.price)}</p>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            </Link>
+                                            <ArtworkCard artwork={art} />
                                         </motion.div>
                                     ))}
                                 </div>

@@ -8,6 +8,7 @@ import { CartItem, Artwork } from '../types';
 import { artworkApi, transformArtwork } from '../services/api';
 import { formatCurrency, cn } from '../lib/utils';
 import Button from '../components/ui/Button';
+import ArtworkCard from '../components/ui/ArtworkCard';
 
 export const ArtworkDetail: React.FC = () => {
    const { id } = useParams<{ id: string }>();
@@ -128,7 +129,7 @@ export const ArtworkDetail: React.FC = () => {
             </Link>
          </div>
 
-         <div className="grid grid-cols-1 lg:grid-cols-12 min-h-screen">
+         <div className="grid grid-cols-1 lg:grid-cols-12 min-h-screen pt-20 lg:pt-24">
 
             {/* Left: Immersive Image (Taking majority of screen on desktop) */}
             <div className="lg:col-span-8 lg:h-screen lg:sticky lg:top-0 bg-charcoal/30 flex items-center justify-center p-8 md:p-20 relative group overflow-hidden">
@@ -154,7 +155,7 @@ export const ArtworkDetail: React.FC = () => {
             </div>
 
             {/* Right: Details Panel */}
-            <div className="lg:col-span-4 bg-void px-8 md:px-12 py-10 lg:py-16 space-y-8 overflow-y-auto border-l border-pearl/5">
+            <div className="lg:col-span-4 bg-void px-8 md:px-12 py-10 lg:py-16 space-y-8 overflow-y-auto border-l border-pearl/5 relative z-10">
 
                {/* Header */}
                <div className="space-y-4">
@@ -305,26 +306,7 @@ export const ArtworkDetail: React.FC = () => {
                </div>
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   {relatedArtworks.map((art) => (
-                     <Link key={art.id} to={`/artwork/${art.id}`} state={{ from: (location.state as any)?.from }} className="group block">
-                        <div className="relative aspect-[3/4] overflow-hidden bg-charcoal rounded-sm border border-pearl/10 shadow-2xl group-hover:border-tangerine/50 transition-all duration-500 mb-4">
-                           <img src={art.imageUrl} alt={art.title} className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-80 group-hover:opacity-100 grayscale group-hover:grayscale-0" />
-                           {!art.inStock && (
-                              <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
-                                 <span className="text-white border border-white px-4 py-2 uppercase tracking-[0.3em] text-[10px] font-medium">Sold</span>
-                              </div>
-                           )}
-                           <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-void via-void/50 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-                              <span className="text-tangerine text-xs uppercase tracking-[0.3em] font-bold">View Details</span>
-                           </div>
-                        </div>
-                        <div className="space-y-2 px-1">
-                           <h4 className="font-display text-lg text-pearl group-hover:text-tangerine transition-colors truncate tracking-wide">{art.title}</h4>
-                           <div className="flex justify-between items-center pt-2 border-t border-pearl/10">
-                              <span className="text-tangerine text-sm font-mono">{formatCurrency(art.price)}</span>
-                              <span className="text-warm-gray text-[10px] uppercase tracking-wider font-mono">{art.year}</span>
-                           </div>
-                        </div>
-                     </Link>
+                     <ArtworkCard key={art.id} artwork={art} />
                   ))}
                </div>
                <Link to={`/artists/${artwork.artistId}`} className="block text-center text-warm-gray hover:text-tangerine text-xs uppercase tracking-[0.2em] transition-colors mt-8 md:hidden font-bold">
