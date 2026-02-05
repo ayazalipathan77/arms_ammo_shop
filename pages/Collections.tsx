@@ -13,10 +13,47 @@ export const Collections: React.FC = () => {
 
     // Filters State
     const [activeCategory, setActiveCategory] = useState<string>('All');
+    const [activeMedium, setActiveMedium] = useState<string>('All');
     const [availability, setAvailability] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('newest');
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
+    const [yearRange, setYearRange] = useState<[number, number]>([0, 0]);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+    // Derive available categories and mediums from artworks
+    const categories = useMemo(() => {
+        const cats = [...new Set(artworks.map(a => a.category))].sort();
+        return ['All', ...cats];
+    }, [artworks]);
+
+    const mediums = useMemo(() => {
+        const meds = [...new Set(artworks.map(a => a.medium).filter(Boolean))].sort();
+        return ['All', ...meds];
+    }, [artworks]);
+
+    // Derive price and year bounds
+    const priceBounds = useMemo(() => {
+        if (artworks.length === 0) return { min: 0, max: 1000000 };
+        const prices = artworks.map(a => a.price);
+        return { min: Math.min(...prices), max: Math.max(...prices) };
+    }, [artworks]);
+
+    const yearBounds = useMemo(() => {
+        if (artworks.length === 0) return { min: 2000, max: new Date().getFullYear() };
+        const years = artworks.map(a => a.year).filter(Boolean);
+        if (years.length === 0) return { min: 2000, max: new Date().getFullYear() };
+        return { min: Math.min(...years), max: Math.max(...years) };
+    }, [artworks]);
+
+    // Initialize price/year ranges when bounds change
+    useEffect(() => {
+        setPriceRange([priceBounds.min, priceBounds.max]);
+    }, [priceBounds.min, priceBounds.max]);
+
+    useEffect(() => {
+        setYearRange([yearBounds.min, yearBounds.max]);
+    }, [yearBounds.min, yearBounds.max]);
 
     // Initial Load from URL
     useEffect(() => {
@@ -24,8 +61,15 @@ export const Collections: React.FC = () => {
         if (cat) setActiveCategory(cat);
     }, [searchParams]);
 
-    // Categories
-    const categories = ['All', 'Painting', 'Digital', 'Sculpture', 'Photography', 'Mixed Media'];
+    // Active filter count
+    const activeFilterCount = [
+        activeCategory !== 'All',
+        activeMedium !== 'All',
+        availability !== 'all',
+        searchQuery !== '',
+        priceRange[0] > priceBounds.min || priceRange[1] < priceBounds.max,
+        yearRange[0] > yearBounds.min || yearRange[1] < yearBounds.max,
+    ].filter(Boolean).length;
 
     // Smart Filter Logic
     const filteredArtworks = useMemo(() => {
@@ -33,9 +77,18 @@ export const Collections: React.FC = () => {
             // Category Filter
             if (activeCategory !== 'All' && art.category !== activeCategory) return false;
 
+            // Medium Filter
+            if (activeMedium !== 'All' && art.medium !== activeMedium) return false;
+
             // Availability Filter
             if (availability === 'available' && !art.inStock) return false;
             if (availability === 'sold' && art.inStock) return false;
+
+            // Price Range Filter
+            if (art.price < priceRange[0] || art.price > priceRange[1]) return false;
+
+            // Year Range Filter
+            if (art.year && (art.year < yearRange[0] || art.year > yearRange[1])) return false;
 
             // Search Query (Smart Filter)
             if (searchQuery) {
@@ -43,8 +96,8 @@ export const Collections: React.FC = () => {
                 const matchTitle = art.title.toLowerCase().includes(query);
                 const matchArtist = art.artistName.toLowerCase().includes(query);
                 const matchDesc = art.description?.toLowerCase().includes(query);
-                // Can add tags check here if tags exist in type
-                if (!matchTitle && !matchArtist && !matchDesc) return false;
+                const matchMedium = art.medium?.toLowerCase().includes(query);
+                if (!matchTitle && !matchArtist && !matchDesc && !matchMedium) return false;
             }
 
             return true;
@@ -55,7 +108,7 @@ export const Collections: React.FC = () => {
             // Default newest
             return (b.year || 0) - (a.year || 0);
         });
-    }, [artworks, activeCategory, availability, sortBy, searchQuery]);
+    }, [artworks, activeCategory, activeMedium, availability, sortBy, searchQuery, priceRange, yearRange]);
 
     const updateCategory = (cat: string) => {
         setActiveCategory(cat);
@@ -65,6 +118,35 @@ export const Collections: React.FC = () => {
             searchParams.set('category', cat);
         }
         setSearchParams(searchParams);
+    };
+
+    const clearAllFilters = () => {
+        setActiveCategory('All');
+        setActiveMedium('All');
+        setAvailability('all');
+        setSearchQuery('');
+        setPriceRange([priceBounds.min, priceBounds.max]);
+        setYearRange([yearBounds.min, yearBounds.max]);
+        searchParams.delete('category');
+        setSearchParams(searchParams);
+    };
+
+    // Radio button component for reuse
+    const RadioOption = ({ name, value, checked, onChange, label }: { name: string; value: string; checked: boolean; onChange: () => void; label: string }) => (
+        <label className="flex items-center gap-3 cursor-pointer group">
+            <div className={`w-4 h-4 border border-pearl/20 flex items-center justify-center transition-colors ${checked ? 'bg-tangerine border-tangerine' : ''}`}>
+                {checked && <div className="w-2 h-2 bg-void" />}
+            </div>
+            <input type="radio" name={name} className="hidden" checked={checked} onChange={onChange} />
+            <span className="text-warm-gray group-hover:text-white text-sm font-mono">{label}</span>
+        </label>
+    );
+
+    // Format price for display
+    const formatPrice = (price: number) => {
+        if (price >= 1000000) return `${(price / 1000000).toFixed(1)}M`;
+        if (price >= 1000) return `${(price / 1000).toFixed(0)}K`;
+        return price.toString();
     };
 
     return (
@@ -90,22 +172,31 @@ export const Collections: React.FC = () => {
                 <div className="flex flex-col lg:flex-row gap-12">
 
                     {/* Sidebar Filters (Desktop) */}
-                    <aside className="hidden lg:block w-64 space-y-8 flex-shrink-0">
-                        {/* Search */}
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Smart Filter..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 pl-10 text-pearl focus:border-tangerine outline-none transition-all font-mono text-xs"
-                            />
-                            <Search className="absolute left-3 top-3 text-warm-gray w-4 h-4" />
+                    <aside className="hidden lg:block w-64 space-y-5 flex-shrink-0">
+                        {/* Search + Clear */}
+                        <div className="space-y-2">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Smart Filter..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 pl-10 text-pearl focus:border-tangerine outline-none transition-all font-mono text-xs"
+                                />
+                                <Search className="absolute left-3 top-3 text-warm-gray w-4 h-4" />
+                            </div>
+                            <button
+                                onClick={clearAllFilters}
+                                disabled={activeFilterCount === 0}
+                                className={`w-full py-2 border font-mono text-[10px] uppercase tracking-widest transition-all ${activeFilterCount > 0 ? 'border-tangerine/40 text-tangerine hover:bg-tangerine/10' : 'border-pearl/10 text-warm-gray/30 cursor-not-allowed'}`}
+                            >
+                                Clear All Filters {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
+                            </button>
                         </div>
 
                         {/* Categories */}
                         <div>
-                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Categories</h3>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Categories</h3>
                             <div className="space-y-2">
                                 {categories.map(cat => (
                                     <button
@@ -119,39 +210,122 @@ export const Collections: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Availability */}
+                        {/* Medium */}
                         <div>
-                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Availability</h3>
-                            <div className="space-y-2">
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className={`w-4 h-4 border border-pearl/20 flex items-center justify-center transition-colors ${availability === 'all' ? 'bg-tangerine border-tangerine' : ''}`}>
-                                        {availability === 'all' && <div className="w-2 h-2 bg-void" />}
-                                    </div>
-                                    <input type="radio" name="availability" className="hidden" checked={availability === 'all'} onChange={() => setAvailability('all')} />
-                                    <span className="text-warm-gray group-hover:text-white text-sm font-mono">All Artworks</span>
-                                </label>
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className={`w-4 h-4 border border-pearl/20 flex items-center justify-center transition-colors ${availability === 'available' ? 'bg-tangerine border-tangerine' : ''}`}>
-                                        {availability === 'available' && <div className="w-2 h-2 bg-void" />}
-                                    </div>
-                                    <input type="radio" name="availability" className="hidden" checked={availability === 'available'} onChange={() => setAvailability('available')} />
-                                    <span className="text-warm-gray group-hover:text-white text-sm font-mono">Available</span>
-                                </label>
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className={`w-4 h-4 border border-pearl/20 flex items-center justify-center transition-colors ${availability === 'sold' ? 'bg-tangerine border-tangerine' : ''}`}>
-                                        {availability === 'sold' && <div className="w-2 h-2 bg-void" />}
-                                    </div>
-                                    <input type="radio" name="availability" className="hidden" checked={availability === 'sold'} onChange={() => setAvailability('sold')} />
-                                    <span className="text-warm-gray group-hover:text-white text-sm font-mono">Sold</span>
-                                </label>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Medium</h3>
+                            <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
+                                {mediums.map(med => (
+                                    <button
+                                        key={med}
+                                        onClick={() => setActiveMedium(med)}
+                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-white transition-colors ${activeMedium === med ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
+                                    >
+                                        {med}
+                                    </button>
+                                ))}
                             </div>
                         </div>
+
+                        {/* Price Range */}
+                        <div>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Price Range</h3>
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-warm-gray font-mono text-xs">
+                                    <span>PKR {formatPrice(priceRange[0])}</span>
+                                    <span className="text-pearl/20">—</span>
+                                    <span>PKR {formatPrice(priceRange[1])}</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="block">
+                                        <span className="text-warm-gray/50 text-[10px] font-mono uppercase">Min</span>
+                                        <input
+                                            type="range"
+                                            min={priceBounds.min}
+                                            max={priceBounds.max}
+                                            value={priceRange[0]}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val <= priceRange[1]) setPriceRange([val, priceRange[1]]);
+                                            }}
+                                            className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
+                                        />
+                                    </label>
+                                    <label className="block">
+                                        <span className="text-warm-gray/50 text-[10px] font-mono uppercase">Max</span>
+                                        <input
+                                            type="range"
+                                            min={priceBounds.min}
+                                            max={priceBounds.max}
+                                            value={priceRange[1]}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val >= priceRange[0]) setPriceRange([priceRange[0], val]);
+                                            }}
+                                            className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Year Range */}
+                        <div>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Year</h3>
+                            <div className="space-y-1.5">
+                                <div className="flex items-center gap-2 text-warm-gray font-mono text-xs">
+                                    <span>{yearRange[0]}</span>
+                                    <span className="text-pearl/20">—</span>
+                                    <span>{yearRange[1]}</span>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="block">
+                                        <span className="text-warm-gray/50 text-[10px] font-mono uppercase">From</span>
+                                        <input
+                                            type="range"
+                                            min={yearBounds.min}
+                                            max={yearBounds.max}
+                                            value={yearRange[0]}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val <= yearRange[1]) setYearRange([val, yearRange[1]]);
+                                            }}
+                                            className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
+                                        />
+                                    </label>
+                                    <label className="block">
+                                        <span className="text-warm-gray/50 text-[10px] font-mono uppercase">To</span>
+                                        <input
+                                            type="range"
+                                            min={yearBounds.min}
+                                            max={yearBounds.max}
+                                            value={yearRange[1]}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val >= yearRange[0]) setYearRange([yearRange[0], val]);
+                                            }}
+                                            className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Availability */}
+                        <div>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Availability</h3>
+                            <div className="space-y-2">
+                                <RadioOption name="availability" value="all" checked={availability === 'all'} onChange={() => setAvailability('all')} label="All Artworks" />
+                                <RadioOption name="availability" value="available" checked={availability === 'available'} onChange={() => setAvailability('available')} label="Available" />
+                                <RadioOption name="availability" value="sold" checked={availability === 'sold'} onChange={() => setAvailability('sold')} label="Sold" />
+                            </div>
+                        </div>
+
                     </aside>
 
                     {/* Mobile Filter Toggle */}
                     <div className="lg:hidden mb-6">
                         <Button variant="outline" onClick={() => setMobileFiltersOpen(true)} className="w-full flex justify-between items-center">
-                            <span>FILTERS / SORT</span>
+                            <span>FILTERS / SORT {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}</span>
                             <Filter size={16} />
                         </Button>
                     </div>
@@ -190,7 +364,6 @@ export const Collections: React.FC = () => {
                                             exit={{ opacity: 0, scale: 0.9 }}
                                             transition={{ duration: 0.3 }}
                                         >
-                                            {/* Adjusted Artcard for smaller size by wrapper className handled in grid cols, internal aspect ratio stays */}
                                             <ArtworkCard artwork={art} />
                                         </motion.div>
                                     ))}
@@ -206,11 +379,7 @@ export const Collections: React.FC = () => {
                                 <Button
                                     variant="secondary"
                                     className="mt-6"
-                                    onClick={() => {
-                                        setActiveCategory('All');
-                                        setAvailability('all');
-                                        setSearchQuery('');
-                                    }}
+                                    onClick={clearAllFilters}
                                 >
                                     CLEAR FILTERS
                                 </Button>
@@ -239,7 +408,7 @@ export const Collections: React.FC = () => {
                         <div className="space-y-8">
                             {/* Mobile Search */}
                             <div>
-                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Search</h3>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Search</h3>
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -254,7 +423,7 @@ export const Collections: React.FC = () => {
 
                             {/* Mobile Categories */}
                             <div>
-                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Categories</h3>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Categories</h3>
                                 <div className="grid grid-cols-2 gap-2">
                                     {categories.map(cat => (
                                         <button
@@ -268,9 +437,105 @@ export const Collections: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* Mobile Medium */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Medium</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {mediums.map(med => (
+                                        <button
+                                            key={med}
+                                            onClick={() => setActiveMedium(med)}
+                                            className={`p-3 border rounded-sm text-xs font-mono uppercase tracking-widest transition-all ${activeMedium === med ? 'bg-tangerine text-void border-tangerine font-bold' : 'border-pearl/20 text-warm-gray'}`}
+                                        >
+                                            {med}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Mobile Price Range */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Price Range</h3>
+                                <div className="flex items-center gap-2 text-warm-gray font-mono text-xs mb-3">
+                                    <span>PKR {formatPrice(priceRange[0])}</span>
+                                    <span className="text-pearl/20">—</span>
+                                    <span>PKR {formatPrice(priceRange[1])}</span>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="block">
+                                        <span className="text-warm-gray/50 text-[10px] font-mono uppercase">Min</span>
+                                        <input
+                                            type="range"
+                                            min={priceBounds.min}
+                                            max={priceBounds.max}
+                                            value={priceRange[0]}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val <= priceRange[1]) setPriceRange([val, priceRange[1]]);
+                                            }}
+                                            className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
+                                        />
+                                    </label>
+                                    <label className="block">
+                                        <span className="text-warm-gray/50 text-[10px] font-mono uppercase">Max</span>
+                                        <input
+                                            type="range"
+                                            min={priceBounds.min}
+                                            max={priceBounds.max}
+                                            value={priceRange[1]}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val >= priceRange[0]) setPriceRange([priceRange[0], val]);
+                                            }}
+                                            className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Mobile Year Range */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Year</h3>
+                                <div className="flex items-center gap-2 text-warm-gray font-mono text-xs mb-3">
+                                    <span>{yearRange[0]}</span>
+                                    <span className="text-pearl/20">—</span>
+                                    <span>{yearRange[1]}</span>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="block">
+                                        <span className="text-warm-gray/50 text-[10px] font-mono uppercase">From</span>
+                                        <input
+                                            type="range"
+                                            min={yearBounds.min}
+                                            max={yearBounds.max}
+                                            value={yearRange[0]}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val <= yearRange[1]) setYearRange([val, yearRange[1]]);
+                                            }}
+                                            className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
+                                        />
+                                    </label>
+                                    <label className="block">
+                                        <span className="text-warm-gray/50 text-[10px] font-mono uppercase">To</span>
+                                        <input
+                                            type="range"
+                                            min={yearBounds.min}
+                                            max={yearBounds.max}
+                                            value={yearRange[1]}
+                                            onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                if (val >= yearRange[0]) setYearRange([yearRange[0], val]);
+                                            }}
+                                            className="w-full accent-amber-600 h-1 bg-charcoal appearance-none cursor-pointer"
+                                        />
+                                    </label>
+                                </div>
+                            </div>
+
                             {/* Mobile Availability & Sort */}
                             <div>
-                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-4 font-bold">Filter & Sort</h3>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Filter & Sort</h3>
                                 <div className="space-y-4">
                                     <select
                                         className="w-full bg-charcoal border border-pearl/20 rounded-sm px-4 py-3 text-pearl focus:border-tangerine outline-none font-mono text-xs"
@@ -294,9 +559,16 @@ export const Collections: React.FC = () => {
                                 </div>
                             </div>
 
-                            <Button onClick={() => setMobileFiltersOpen(false)} className="w-full mt-8">
-                                VIEW RESULTS
-                            </Button>
+                            <div className="flex gap-3 mt-8">
+                                {activeFilterCount > 0 && (
+                                    <Button variant="secondary" onClick={clearAllFilters} className="flex-1">
+                                        CLEAR ALL
+                                    </Button>
+                                )}
+                                <Button onClick={() => setMobileFiltersOpen(false)} className="flex-1">
+                                    VIEW RESULTS ({filteredArtworks.length})
+                                </Button>
+                            </div>
                         </div>
                     </motion.div>
                 )}

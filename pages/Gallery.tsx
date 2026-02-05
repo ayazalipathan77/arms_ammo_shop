@@ -368,11 +368,17 @@ export const Gallery: React.FC = () => {
                   <img
                     src={art.imageUrl}
                     alt={art.title}
-                    className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                    className={`w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100 ${!art.inStock ? 'grayscale-[50%] group-hover:grayscale-[20%]' : ''}`}
                   />
                   {!art.inStock && (
-                    <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center rounded-2xl">
-                      <span className="text-white border border-white px-4 py-2 rounded-full uppercase tracking-[0.3em] text-[10px] font-medium">Sold</span>
+                    <div className="absolute inset-0 bg-black/30 pointer-events-none rounded-2xl" />
+                  )}
+                  {/* Sold Badge */}
+                  {!art.inStock && (
+                    <div className="absolute top-4 left-4 z-10">
+                      <div className="bg-red-600 text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg border border-red-400/30 rounded-sm">
+                        SOLD
+                      </div>
                     </div>
                   )}
                   <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500 rounded-b-2xl">
@@ -380,11 +386,11 @@ export const Gallery: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2 px-2">
+                <div className="space-y-1.5 px-2">
                   <h3 className="font-serif text-lg text-white group-hover:text-amber-500 transition-colors truncate tracking-wide">{art.title}</h3>
                   <p className="text-stone-500 text-xs uppercase tracking-[0.3em] detail-text">{art.artistName}</p>
-                  <div className="flex justify-between items-center pt-2 border-t border-stone-800/30">
-                    <span className="text-amber-500/80 text-sm font-medium">{convertPrice(art.price)}</span>
+                  <div className="flex justify-between items-center pt-1.5 border-t border-stone-800/30">
+                    <span className="text-white font-mono text-sm font-medium">{convertPrice(art.price)}</span>
                     <span className="text-stone-600 text-[10px] uppercase tracking-wider">{art.year}</span>
                   </div>
                 </div>
