@@ -55,6 +55,8 @@ export const Cart: React.FC = () => {
       const paymentStatus = searchParams.get('payment');
       if (paymentStatus === 'success') {
          setStep('SUCCESS');
+         const savedId = sessionStorage.getItem('lastOrderId');
+         if (savedId) setCreatedOrderId(savedId);
       }
    }, [searchParams]);
 
@@ -189,6 +191,7 @@ export const Cart: React.FC = () => {
 
          addOrder(newOrder);
          setCreatedOrderId(response.order.id);
+         sessionStorage.setItem('lastOrderId', response.order.id);
          setPendingOrderId(response.order.id);
 
          if (paymentMethod === 'BANK') {

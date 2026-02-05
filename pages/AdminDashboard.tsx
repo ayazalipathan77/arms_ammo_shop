@@ -47,6 +47,7 @@ export const AdminDashboard: React.FC = () => {
 
    // Local State for Artworks
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+   const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
    const [newArtwork, setNewArtwork] = useState<any>({
       title: '', artistId: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
       year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: '',
@@ -387,7 +388,7 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
-   const handleAddArtwork = async () => {
+   const handleSaveArtwork = async () => {
       if (!newArtwork.title || !newArtwork.price) {
          alert('Please fill in Title and Price');
          return;
@@ -397,22 +398,53 @@ export const AdminDashboard: React.FC = () => {
          return;
       }
       try {
-         await addArtwork({
+         const artData = {
             ...newArtwork,
             imageUrl: newArtwork.imageUrl || `https://picsum.photos/800/800?random=${Date.now()}`,
             year: newArtwork.year || new Date().getFullYear(),
-            dimensions: newArtwork.dimensions || '24x24'
-         } as any);
+            dimensions: newArtwork.dimensions || '24x24',
+            description: newArtwork.description || '',
+            category: newArtwork.category || 'Abstract',
+            medium: newArtwork.medium || 'Mixed Media',
+            inStock: newArtwork.inStock ?? true
+         };
+
+         if (editingArtworkId) {
+            await updateArtwork(editingArtworkId, artData);
+         } else {
+            await addArtwork(artData);
+         }
+
          setIsAddModalOpen(false);
+         setEditingArtworkId(null);
          setNewArtwork({
             title: '', artistId: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
             year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: '',
             printOptions: { enabled: false, sizes: [] }
          });
       } catch (err) {
-         alert('Failed to add artwork');
-         console.error('Add artwork error:', err);
+         alert(`Failed to ${editingArtworkId ? 'update' : 'add'} artwork`);
+         console.error('Save artwork error:', err);
       }
+   };
+
+   const handleEditArtwork = (art: any) => {
+      setEditingArtworkId(art.id);
+      setNewArtwork({
+         title: art.title,
+         artistId: art.artistId,
+         artistName: art.artistName,
+         price: art.price,
+         category: art.category,
+         medium: art.medium,
+         inStock: art.inStock,
+         year: art.year,
+         dimensions: art.dimensions,
+         description: art.description,
+         imageUrl: art.imageUrl,
+         printOptions: art.printOptions || { enabled: false, sizes: [] }
+      });
+      setIsAddModalOpen(true);
    };
 
    const handleAddConversation = async () => {
@@ -723,9 +755,14 @@ export const AdminDashboard: React.FC = () => {
                                  </button>
                               </td>
                               <td className="p-4">
-                                 <button onClick={() => deleteArtwork(art.id)} className="text-warm-gray hover:text-red-500 transition-colors">
-                                    <Trash2 size={16} />
-                                 </button>
+                                 <div className="flex gap-2">
+                                    <button onClick={() => handleEditArtwork(art)} className="text-warm-gray hover:text-pearl transition-colors">
+                                       <Edit size={16} />
+                                    </button>
+                                    <button onClick={() => deleteArtwork(art.id)} className="text-warm-gray hover:text-red-500 transition-colors">
+                                       <Trash2 size={16} />
+                                    </button>
+                                 </div>
                               </td>
                            </tr>
                         ))}
@@ -1273,12 +1310,65 @@ export const AdminDashboard: React.FC = () => {
             <div className="fixed inset-0 z-[100] bg-void/90 backdrop-blur-sm flex items-center justify-center p-4">
                <div className="bg-charcoal border border-pearl/20 w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative">
                   <button onClick={() => setIsAddModalOpen(false)} className="absolute top-4 right-4 text-warm-gray hover:text-pearl"><X size={24} /></button>
-                  <h3 className="text-2xl font-display text-pearl mb-6 border-b border-pearl/10 pb-4">New Masterpiece</h3>
+                  <h3 className="text-2xl font-display text-pearl mb-6 border-b border-pearl/10 pb-4">{editingArtworkId ? 'Edit Masterpiece' : 'New Masterpiece'}</h3>
 
                   <div className="space-y-4">
+                     {/* Row 1: Title & Artist */}
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Title</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Artwork Title" value={newArtwork.title} onChange={e => setNewArtwork({ ...newArtwork, title: e.target.value })} />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Artist</label>
+                           <select
+                              className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none"
+                              value={newArtwork.artistId}
+                              onChange={e => {
+                                 const selectedArtist = artists.find(a => a.id === e.target.value);
+                                 setNewArtwork({ ...newArtwork, artistId: e.target.value, artistName: selectedArtist?.name || '' });
+                              }}
+                           >
+                              <option value="">Select Artist</option>
+                              {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                           </select>
+                        </div>
+                     </div>
+
+                     {/* Row 2: Price, Year, Category */}
+                     <div className="grid grid-cols-3 gap-4">
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Price (PKR)</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" type="number" value={newArtwork.price || ''} onChange={e => setNewArtwork({ ...newArtwork, price: Number(e.target.value) })} />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Year</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" type="number" value={newArtwork.year} onChange={e => setNewArtwork({ ...newArtwork, year: Number(e.target.value) })} />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Category</label>
+                           <select className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" value={newArtwork.category} onChange={e => setNewArtwork({ ...newArtwork, category: e.target.value })}>
+                              {['Calligraphy', 'Landscape', 'Abstract', 'Miniature', 'Portrait', 'Contemporary'].map(c => <option key={c} value={c}>{c}</option>)}
+                           </select>
+                        </div>
+                     </div>
+
+                     {/* Row 3: Medium & Dimensions */}
                      <div className="grid grid-cols-2 gap-4">
-                        <input className="bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Title" value={newArtwork.title} onChange={e => setNewArtwork({ ...newArtwork, title: e.target.value })} />
-                        <input className="bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" type="number" placeholder="Price" value={newArtwork.price || ''} onChange={e => setNewArtwork({ ...newArtwork, price: Number(e.target.value) })} />
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Medium</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="e.g. Oil on Canvas" value={newArtwork.medium} onChange={e => setNewArtwork({ ...newArtwork, medium: e.target.value })} />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Dimensions</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="e.g. 24 x 36 inches" value={newArtwork.dimensions} onChange={e => setNewArtwork({ ...newArtwork, dimensions: e.target.value })} />
+                        </div>
+                     </div>
+
+                     {/* Description */}
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Description</label>
+                        <textarea className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" rows={4} value={newArtwork.description} onChange={e => setNewArtwork({ ...newArtwork, description: e.target.value })} />
                      </div>
 
                      {/* Image Upload Area */}
@@ -1294,8 +1384,14 @@ export const AdminDashboard: React.FC = () => {
                         )}
                      </div>
 
+                     {/* In Stock Toggle */}
+                     <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={newArtwork.inStock} onChange={e => setNewArtwork({ ...newArtwork, inStock: e.target.checked })} className="accent-tangerine w-4 h-4" />
+                        <span className="text-pearl text-sm">Available in Stock</span>
+                     </label>
+
                      <div className="flex gap-4 pt-4">
-                        <Button variant="primary" onClick={handleAddArtwork} className="flex-1">Add to Collection</Button>
+                        <Button variant="primary" onClick={handleSaveArtwork} className="flex-1">{editingArtworkId ? 'Update Masterpiece' : 'Add to Collection'}</Button>
                      </div>
                   </div>
                </div>
@@ -1309,18 +1405,56 @@ export const AdminDashboard: React.FC = () => {
                   <button onClick={() => setIsExhModalOpen(false)} className="absolute top-4 right-4 text-warm-gray hover:text-pearl"><X size={24} /></button>
                   <h3 className="text-2xl font-display text-pearl mb-6">{editingExhId ? 'Edit Exhibition' : 'Curate Exhibition'}</h3>
                   <div className="space-y-4">
-                     <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Title" value={newExh.title} onChange={e => setNewExh({ ...newExh, title: e.target.value })} />
+                     {/* Title & Location */}
                      <div className="grid grid-cols-2 gap-4">
-                        <input type="date" className="bg-void border border-pearl/20 p-3 text-pearl" value={newExh.startDate} onChange={e => setNewExh({ ...newExh, startDate: e.target.value })} />
-                        <input type="date" className="bg-void border border-pearl/20 p-3 text-pearl" value={newExh.endDate} onChange={e => setNewExh({ ...newExh, endDate: e.target.value })} />
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Title</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Exhibition Title" value={newExh.title} onChange={e => setNewExh({ ...newExh, title: e.target.value })} />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Location</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Gallery or Virtual URL" value={newExh.location} onChange={e => setNewExh({ ...newExh, location: e.target.value })} />
+                        </div>
                      </div>
-                     <textarea className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" rows={3} placeholder="Description" value={newExh.description} onChange={e => setNewExh({ ...newExh, description: e.target.value })} />
 
-                     <div className="border border-pearl/20 p-4 flex items-center justify-between">
-                        <span className="text-warm-gray text-sm">Exhibition Image</span>
-                        <label className="cursor-pointer text-tangerine text-xs uppercase font-bold hover:text-white transition-colors">
-                           {isUploadingExhImage ? 'Uploading...' : 'Select File'}
-                           <input type="file" className="hidden" onChange={handleExhibitionImageUpload} />
+                     {/* Dates & Status */}
+                     <div className="grid grid-cols-3 gap-4">
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Start Date</label>
+                           <input type="date" className="w-full bg-void border border-pearl/20 p-3 text-pearl" value={newExh.startDate} onChange={e => setNewExh({ ...newExh, startDate: e.target.value })} />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">End Date</label>
+                           <input type="date" className="w-full bg-void border border-pearl/20 p-3 text-pearl" value={newExh.endDate} onChange={e => setNewExh({ ...newExh, endDate: e.target.value })} />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Status</label>
+                           <select className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" value={newExh.status} onChange={e => setNewExh({ ...newExh, status: e.target.value })}>
+                              <option value="UPCOMING">Upcoming</option>
+                              <option value="CURRENT">Current</option>
+                              <option value="PAST">Past Reflection</option>
+                           </select>
+                        </div>
+                     </div>
+
+                     {/* Description */}
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Curatorial Statement</label>
+                        <textarea className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" rows={3} placeholder="Description" value={newExh.description} onChange={e => setNewExh({ ...newExh, description: e.target.value })} />
+                     </div>
+
+                     {/* Image & Options */}
+                     <div className="flex items-center gap-4">
+                        <div className="flex-1 border border-pearl/20 p-3 flex items-center justify-between">
+                           <span className="text-warm-gray text-sm">Exhibition Poster</span>
+                           <label className="cursor-pointer text-tangerine text-xs uppercase font-bold hover:text-white transition-colors">
+                              {isUploadingExhImage ? 'Uploading...' : 'Select File'}
+                              <input type="file" className="hidden" onChange={handleExhibitionImageUpload} />
+                           </label>
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer border border-pearl/20 p-3">
+                           <input type="checkbox" checked={newExh.isVirtual} onChange={e => setNewExh({ ...newExh, isVirtual: e.target.checked })} className="accent-tangerine w-4 h-4" />
+                           <span className="text-pearl text-xs uppercase tracking-widest">Virtual Event</span>
                         </label>
                      </div>
 
