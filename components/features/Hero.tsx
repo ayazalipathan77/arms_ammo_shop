@@ -65,46 +65,21 @@ const Hero = () => {
                         className="absolute inset-0 w-full h-full perspective-1000"
                     >
                         <div className="w-full h-full relative">
-                            {/* Image with overlay */}
+                            {/* Image with overlay - Dark Grayscale */}
                             <img
                                 src={banners[current].image}
                                 alt={banners[current].title}
-                                className="w-full h-full object-cover opacity-60"
+                                className="w-full h-full object-cover grayscale brightness-50"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-r from-void via-void/50 to-transparent"></div>
-                            <div className="absolute inset-0 bg-gradient-to-t from-void via-transparent to-transparent"></div>
+                            <div className="absolute inset-0 bg-void/40 mix-blend-multiply"></div>
                         </div>
                     </motion.div>
                 </AnimatePresence>
             </div>
 
             {/* Content Content - Static Layer */}
-            <div className="absolute inset-0 z-10 flex flex-col justify-center px-6 md:px-12 pointer-events-none">
-                <div className="max-w-[1920px] mx-auto w-full">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={current}
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -30 }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
-                            className="pointer-events-auto"
-                        >
-                            <h2 className="text-tangerine font-mono text-sm md:text-base tracking-[0.5em] mb-4">
-                                EXHIBITION 0{current + 1}
-                            </h2>
-                            <h1 className="text-7xl md:text-[10rem] font-display font-bold leading-none text-white mix-blend-overlay opacity-90 mb-8">
-                                {banners[current].title}<br />
-                                <span className="text-transparent text-stroke">{banners[current].subtitle}</span>
-                            </h1>
-                            <div className="flex gap-4">
-                                <Button variant="primary">VIEW COLLECTION</Button>
-                                <Button variant="outline">EXHIBITIONS</Button>
-                            </div>
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
-            </div>
+            {/* Content Content - Static Layer - REMOVED */}
+            <div className="hidden" />
 
             {/* Progress Bar */}
             <div className="absolute bottom-12 left-6 md:left-12 right-6 md:right-12 z-20 flex gap-2">
