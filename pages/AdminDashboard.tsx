@@ -3,9 +3,10 @@ import {
    LayoutDashboard, Package, Users, DollarSign, Settings,
    Plus, Edit, Trash2, Truck, CreditCard, Check, X, Search,
    Video, Globe, MessageSquare, Save, Facebook, Instagram, Image as ImageIcon, Calendar,
-   UserCheck, UserX, Clock, Mail, Shield, AlertCircle, Loader2
+   UserCheck, UserX, Clock, Mail, Shield, AlertCircle, Loader2, Palette, Type, Sparkles
 } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
+import { useTheme, PRESET_THEMES, ThemeConfig } from '../context/ThemeContext';
 import { OrderStatus, Artwork, Conversation, PrintSizeOption } from '../types';
 import { uploadApi, adminApi, artistApi } from '../services/api';
 import Button from '../components/ui/Button';
@@ -24,7 +25,7 @@ export const AdminDashboard: React.FC = () => {
 
    const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
 
-   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'LANDING PAGE'>('OVERVIEW');
+   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'LANDING PAGE' | 'THEME'>('OVERVIEW');
 
    // Dashboard Stats
    const [stats, setStats] = useState<any>(null);
@@ -93,6 +94,15 @@ export const AdminDashboard: React.FC = () => {
    const [isUploadingBgImages, setIsUploadingBgImages] = useState(false);
    const [exhibitionMode, setExhibitionMode] = useState<'auto' | 'manual'>('manual');
    const [isUploadingHero, setIsUploadingHero] = useState(false);
+
+   // Theme State
+   const { currentTheme, applyTheme, resetTheme } = useTheme();
+   const [themeBuilder, setThemeBuilder] = useState<ThemeConfig>(currentTheme);
+
+   // Sync builder state when currentTheme changes (e.g. on reset)
+   useEffect(() => {
+      setThemeBuilder(currentTheme);
+   }, [currentTheme]);
 
    useEffect(() => {
       loadStats();
@@ -1313,6 +1323,213 @@ export const AdminDashboard: React.FC = () => {
                      <Button variant="primary" onClick={handleAddExhibition} className="w-full">{editingExhId ? 'Update' : 'Launch'} Exhibition</Button>
                   </div>
                </div>
+            </div>
+         )}
+
+         {/* THEME TAB */}
+         {activeTab === 'THEME' && (
+            <div className="space-y-8 animate-fade-in pb-24">
+               <div className="flex justify-between items-center sticky top-20 bg-void/90 backdrop-blur z-40 py-4 border-b border-pearl/10">
+                  <div>
+                     <h2 className="text-2xl font-display text-pearl">Theme Builder</h2>
+                     <p className="text-xs text-warm-gray">Customize the visual identity of MuraqQa</p>
+                  </div>
+                  <div className="flex gap-4">
+                     <Button variant="secondary" onClick={() => {
+                        resetTheme();
+                        alert('Theme reset to default!');
+                     }}>Reset Default</Button>
+                     <Button variant="primary" onClick={() => {
+                        applyTheme(themeBuilder);
+                        alert('Theme saved successfully!');
+                     }}>
+                        <Save size={18} className="mr-2" /> Apply Theory
+                     </Button>
+                  </div>
+               </div>
+
+               {/* Preset Scenes */}
+               <div className="bg-charcoal/30 p-6 border border-pearl/10">
+                  <h3 className="text-pearl font-display text-lg mb-4 flex items-center gap-2">
+                     <Palette size={20} className="text-tangerine" /> Prebuilt Atmospheres
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                     {Object.entries(PRESET_THEMES).map(([key, theme]) => (
+                        <button
+                           key={key}
+                           onClick={() => {
+                              applyTheme(theme);
+                              setThemeBuilder(theme);
+                           }}
+                           className={cn(
+                              "p-4 border text-left transition-all hover:scale-[1.02]",
+                              currentTheme.name === theme.name
+                                 ? "border-tangerine bg-tangerine/10 shadow-[0_0_20px_rgba(255,107,53,0.15)]"
+                                 : "border-pearl/10 hover:border-pearl/30 bg-void"
+                           )}
+                        >
+                           <div className="flex gap-2 mb-3">
+                              <div className="w-6 h-6 rounded-full border border-white/20" style={{ backgroundColor: theme.colors.void }} />
+                              <div className="w-6 h-6 rounded-full border border-white/20" style={{ backgroundColor: theme.colors.tangerine }} />
+                              <div className="w-6 h-6 rounded-full border border-white/20" style={{ backgroundColor: theme.colors.pearl }} />
+                           </div>
+                           <h4 className="text-sm font-bold text-pearl mb-1">{theme.name}</h4>
+                           <p className="text-[10px] text-warm-gray uppercase tracking-widest">Preset</p>
+                        </button>
+                     ))}
+                  </div>
+               </div>
+
+               {/* Custom Color Lab */}
+               <div className="bg-charcoal/30 p-6 border border-pearl/10">
+                  <h3 className="text-pearl font-display text-lg mb-4 flex items-center gap-2">
+                     <Sparkles size={20} className="text-tangerine" /> Chromatic Lab
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="space-y-4">
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Primary Accent (Tangerine)</label>
+                        <div className="flex gap-4 items-center">
+                           <input
+                              type="color"
+                              value={themeBuilder.colors.tangerine}
+                              onChange={(e) => {
+                                 const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, tangerine: e.target.value } };
+                                 setThemeBuilder(newTheme);
+                                 applyTheme(newTheme); // Live preview
+                              }}
+                              className="w-12 h-12 border-none bg-transparent cursor-pointer"
+                           />
+                           <input
+                              type="text"
+                              value={themeBuilder.colors.tangerine}
+                              className="bg-void border border-pearl/20 p-2 text-pearl font-mono w-full"
+                              readOnly
+                           />
+                        </div>
+
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block mt-4">Secondary Accent (Amber)</label>
+                        <div className="flex gap-4 items-center">
+                           <input
+                              type="color"
+                              value={themeBuilder.colors.amber}
+                              onChange={(e) => {
+                                 const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, amber: e.target.value } };
+                                 setThemeBuilder(newTheme);
+                                 applyTheme(newTheme);
+                              }}
+                              className="w-12 h-12 border-none bg-transparent cursor-pointer"
+                           />
+                           <input
+                              type="text"
+                              value={themeBuilder.colors.amber}
+                              className="bg-void border border-pearl/20 p-2 text-pearl font-mono w-full"
+                              readOnly
+                           />
+                        </div>
+                     </div>
+
+                     <div className="space-y-4">
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Background Depth (Void)</label>
+                        <div className="flex gap-4 items-center">
+                           <input
+                              type="color"
+                              value={themeBuilder.colors.void}
+                              onChange={(e) => {
+                                 const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, void: e.target.value } };
+                                 setThemeBuilder(newTheme);
+                                 applyTheme(newTheme);
+                              }}
+                              className="w-12 h-12 border-none bg-transparent cursor-pointer"
+                           />
+                           <input
+                              type="text"
+                              value={themeBuilder.colors.void}
+                              className="bg-void border border-pearl/20 p-2 text-pearl font-mono w-full"
+                              readOnly
+                           />
+                        </div>
+
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block mt-4">Surface Texture (Charcoal)</label>
+                        <div className="flex gap-4 items-center">
+                           <input
+                              type="color"
+                              value={themeBuilder.colors.charcoal}
+                              onChange={(e) => {
+                                 const newTheme = { ...themeBuilder, colors: { ...themeBuilder.colors, charcoal: e.target.value } };
+                                 setThemeBuilder(newTheme);
+                                 applyTheme(newTheme);
+                              }}
+                              className="w-12 h-12 border-none bg-transparent cursor-pointer"
+                           />
+                           <input
+                              type="text"
+                              value={themeBuilder.colors.charcoal}
+                              className="bg-void border border-pearl/20 p-2 text-pearl font-mono w-full"
+                              readOnly
+                           />
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               {/* Typography Config */}
+               <div className="bg-charcoal/30 p-6 border border-pearl/10">
+                  <h3 className="text-pearl font-display text-lg mb-4 flex items-center gap-2">
+                     <Type size={20} className="text-tangerine" /> Typography System
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-4 block">Display Font (Headings)</label>
+                        <select
+                           className="w-full bg-void border border-pearl/20 p-4 text-pearl text-lg"
+                           value={themeBuilder.fonts.display}
+                           onChange={(e) => {
+                              const newTheme = { ...themeBuilder, fonts: { ...themeBuilder.fonts, display: e.target.value } };
+                              setThemeBuilder(newTheme);
+                              applyTheme(newTheme);
+                           }}
+                        >
+                           <option value="'Monument Extended', 'Syne', sans-serif">Monument Extended (Brutalist)</option>
+                           <option value="'Playfair Display', serif">Playfair Display (Elegant)</option>
+                           <option value="'Cinzel', serif">Cinzel (Classical)</option>
+                           <option value="'Outfit', sans-serif">Outfit (Modern)</option>
+                           <option value="'Space Grotesk', sans-serif">Space Grotesk (Tech)</option>
+                           <option value="'Anton', sans-serif">Anton (Bold)</option>
+                           <optgroup label="Arabic / Eastern">
+                              <option value="'Amiri', serif">Amiri (Classic Naskh)</option>
+                              <option value="'Aref Ruqaa', serif">Aref Ruqaa (Calligraphy)</option>
+                              <option value="'Cairo', sans-serif">Cairo (Modern Kufic)</option>
+                              <option value="'Rakkas', display">Rakkas (Display)</option>
+                           </optgroup>
+                        </select>
+                        <p className="mt-4 text-4xl" style={{ fontFamily: themeBuilder.fonts.display }}>MURAQQA</p>
+                     </div>
+
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-4 block">Body Font (Text)</label>
+                        <select
+                           className="w-full bg-void border border-pearl/20 p-4 text-pearl"
+                           value={themeBuilder.fonts.body}
+                           onChange={(e) => {
+                              const newTheme = { ...themeBuilder, fonts: { ...themeBuilder.fonts, body: e.target.value } };
+                              setThemeBuilder(newTheme);
+                              applyTheme(newTheme);
+                           }}
+                        >
+                           <option value="'Inter', 'Satoshi', sans-serif">Inter (Clean)</option>
+                           <option value="'Lora', serif">Lora (Serif)</option>
+                           <option value="'Quicksand', sans-serif">Quicksand (Rounded)</option>
+                           <option value="'DM Sans', sans-serif">DM Sans (Geo)</option>
+                           <option value="'Roboto', sans-serif">Roboto (Neutral)</option>
+                           <option value="'Cormorant Garamond', serif">Cormorant (Elegant)</option>
+                        </select>
+                        <p className="mt-4 text-sm leading-relaxed" style={{ fontFamily: themeBuilder.fonts.body }}>
+                           The quick brown fox jumps over the lazy dog. Contemporary art requires a canvas that breathes.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+
             </div>
          )}
 
