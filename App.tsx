@@ -11,6 +11,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { Cart } from './pages/Cart';
 import { UserProfile } from './pages/UserProfile';
 import { Artists } from './pages/Artists';
+import { ArtistDetail } from './pages/ArtistDetail';
 import { ThemeProvider } from './context/ThemeContext';
 import { GalleryProvider } from './context/GalleryContext';
 import { AuthProvider } from './context/AuthContext';
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/profile" element={<UserProfile />} />
                 <Route path="/artists" element={<Artists />} />
+                <Route path="/artists/:id" element={<ArtistDetail />} />
               </Route>
             </Routes>
           </ThemeProvider>

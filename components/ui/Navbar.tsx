@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
-import { Menu, X, User } from 'lucide-react';
+import { Menu, X, User, ShoppingBag, LogOut, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useCartContext } from '../../context/CartContext';
 
 const ScrambleText = ({ text }: { text: string }) => {
     const [display, setDisplay] = useState(text);
@@ -46,13 +47,24 @@ const Navbar = () => {
     const { scrollY } = useScroll();
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const { user } = useAuth();
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const { user, logout } = useAuth();
+    const { cart } = useCartContext();
+    const navigate = useNavigate();
+
+    const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
     useEffect(() => {
         return scrollY.onChange((latest) => {
             setIsScrolled(latest > 50);
         });
     }, [scrollY]);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+        setUserMenuOpen(false);
+    };
 
     const navItems = [
         { name: 'WORK', path: '/exhibitions' },
@@ -89,19 +101,92 @@ const Navbar = () => {
                             </Link>
                         ))}
 
-                        {/* Auth Icon */}
-                        <Link to={user ? "/profile" : "/auth"} className="text-pearl hover:text-tangerine transition-colors">
-                            <User size={20} />
-                        </Link>
+                        <div className="flex items-center gap-6 border-l border-pearl/10 pl-8 ml-4">
+                            {/* Cart Icon */}
+                            <Link to="/cart" className="text-pearl hover:text-tangerine transition-colors relative group">
+                                <ShoppingBag size={20} />
+                                {cartItemCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-tangerine text-void text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                        {cartItemCount}
+                                    </span>
+                                )}
+                            </Link>
+
+                            {/* User Menu */}
+                            {user ? (
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                        className="flex items-center gap-2 text-pearl hover:text-white transition-colors font-mono text-xs uppercase tracking-wider"
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-charcoal border border-pearl/10 flex items-center justify-center text-tangerine">
+                                            {user.fullName.charAt(0)}
+                                        </div>
+                                        <ChevronDown size={14} className={cn("transition-transform duration-300", userMenuOpen ? "rotate-180" : "")} />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {userMenuOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute top-full right-0 mt-4 w-56 bg-stone-900 border border-stone-800 p-2 shadow-2xl backdrop-blur-xl rounded-lg"
+                                                onMouseLeave={() => setUserMenuOpen(false)}
+                                            >
+                                                <div className="px-4 py-3 border-b border-stone-800 mb-2">
+                                                    <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-1">Signed in as</p>
+                                                    <p className="text-sm font-display font-bold text-white truncate">{user.fullName}</p>
+                                                </div>
+
+                                                <Link
+                                                    to="/profile"
+                                                    className="flex items-center gap-3 px-4 py-3 text-sm text-stone-300 hover:bg-stone-800 hover:text-amber-500 transition-colors rounded-md"
+                                                    onClick={() => setUserMenuOpen(false)}
+                                                >
+                                                    <User size={16} />
+                                                    MY PROFILE
+                                                </Link>
+
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-colors rounded-md mt-1"
+                                                >
+                                                    <LogOut size={16} />
+                                                    LOGOUT
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            ) : (
+                                <Link to="/auth" className="text-pearl hover:text-tangerine transition-colors flex items-center gap-2 font-mono text-xs uppercase tracking-wider border border-pearl/20 px-4 py-2 hover:border-tangerine">
+                                    <User size={14} />
+                                    LOGIN
+                                </Link>
+                            )}
+                        </div>
                     </div>
 
                     {/* Mobile Menu Toggle */}
-                    <button
-                        className="md:hidden text-pearl z-50"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        {mobileMenuOpen ? <X size={32} /> : <Menu size={32} />}
-                    </button>
+                    <div className="flex items-center gap-6 md:hidden">
+                        {/* Mobile Cart */}
+                        <Link to="/cart" className="text-pearl hover:text-tangerine transition-colors relative">
+                            <ShoppingBag size={24} />
+                            {cartItemCount > 0 && (
+                                <span className="absolute -top-2 -right-2 bg-tangerine text-void text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                                    {cartItemCount}
+                                </span>
+                            )}
+                        </Link>
+
+                        <button
+                            className="text-pearl z-50"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            {mobileMenuOpen ? <X size={32} /> : <Menu size={32} />}
+                        </button>
+                    </div>
                 </div>
             </motion.nav>
 
@@ -145,14 +230,37 @@ const Navbar = () => {
                         }}
                         transition={{ delay: 0.6 }}
                     >
-                        <Link
-                            to={user ? "/profile" : "/auth"}
-                            className="text-2xl font-mono text-pearl hover:text-tangerine transition-colors flex items-center gap-2 justify-center"
-                            onClick={() => setMobileMenuOpen(false)}
-                        >
-                            <User size={24} />
-                            {user ? "PROFILE" : "LOGIN"}
-                        </Link>
+                        {user ? (
+                            <div className="flex flex-col gap-4">
+                                <Link
+                                    to="/profile"
+                                    className="text-xl font-mono text-tangerine flex items-center gap-2 justify-center"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    <User size={20} />
+                                    {user.fullName}
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        handleLogout();
+                                        setMobileMenuOpen(false);
+                                    }}
+                                    className="text-sm font-mono text-red-400 flex items-center gap-2 justify-center uppercase tracking-widest border border-red-500/30 px-6 py-3"
+                                >
+                                    <LogOut size={16} />
+                                    LOGOUT
+                                </button>
+                            </div>
+                        ) : (
+                            <Link
+                                to="/auth"
+                                className="text-2xl font-mono text-pearl hover:text-tangerine transition-colors flex items-center gap-2 justify-center"
+                                onClick={() => setMobileMenuOpen(false)}
+                            >
+                                <User size={24} />
+                                LOGIN
+                            </Link>
+                        )}
                     </motion.div>
                 </div>
             </motion.div>

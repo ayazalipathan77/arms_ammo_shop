@@ -3,14 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { MapPin, ArrowLeft, Loader2, Globe, Sparkles, ArrowRight, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
 import { artistApi, artworkApi, transformArtwork, PaginationInfo } from '../services/api';
 import { Artist, Artwork } from '../types';
-import { useCurrency } from '../App';
+import { formatCurrency } from '../lib/utils';
 import { motion } from 'framer-motion';
 
 const ARTWORKS_PER_PAGE = 12;
 
 export const ArtistDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const { convertPrice } = useCurrency();
 
     const [artist, setArtist] = useState<Artist | null>(null);
     const [artworks, setArtworks] = useState<Artwork[]>([]);
@@ -311,108 +310,105 @@ export const ArtistDetail: React.FC = () => {
                             </div>
                         ) : (
                             <>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {artworks.map((art, idx) => (
-                                    <motion.div
-                                        key={art.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.05 * idx }}
-                                    >
-                                        <Link to={`/artwork/${art.id}`} className="group block">
-                                            <motion.div
-                                                whileHover={{ y: -4 }}
-                                                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                                className="bg-stone-900/30 backdrop-blur-sm border border-white/5 rounded-xl overflow-hidden hover:border-amber-500/30 transition-all duration-500"
-                                            >
-                                                <div className="relative aspect-[3/4] overflow-hidden">
-                                                    <img
-                                                        src={art.imageUrl}
-                                                        alt={art.title}
-                                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                                    />
-                                                    {!art.inStock && (
-                                                        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
-                                                            <span className="border border-white/50 text-white px-3 py-1 rounded-full uppercase text-[10px] tracking-widest">Sold</span>
-                                                        </div>
-                                                    )}
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                                        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                                                            <span className="text-amber-500 text-xs font-medium">View</span>
-                                                            <ArrowRight size={14} className="text-amber-500" />
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    {artworks.map((art, idx) => (
+                                        <motion.div
+                                            key={art.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.05 * idx }}
+                                        >
+                                            <Link to={`/artwork/${art.id}`} className="group block">
+                                                <motion.div
+                                                    whileHover={{ y: -4 }}
+                                                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                                                    className="bg-stone-900/30 backdrop-blur-sm border border-white/5 rounded-xl overflow-hidden hover:border-amber-500/30 transition-all duration-500"
+                                                >
+                                                    <div className="relative aspect-[3/4] overflow-hidden">
+                                                        <img
+                                                            src={art.imageUrl}
+                                                            alt={art.title}
+                                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                        />
+                                                        {!art.inStock && (
+                                                            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center">
+                                                                <span className="border border-white/50 text-white px-3 py-1 rounded-full uppercase text-[10px] tracking-widest">Sold</span>
+                                                            </div>
+                                                        )}
+                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                                            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                                                                <span className="text-amber-500 text-xs font-medium">View</span>
+                                                                <ArrowRight size={14} className="text-amber-500" />
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="p-3">
-                                                    <h4 className="font-serif text-sm text-white group-hover:text-amber-400 transition-colors truncate">{art.title}</h4>
-                                                    <div className="flex items-center justify-between mt-1">
-                                                        <p className="text-stone-600 text-[10px] uppercase tracking-wider">{art.year}</p>
-                                                        <p className="text-amber-500/80 text-xs font-medium">{convertPrice(art.price)}</p>
+                                                    <div className="p-3">
+                                                        <h4 className="font-serif text-sm text-white group-hover:text-amber-400 transition-colors truncate">{art.title}</h4>
+                                                        <div className="flex items-center justify-between mt-1">
+                                                            <p className="text-stone-600 text-[10px] uppercase tracking-wider">{art.year}</p>
+                                                            <p className="text-amber-500/80 text-xs font-medium">{formatCurrency(art.price)}</p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </motion.div>
-                                        </Link>
-                                    </motion.div>
-                                ))}
-                            </div>
+                                                </motion.div>
+                                            </Link>
+                                        </motion.div>
+                                    ))}
+                                </div>
 
-                            {/* Pagination */}
-                            {pagination.totalPages > 1 && (
-                                <div className="flex items-center justify-center gap-2 mt-10">
-                                    {/* Previous Button */}
-                                    <button
-                                        onClick={() => goToPage(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                        className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${
-                                            currentPage === 1
+                                {/* Pagination */}
+                                {pagination.totalPages > 1 && (
+                                    <div className="flex items-center justify-center gap-2 mt-10">
+                                        {/* Previous Button */}
+                                        <button
+                                            onClick={() => goToPage(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                            className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${currentPage === 1
                                                 ? 'text-stone-600 cursor-not-allowed'
                                                 : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
-                                        }`}
-                                    >
-                                        <ChevronLeft size={14} />
-                                    </button>
+                                                }`}
+                                        >
+                                            <ChevronLeft size={14} />
+                                        </button>
 
-                                    {/* Page Numbers */}
-                                    <div className="flex items-center gap-1">
-                                        {getPageNumbers().map((page, idx) => (
-                                            <button
-                                                key={idx}
-                                                onClick={() => typeof page === 'number' && goToPage(page)}
-                                                disabled={page === '...'}
-                                                className={`w-8 h-8 rounded-full text-xs font-medium transition-all ${
-                                                    page === currentPage
+                                        {/* Page Numbers */}
+                                        <div className="flex items-center gap-1">
+                                            {getPageNumbers().map((page, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => typeof page === 'number' && goToPage(page)}
+                                                    disabled={page === '...'}
+                                                    className={`w-8 h-8 rounded-full text-xs font-medium transition-all ${page === currentPage
                                                         ? 'bg-amber-500 text-stone-950'
                                                         : page === '...'
-                                                        ? 'text-stone-600 cursor-default'
-                                                        : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
-                                                }`}
-                                            >
-                                                {page}
-                                            </button>
-                                        ))}
-                                    </div>
+                                                            ? 'text-stone-600 cursor-default'
+                                                            : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                                                        }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            ))}
+                                        </div>
 
-                                    {/* Next Button */}
-                                    <button
-                                        onClick={() => goToPage(currentPage + 1)}
-                                        disabled={currentPage === pagination.totalPages}
-                                        className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${
-                                            currentPage === pagination.totalPages
+                                        {/* Next Button */}
+                                        <button
+                                            onClick={() => goToPage(currentPage + 1)}
+                                            disabled={currentPage === pagination.totalPages}
+                                            className={`flex items-center gap-1 px-3 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${currentPage === pagination.totalPages
                                                 ? 'text-stone-600 cursor-not-allowed'
                                                 : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
-                                        }`}
-                                    >
-                                        <ChevronRight size={14} />
-                                    </button>
-                                </div>
-                            )}
+                                                }`}
+                                        >
+                                            <ChevronRight size={14} />
+                                        </button>
+                                    </div>
+                                )}
 
-                            {/* Pagination Info */}
-                            {pagination.total > 0 && (
-                                <div className="text-center text-stone-600 text-xs uppercase tracking-widest mt-4">
-                                    Showing {((currentPage - 1) * ARTWORKS_PER_PAGE) + 1} - {Math.min(currentPage * ARTWORKS_PER_PAGE, pagination.total)} of {pagination.total}
-                                </div>
-                            )}
+                                {/* Pagination Info */}
+                                {pagination.total > 0 && (
+                                    <div className="text-center text-stone-600 text-xs uppercase tracking-widest mt-4">
+                                        Showing {((currentPage - 1) * ARTWORKS_PER_PAGE) + 1} - {Math.min(currentPage * ARTWORKS_PER_PAGE, pagination.total)} of {pagination.total}
+                                    </div>
+                                )}
                             </>
                         )}
                     </motion.div>

@@ -27,7 +27,7 @@ export const Conversations: React.FC = () => {
    const others = filteredConversations.slice(1);
 
    return (
-      <div className="pt-32 pb-20 min-h-screen relative z-10 px-6 md:px-12">
+      <div className="pt-32 pb-20 min-h-screen relative z-10 px-6 md:px-12 bg-stone-950">
          {/* Header */}
          <div className="max-w-[1920px] mx-auto mb-20 border-b border-pearl/10 pb-8 flex flex-col md:flex-row justify-between items-end gap-8 high-contrast:border-black/20">
             <div>
@@ -50,8 +50,8 @@ export const Conversations: React.FC = () => {
                      key={tab.key}
                      onClick={() => setFilter(tab.key as CategoryFilter)}
                      className={`px-6 py-2 text-xs font-display font-bold uppercase tracking-widest transition-all duration-300 border ${filter === tab.key
-                           ? 'bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black'
-                           : 'text-warm-gray border-warm-gray/30 hover:border-tangerine hover:text-tangerine bg-transparent high-contrast:text-black high-contrast:border-black/50'
+                        ? 'bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black'
+                        : 'text-warm-gray border-warm-gray/30 hover:border-tangerine hover:text-tangerine bg-transparent high-contrast:text-black high-contrast:border-black/50'
                         }`}
                   >
                      {tab.label}
