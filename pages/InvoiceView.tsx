@@ -5,7 +5,10 @@ import { Printer, ArrowLeft, Mail } from 'lucide-react';
 import { orderApi } from '../services/api';
 import type { Order } from '../types';
 
-const formatPrice = (price: number) => `PKR ${price.toLocaleString()}`;
+const formatPrice = (price: number | undefined | null) => {
+   if (typeof price !== 'number') return 'PKR 0';
+   return `PKR ${price.toLocaleString()}`;
+};
 
 export const InvoiceView: React.FC = () => {
    const { id } = useParams<{ id: string }>();

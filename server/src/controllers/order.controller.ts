@@ -53,35 +53,50 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
             totalAmount += Number(item.artwork.price) * item.quantity;
         }
 
-        // Create order with items
-        const order = await prisma.order.create({
-            data: {
-                userId,
-                totalAmount,
-                shippingAddress: typeof shippingAddress === 'string' ? shippingAddress : JSON.stringify(shippingAddress),
-                paymentMethod: paymentMethod || 'STRIPE',
-                items: {
-                    create: cartItems.map(item => ({
-                        artworkId: item.artworkId,
-                        quantity: item.quantity,
-                        priceAtPurchase: item.artwork.price,
-                        type: item.type,
-                        printSize: item.printSize,
-                    })),
+        // Create order transaction
+        const order = await prisma.$transaction(async (tx) => {
+            // Create order with items
+            const newOrder = await tx.order.create({
+                data: {
+                    userId,
+                    totalAmount,
+                    shippingAddress: typeof shippingAddress === 'string' ? shippingAddress : JSON.stringify(shippingAddress),
+                    paymentMethod: paymentMethod || 'STRIPE',
+                    items: {
+                        create: cartItems.map(item => ({
+                            artworkId: item.artworkId,
+                            quantity: item.quantity,
+                            priceAtPurchase: item.artwork.price,
+                            type: item.type,
+                            printSize: item.printSize,
+                        })),
+                    },
                 },
-            },
-            include: {
-                items: {
-                    include: { artwork: true },
+                include: {
+                    items: {
+                        include: { artwork: true },
+                    },
+                    user: {
+                        select: { id: true, fullName: true, email: true },
+                    },
                 },
-                user: {
-                    select: { id: true, fullName: true, email: true },
-                },
-            },
-        });
+            });
 
-        // Clear cart after order creation
-        await prisma.cartItem.deleteMany({ where: { userId } });
+            // Mark originals as out of stock
+            for (const item of cartItems) {
+                if (item.type === 'ORIGINAL') {
+                    await tx.artwork.update({
+                        where: { id: item.artworkId },
+                        data: { inStock: false }
+                    });
+                }
+            }
+
+            // Clear cart after order creation
+            await tx.cartItem.deleteMany({ where: { userId } });
+
+            return newOrder;
+        });
 
         res.status(StatusCodes.CREATED).json({ order });
     } catch (error) {
@@ -523,16 +538,6 @@ export const adminConfirmOrder = async (req: Request, res: Response): Promise<vo
             }
         });
 
-        // Mark artworks as out of stock (for originals)
-        for (const item of order.items) {
-            if (item.type === 'ORIGINAL') {
-                await prisma.artwork.update({
-                    where: { id: item.artworkId },
-                    data: { inStock: false }
-                });
-            }
-        }
-
         // Send confirmation email to collector
         const emailContent = getOrderConfirmedTemplate(order as any);
         await sendEmail(
@@ -724,14 +729,13 @@ export const cancelOrder = async (req: Request, res: Response): Promise<void> =>
         }
 
         // Restore artwork stock if it was marked as sold
-        if (order.status === 'CONFIRMED') {
-            for (const item of order.items) {
-                if (item.type === 'ORIGINAL') {
-                    await prisma.artwork.update({
-                        where: { id: item.artworkId },
-                        data: { inStock: true }
-                    });
-                }
+        // Always try to restore stock for originals upon cancellation
+        for (const item of order.items) {
+            if (item.type === 'ORIGINAL') {
+                await prisma.artwork.update({
+                    where: { id: item.artworkId },
+                    data: { inStock: true }
+                });
             }
         }
 

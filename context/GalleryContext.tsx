@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { Artwork, Order, ShippingConfig, OrderStatus, Conversation, SiteContent, LandingPageContent } from '../types';
 import { MOCK_CONVERSATIONS, DEFAULT_SITE_CONTENT } from '../constants';
-import { artworkApi, transformArtwork, ArtworkFilters, adminApi, settingsApi, conversationApi, exhibitionApi } from '../services/api';
+import { artworkApi, transformArtwork, ArtworkFilters, adminApi, settingsApi, conversationApi, exhibitionApi, transformOrder } from '../services/api';
 import { useAuth } from './AuthContext';
 
 interface GalleryContextType {
@@ -139,8 +139,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
     if (user?.role !== 'ADMIN') return;
     try {
       const response = await adminApi.getAllOrders();
-      // Map API orders to frontend Order type if needed, but they should be compatible
-      setOrders(response.orders as any);
+      setOrders(response.orders.map(transformOrder));
     } catch (err) {
       console.error('Error fetching orders:', err);
     }
