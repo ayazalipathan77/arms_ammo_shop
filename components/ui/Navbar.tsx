@@ -68,6 +68,7 @@ const Navbar = () => {
 
     const navItems = [
         { name: 'COLLECTIONS', path: '/collections' },
+        { name: 'EXHIBITIONS', path: '/exhibitions' },
         { name: 'ARTIST', path: '/artists' },
         { name: 'STORIES', path: '/stories' },
         { name: 'CONTACT', path: '/contact' },

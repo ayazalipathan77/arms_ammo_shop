@@ -197,20 +197,27 @@ const Home = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               {curatedCollections.map((collection: any, idx: number) => (
-                <div key={idx} className="group relative aspect-video overflow-hidden rounded-sm border border-pearl/10 cursor-pointer bg-charcoal">
+                <Link
+                  key={idx}
+                  to={`/collections?category=${encodeURIComponent(collection.title)}`}
+                  className="group relative aspect-video overflow-hidden rounded-sm border border-pearl/10 cursor-pointer bg-charcoal block"
+                >
                   <img
-                    src={collection.imageUrl || 'https://images.unsplash.com/photo-1549887552-93f954d4393e'}
+                    src={collection.imageUrl && collection.imageUrl !== '' ? collection.imageUrl : 'https://images.unsplash.com/photo-1549887552-93f954d4393e?q=80&w=1000&auto=format&fit=crop'}
                     alt={collection.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-100 grayscale transition-all group-hover:grayscale-0"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1549887552-93f954d4393e?q=80&w=1000&auto=format&fit=crop';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-void via-void/40 to-transparent p-8 flex flex-col justify-end">
                     <h3 className="text-3xl font-display text-pearl uppercase mb-2 group-hover:text-tangerine transition-colors">{collection.title}</h3>
                     <p className="text-warm-gray line-clamp-2 mb-4 max-w-lg font-mono text-sm">{collection.description}</p>
-                    <Link to={`/collections?category=${collection.title}`} className="flex items-center gap-2 text-tangerine text-sm font-bold tracking-widest uppercase hover:text-white transition-colors">
+                    <div className="flex items-center gap-2 text-tangerine text-sm font-bold tracking-widest uppercase hover:text-white transition-colors">
                       Explore Collection <ArrowRight size={16} />
-                    </Link>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

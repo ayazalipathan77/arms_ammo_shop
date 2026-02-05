@@ -1144,6 +1144,49 @@ export const AdminDashboard: React.FC = () => {
                   )}
                </div>
 
+               {/* Top 5 Highlight Config */}
+               <div className="bg-charcoal/30 p-6 border border-pearl/10">
+                  <h3 className="text-pearl font-display text-lg mb-4">Top 5 Highlights</h3>
+                  <div className="space-y-4">
+                     <p className="text-xs text-warm-gray mb-2">Select artworks to feature in the "Top 5" section. (Max 5)</p>
+                     <div className="flex flex-wrap gap-2 mb-2">
+                        {landingForm.topPaintings.artworkIds.map(id => {
+                           const art = artworks.find(a => a.id === id);
+                           return (
+                              <span key={id} className="text-xs border border-pearl/10 px-2 py-1 flex items-center gap-2 bg-charcoal text-pearl">
+                                 {art?.title || id}
+                                 <button onClick={() => {
+                                    const newIds = landingForm.topPaintings.artworkIds.filter(aid => aid !== id);
+                                    setLandingForm({ ...landingForm, topPaintings: { ...landingForm.topPaintings, artworkIds: newIds } });
+                                 }} className="hover:text-red-500"><X size={12} /></button>
+                              </span>
+                           )
+                        })}
+                     </div>
+
+                     {landingForm.topPaintings.artworkIds.length < 5 && (
+                        <select
+                           className="w-full bg-charcoal border border-pearl/10 text-xs p-2 text-pearl focus:border-tangerine outline-none"
+                           onChange={e => {
+                              if (e.target.value && !landingForm.topPaintings.artworkIds.includes(e.target.value)) {
+                                 setLandingForm({
+                                    ...landingForm,
+                                    topPaintings: {
+                                       ...landingForm.topPaintings,
+                                       artworkIds: [...landingForm.topPaintings.artworkIds, e.target.value]
+                                    }
+                                 });
+                              }
+                              e.target.value = '';
+                           }}
+                        >
+                           <option value="">+ Add Artwork to Top 5</option>
+                           {artworks.map(a => <option key={a.id} value={a.id}>{a.title} - {a.artistName}</option>)}
+                        </select>
+                     )}
+                  </div>
+               </div>
+
                {/* Collections Builders */}
                <div className="bg-charcoal/30 p-6 border border-pearl/10">
                   <h3 className="text-pearl font-display text-lg mb-4">Curated Collections</h3>

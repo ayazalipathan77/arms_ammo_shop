@@ -78,8 +78,47 @@ const Hero = () => {
             </div>
 
             {/* Content Content - Static Layer */}
-            {/* Content Content - Static Layer - REMOVED */}
-            <div className="hidden" />
+            {/* Content Content - Static Layer */}
+            <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                <div className="text-center space-y-4 md:space-y-6 max-w-4xl px-6">
+                    <motion.h2
+                        key={`${current}-sub`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-tangerine font-mono text-sm md:text-base tracking-[0.3em] uppercase"
+                    >
+                        {banners[current].subtitle}
+                    </motion.h2>
+
+                    <div className="overflow-hidden">
+                        <motion.h1
+                            key={`${current}-title`}
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            exit={{ y: "-100%" }}
+                            transition={{ duration: 0.8, ease: "circOut" }}
+                            className="text-7xl md:text-9xl font-display text-white tracking-tighter uppercase mix-blend-difference"
+                        >
+                            {/* If we have an accent word configured and it matches part of the title, we could style it. 
+                                For now, we just display the full title relative to the banner config. */}
+                            {banners[current].title}
+                        </motion.h1>
+                    </div>
+
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.6 }}
+                        className="pt-8 pointer-events-auto"
+                    >
+                        <Button variant="outline" className="text-white border-white hover:bg-white hover:text-void">
+                            EXPLORE COLLECTION
+                        </Button>
+                    </motion.div>
+                </div>
+            </div>
 
             {/* Progress Bar */}
             <div className="absolute bottom-12 left-6 md:left-12 right-6 md:right-12 z-20 flex gap-2">
