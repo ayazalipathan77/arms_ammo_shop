@@ -238,6 +238,8 @@ export const getAllOrders = async (req: Request, res: Response): Promise<void> =
 export const getOrderById = async (req: Request, res: Response): Promise<void> => {
     try {
         const orderId = req.params.id as string;
+        const userId = req.user?.userId;
+        const userRole = req.user?.role;
 
         const order = await prisma.order.findUnique({
             where: { id: orderId },
@@ -274,6 +276,12 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
 
         if (!order) {
             res.status(StatusCodes.NOT_FOUND).json({ message: 'Order not found' });
+            return;
+        }
+
+        // Check authorization: user must be the order owner or an admin
+        if (order.userId !== userId && userRole !== 'ADMIN') {
+            res.status(StatusCodes.FORBIDDEN).json({ message: 'Access denied' });
             return;
         }
 

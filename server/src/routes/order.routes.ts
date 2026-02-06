@@ -25,7 +25,8 @@ router.get('/my-orders', authenticate, getUserOrders);
 
 // Protected admin routes
 router.get('/', authenticate, authorizeRole('ADMIN'), getAllOrders);
-router.get('/:id', authenticate, authorizeRole('ADMIN'), getOrderById);
+// Allow users to view their own orders (ownership checked in controller)
+router.get('/:id', authenticate, getOrderById);
 router.post('/:id/request-artist-confirmation', authenticate, authorizeRole('ADMIN'), requestArtistConfirmation);
 router.put('/:id/confirm', authenticate, authorizeRole('ADMIN'), adminConfirmOrder);
 router.put('/:id/ship', authenticate, authorizeRole('ADMIN'), markOrderShipped);
