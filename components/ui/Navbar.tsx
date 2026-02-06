@@ -228,7 +228,7 @@ const Navbar = () => {
                         >
                             <Link
                                 to={item.path}
-                                className="text-6xl font-display font-bold text-transparent text-stroke hover:text-tangerine transition-colors duration-300"
+                                className="text-4xl sm:text-5xl md:text-6xl font-display font-bold text-pearl hover:text-tangerine transition-colors duration-300 px-4"
                                 onClick={() => setMobileMenuOpen(false)}
                             >
                                 {item.name}
