@@ -42,11 +42,11 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://js.stripe.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://js.stripe.com", "https://www.google.com", "https://www.gstatic.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://fonts.googleapis.com"],
             imgSrc: ["'self'", "data:", "https:", "http:"],
-            connectSrc: ["'self'", "https://api.stripe.com"],
-            frameSrc: ["'self'", "https://js.stripe.com"],
+            connectSrc: ["'self'", "https://api.stripe.com", "https://www.google.com"],
+            frameSrc: ["'self'", "https://js.stripe.com", "https://www.google.com"],
             fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
         },
     },
