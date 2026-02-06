@@ -19,8 +19,14 @@ export const SocialAuthCallback: React.FC = () => {
         }
 
         if (token) {
+            // Set token first
             login(token);
-            navigate('/', { replace: true });
+            // Small delay to ensure localStorage is persisted and state is stable
+            const timer = setTimeout(() => {
+                navigate('/', { replace: true });
+            }, 200);
+
+            return () => clearTimeout(timer);
         } else {
             setError('No authentication token received. Please try again.');
         }

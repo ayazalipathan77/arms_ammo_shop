@@ -66,6 +66,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         } catch (err: any) {
             console.error('Failed to fetch cart:', err);
             setError(err.message || 'Failed to fetch cart');
+            // Don't block the UI - set empty cart on error
+            setCart([]);
+            setCartItemIds(new Map());
         } finally {
             setIsLoading(false);
         }
