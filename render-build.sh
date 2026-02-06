@@ -22,11 +22,12 @@ echo "Building backend..."
 npm run build
 cd ..
 
-# 3. Install Dependencies for Frontend
+# 4. Install Dependencies for Frontend
 echo "Installing frontend dependencies..."
-npm install
+# Also need devDependencies for Vite build
+NODE_ENV=development npm install
 
-# 4. Build Frontend
+# 5. Build Frontend
 echo "Building frontend..."
 npm run build
 
