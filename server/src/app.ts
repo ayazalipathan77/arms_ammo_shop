@@ -88,6 +88,22 @@ app.use('/api/users', userRoutes);
 app.use('/api/shipping', shippingRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Serve static files in production
+if (env.NODE_ENV === 'production') {
+    const path = require('path');
+    // Serve static files from the frontend dist directory
+    // Assuming dist is in the root directory (parent of server)
+    app.use(express.static(path.join(__dirname, '../../../dist')));
+
+    app.get('*', (req: Request, res: Response) => {
+        if (!req.path.startsWith('/api')) {
+            res.sendFile(path.resolve(__dirname, '../../../dist', 'index.html'));
+        } else {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Route not found' });
+        }
+    });
+}
+
 // 404 Handler
 app.use((req: Request, res: Response) => {
     res.status(StatusCodes.NOT_FOUND).json({ message: 'Route not found' });
