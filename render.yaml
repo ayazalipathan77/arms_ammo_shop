@@ -5,9 +5,9 @@ services:
     runtime: node
     root: server
     # Use prisma db push instead of migrate deploy (schema has drifted from migrations)
-    # Install with --include=dev to get TypeScript type definitions needed for build
+    # Force install devDependencies by setting NODE_ENV=development during install
     buildCommand: |
-      npm install --include=dev
+      NODE_ENV=development npm install
       npx prisma generate
       npx prisma db push --accept-data-loss
       npm run build
