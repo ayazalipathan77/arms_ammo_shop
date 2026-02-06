@@ -146,10 +146,9 @@ export const InvoiceView: React.FC = () => {
                   </button>
                </div>
             </div>
-      </>
 
-         {/* Invoice Layout */}
-         <div className="max-w-[210mm] mx-auto bg-white min-h-[297mm] relative p-12 md:p-16 border border-zinc-100 shadow-xl print:shadow-none print:border-none print:w-full">
+            {/* Invoice Layout */}
+            <div className="max-w-[210mm] mx-auto bg-white min-h-[297mm] relative p-12 md:p-16 border border-zinc-100 shadow-xl print:shadow-none print:border-none print:w-full">
 
             {/* Header Section */}
             <div className="flex justify-between items-start mb-24">
@@ -270,5 +269,6 @@ export const InvoiceView: React.FC = () => {
 
          </div>
       </div>
+      </>
    );
 };
