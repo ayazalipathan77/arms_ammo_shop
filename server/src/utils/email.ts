@@ -5,18 +5,20 @@ import { env } from '../config/env';
 const transporter = nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: parseInt(env.SMTP_PORT),
-    secure: env.SMTP_PORT === '465', // true for 465, false for other ports
+    secure: env.SMTP_PORT === '465', // true for 465 (SSL), false for 587 (TLS)
     auth: {
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
     },
-    connectionTimeout: 30000, // 30s connection timeout (increased for production)
-    socketTimeout: 30000,     // 30s socket timeout
+    connectionTimeout: 60000, // 60s connection timeout
+    socketTimeout: 60000,     // 60s socket timeout
     greetingTimeout: 30000,   // 30s greeting timeout
+    // Gmail-specific TLS settings
     tls: {
-        ciphers: 'SSLv3',     // Support older TLS versions if needed
-        rejectUnauthorized: false, // Allow self-signed certificates
+        minVersion: 'TLSv1.2', // Require TLS 1.2 or higher
+        ciphers: 'HIGH:!aNULL:!MD5', // Strong ciphers only
     },
+    requireTLS: env.SMTP_PORT === '587', // Force STARTTLS for port 587
 });
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
