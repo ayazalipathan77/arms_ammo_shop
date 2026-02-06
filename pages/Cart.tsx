@@ -273,25 +273,23 @@ export const Cart: React.FC = () => {
                   </h2>
                   <p className="text-warm-gray mb-8 font-mono text-sm leading-relaxed">
                      {paymentMethod === 'BANK'
-                        ? 'Thank you. Please complete the bank transfer to process your order.'
-                        : 'Thank you for collecting with Muraqqa. An invoice has been emailed to you.'}
+                        ? 'Thank you. Please complete the bank transfer to process your order. You will receive a confirmation email with your invoice once payment is verified.'
+                        : 'Thank you for collecting with Muraqqa. A confirmation email with your invoice has been sent to your email address.'}
                   </p>
                   {whatsappNotify && <p className="text-green-400 text-xs mb-8 uppercase tracking-widest">WhatsApp updates enabled</p>}
 
                   <div className="space-y-3">
                      <Link
-                        to={createdOrderId ? `/invoice/${createdOrderId}` : '#'}
-                        target="_blank"
+                        to="/"
                         className="flex items-center justify-center gap-2 w-full bg-tangerine hover:bg-white text-void px-6 py-4 text-xs font-bold transition-colors uppercase tracking-[0.2em]"
                      >
-                        <FileText size={16} /> View Invoice
+                        Return Home
                      </Link>
-
                      <Link
-                        to="/"
+                        to="/profile"
                         className="flex items-center justify-center gap-2 w-full border border-pearl/10 hover:border-pearl/30 px-6 py-4 text-xs text-warm-gray hover:text-pearl transition-colors uppercase tracking-[0.2em]"
                      >
-                        Return Home
+                        View My Orders
                      </Link>
                   </div>
                </div>

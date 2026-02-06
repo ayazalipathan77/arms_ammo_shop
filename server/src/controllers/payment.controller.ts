@@ -4,6 +4,11 @@ import Stripe from 'stripe';
 import prisma from '../config/database';
 import { env } from '../config/env';
 import {
+    sendEmail,
+    getOrderConfirmationTemplate,
+    getAdminOrderCopyTemplate,
+} from '../utils/email';
+import {
     createPaymentIntentSchema,
     confirmBankTransferSchema,
 } from '../validators/payment.validator';
@@ -206,14 +211,70 @@ export const handleStripeWebhook = async (req: Request, res: Response): Promise<
                 const orderId = paymentIntent.metadata.orderId;
 
                 if (orderId) {
-                    // Update order status to PAID
-                    await prisma.order.update({
+                    // Update order status to PAID and fetch full order data
+                    const order = await prisma.order.update({
                         where: { id: orderId },
                         data: {
                             status: 'PAID',
+                            transactionId: paymentIntent.id,
+                        },
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    email: true,
+                                    phoneNumber: true,
+                                },
+                            },
+                            items: {
+                                include: {
+                                    artwork: {
+                                        include: {
+                                            artist: {
+                                                include: {
+                                                    user: {
+                                                        select: {
+                                                            fullName: true,
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
                         },
                     });
+
                     console.log(`Order ${orderId} marked as PAID`);
+
+                    // Send confirmation email to collector
+                    const collectorEmailSent = await sendEmail(
+                        order.user.email,
+                        'Order Confirmation - Muraqqa Art Gallery',
+                        getOrderConfirmationTemplate(order as any)
+                    );
+
+                    if (collectorEmailSent) {
+                        console.log(`✅ Order confirmation email sent to ${order.user.email}`);
+                    } else {
+                        console.error(`❌ Failed to send confirmation email to ${order.user.email}`);
+                    }
+
+                    // Send order copy to admin
+                    const requestArtistUrl = `${env.CLIENT_URL}/admin?tab=orders&orderId=${order.id}`;
+                    const adminEmailSent = await sendEmail(
+                        'admin@muraqqa.art', // Admin email
+                        `New Order Received - #${order.id.slice(-8).toUpperCase()}`,
+                        getAdminOrderCopyTemplate(order as any, requestArtistUrl)
+                    );
+
+                    if (adminEmailSent) {
+                        console.log(`✅ Admin notification email sent`);
+                    } else {
+                        console.error(`❌ Failed to send admin notification email`);
+                    }
                 }
                 break;
             }
@@ -278,35 +339,66 @@ export const confirmBankTransfer = async (req: Request, res: Response): Promise<
             return;
         }
 
-        // Update order to PAID
+        // Update order to PAID with full details for email
         const updatedOrder = await prisma.order.update({
             where: { id: validatedData.orderId },
             data: {
                 status: 'PAID',
             },
             include: {
-                items: {
-                    include: {
-                        artwork: {
-                            select: {
-                                id: true,
-                                title: true,
-                            },
-                        },
-                    },
-                },
                 user: {
                     select: {
                         id: true,
                         fullName: true,
                         email: true,
+                        phoneNumber: true,
+                    },
+                },
+                items: {
+                    include: {
+                        artwork: {
+                            include: {
+                                artist: {
+                                    include: {
+                                        user: {
+                                            select: {
+                                                fullName: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },
         });
 
+        // Send confirmation email to collector
+        const collectorEmailSent = await sendEmail(
+            updatedOrder.user.email,
+            'Payment Confirmed - Muraqqa Art Gallery',
+            getOrderConfirmationTemplate(updatedOrder as any)
+        );
+
+        if (collectorEmailSent) {
+            console.log(`✅ Order confirmation email sent to ${updatedOrder.user.email}`);
+        }
+
+        // Send order copy to admin
+        const requestArtistUrl = `${env.CLIENT_URL}/admin?tab=orders&orderId=${updatedOrder.id}`;
+        const adminEmailSent = await sendEmail(
+            'admin@muraqqa.art',
+            `Payment Confirmed - Order #${updatedOrder.id.slice(-8).toUpperCase()}`,
+            getAdminOrderCopyTemplate(updatedOrder as any, requestArtistUrl)
+        );
+
+        if (adminEmailSent) {
+            console.log(`✅ Admin notification email sent`);
+        }
+
         res.status(StatusCodes.OK).json({
-            message: 'Bank transfer confirmed, order marked as PAID',
+            message: 'Bank transfer confirmed, order marked as PAID. Confirmation emails sent.',
             order: updatedOrder,
         });
     } catch (error: any) {
