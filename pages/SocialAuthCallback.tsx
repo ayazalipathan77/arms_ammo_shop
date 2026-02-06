@@ -10,15 +10,26 @@ export const SocialAuthCallback: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const hasProcessed = useRef(false);
 
+    console.log('🔄 SocialAuthCallback component rendered');
+
     useEffect(() => {
+        console.log('🔄 useEffect running, hasProcessed:', hasProcessed.current);
+
         // Prevent multiple executions using ref
-        if (hasProcessed.current) return;
+        if (hasProcessed.current) {
+            console.log('⏭️ Already processed, skipping');
+            return;
+        }
         hasProcessed.current = true;
 
         const token = searchParams.get('token');
         const errorParam = searchParams.get('error');
+        const fullUrl = window.location.href;
 
-        console.log('🔐 OAuth Callback - Token:', token ? 'Present' : 'Missing', 'Error:', errorParam);
+        console.log('🔐 OAuth Callback:');
+        console.log('  - Full URL:', fullUrl);
+        console.log('  - Token:', token ? `${token.substring(0, 20)}...` : 'Missing');
+        console.log('  - Error param:', errorParam);
 
         if (errorParam) {
             console.error('❌ OAuth error:', errorParam);
@@ -27,22 +38,26 @@ export const SocialAuthCallback: React.FC = () => {
         }
 
         if (token) {
-            console.log('✅ Processing token...');
+            console.log('✅ Token found, processing login...');
 
             try {
                 // Set token in auth context
                 login(token);
-                console.log('✅ Token set successfully');
+                console.log('✅ Token set successfully in AuthContext');
+                console.log('✅ localStorage authToken:', localStorage.getItem('authToken') ? 'Set' : 'Not set');
 
-                // Navigate to home
-                console.log('🚀 Navigating to home page...');
-                navigate('/', { replace: true });
+                // Small delay to ensure state updates
+                setTimeout(() => {
+                    console.log('🚀 Navigating to home page...');
+                    navigate('/', { replace: true });
+                    console.log('✅ Navigate called');
+                }, 100);
             } catch (err) {
                 console.error('❌ Error during login:', err);
                 setError('Login failed. Please try again.');
             }
         } else {
-            console.error('❌ No token in URL');
+            console.error('❌ No token in URL parameters');
             setError('No authentication token received. Please try again.');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
