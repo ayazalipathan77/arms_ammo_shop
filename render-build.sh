@@ -32,3 +32,8 @@ echo "Building frontend..."
 npm run build
 
 echo "Build complete!"
+
+# Ensure server.cjs exists (renamed from server.js for CommonJS compatibility)
+if [ ! -f "server.cjs" ] && [ -f "server.js" ]; then
+    mv server.js server.cjs
+fi
