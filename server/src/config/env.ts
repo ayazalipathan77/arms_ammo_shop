@@ -30,10 +30,10 @@ const envSchema = z.object({
     FACEBOOK_APP_ID: z.string().optional().default(''),
     FACEBOOK_APP_SECRET: z.string().optional().default(''),
 
-    // SMTP Email (Gmail)
+    // SMTP Email (supports Gmail, Resend, SendGrid, etc.)
     SMTP_HOST: z.string().default('smtp.gmail.com'),
     SMTP_PORT: z.string().default('587'),
-    SMTP_USER: z.string().email().optional(),
+    SMTP_USER: z.string().optional(), // Username or email (e.g., 'resend' for Resend, email for Gmail)
     SMTP_PASS: z.string().optional(),
     SMTP_FROM: z.string().optional(),
 });
