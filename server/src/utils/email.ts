@@ -2,23 +2,20 @@ import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 
 // Create reusable transporter object using the default SMTP transport
+// Supports Gmail (port 587), Resend (port 465), and other SMTP services
 const transporter = nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: parseInt(env.SMTP_PORT),
-    secure: env.SMTP_PORT === '465', // true for 465 (SSL), false for 587 (TLS)
+    secure: env.SMTP_PORT === '465', // true for 465 (SSL), false for 587 (TLS/STARTTLS)
     auth: {
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
     },
-    connectionTimeout: 60000, // 60s connection timeout
-    socketTimeout: 60000,     // 60s socket timeout
+    connectionTimeout: 90000, // 90s connection timeout (increased for slower networks)
+    socketTimeout: 90000,     // 90s socket timeout
     greetingTimeout: 30000,   // 30s greeting timeout
-    // Gmail-specific TLS settings
-    tls: {
-        minVersion: 'TLSv1.2', // Require TLS 1.2 or higher
-        ciphers: 'HIGH:!aNULL:!MD5', // Strong ciphers only
-    },
-    requireTLS: env.SMTP_PORT === '587', // Force STARTTLS for port 587
+    logger: env.NODE_ENV === 'development', // Enable debug logs in development
+    debug: env.NODE_ENV === 'development',  // Enable debug output
 });
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
