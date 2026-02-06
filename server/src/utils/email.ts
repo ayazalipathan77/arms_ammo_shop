@@ -10,8 +10,13 @@ const transporter = nodemailer.createTransport({
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
     },
-    connectionTimeout: 5000, // 5s connection timeout
-    socketTimeout: 5000,     // 5s socket timeout
+    connectionTimeout: 30000, // 30s connection timeout (increased for production)
+    socketTimeout: 30000,     // 30s socket timeout
+    greetingTimeout: 30000,   // 30s greeting timeout
+    tls: {
+        ciphers: 'SSLv3',     // Support older TLS versions if needed
+        rejectUnauthorized: false, // Allow self-signed certificates
+    },
 });
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
