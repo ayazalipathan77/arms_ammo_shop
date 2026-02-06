@@ -80,7 +80,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             setCart([]);
             setCartItemIds(new Map());
         }
-    }, [token, user, refreshCart]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token, user]); // refreshCart is intentionally omitted to prevent infinite loop
 
     // Add item to cart
     const addToCart = async (item: CartItem) => {
