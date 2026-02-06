@@ -357,12 +357,24 @@ export const AdminDashboard: React.FC = () => {
 
 
    const handleUpdateUserRole = async (userId: string, newRole: string) => {
-      if (!confirm(`Are you sure you want to promote this user to ${newRole}?`)) return;
+      if (!confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return;
       try {
          await adminApi.updateUserRole(userId, newRole);
          loadUsers(); // Refresh list
-      } catch (err) {
-         alert('Failed to update user role');
+         loadStats(); // Update stats
+      } catch (err: any) {
+         alert(err.message || 'Failed to update user role');
+      }
+   };
+
+   const handleDeleteUser = async (userId: string, userName: string) => {
+      if (!confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) return;
+      try {
+         await adminApi.deleteUser(userId);
+         loadUsers(); // Refresh list
+         loadStats(); // Update stats
+      } catch (err: any) {
+         alert(err.message || 'Failed to delete user');
       }
    };
 
@@ -1068,15 +1080,51 @@ export const AdminDashboard: React.FC = () => {
                               <td className="p-4">
                                  {(u.artistStatus === 'PENDING' || userSubTab === 'PENDING') ? (
                                     <div className="flex gap-2">
-                                       <button onClick={() => handleApproveArtist(u.id)} className="p-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors" title="Approve">
-                                          <Check size={16} />
+                                       <button onClick={() => handleApproveArtist(u.id)} disabled={approvingId === u.id} className="p-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors disabled:opacity-50" title="Approve Artist">
+                                          {approvingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                                        </button>
-                                       <button onClick={() => handleRejectArtist(u.id)} className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Reject">
-                                          <X size={16} />
+                                       <button onClick={() => handleRejectArtist(u.id)} disabled={rejectingId === u.id} className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50" title="Reject Artist">
+                                          {rejectingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
                                        </button>
                                     </div>
                                  ) : (
-                                    <button className="text-warm-gray hover:text-pearl"><Settings size={16} /></button>
+                                    <div className="flex gap-2">
+                                       {u.role === 'USER' && (
+                                          <button
+                                             onClick={() => handleUpdateUserRole(u.id, 'ARTIST')}
+                                             className="p-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 rounded transition-colors"
+                                             title="Promote to Artist"
+                                          >
+                                             <Palette size={16} />
+                                          </button>
+                                       )}
+                                       {u.role === 'ARTIST' && u.isApproved && (
+                                          <button
+                                             onClick={() => handleUpdateUserRole(u.id, 'USER')}
+                                             className="p-2 border border-warm-gray/30 text-warm-gray hover:bg-warm-gray/10 rounded transition-colors"
+                                             title="Demote to User"
+                                          >
+                                             <UserX size={16} />
+                                          </button>
+                                       )}
+                                       {u.role === 'ARTIST' && !u.isApproved && (
+                                          <button
+                                             onClick={() => handleApproveArtist(u.id)}
+                                             disabled={approvingId === u.id}
+                                             className="p-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors disabled:opacity-50"
+                                             title="Approve Artist"
+                                          >
+                                             {approvingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
+                                          </button>
+                                       )}
+                                       <button
+                                          onClick={() => handleDeleteUser(u.id, u.fullName || u.email)}
+                                          className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                                          title="Delete User"
+                                       >
+                                          <Trash2 size={16} />
+                                       </button>
+                                    </div>
                                  )}
                               </td>
                            </tr>

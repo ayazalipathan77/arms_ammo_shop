@@ -3,6 +3,7 @@ import {
     getDashboardStats,
     getAllUsers,
     updateUserRole,
+    deleteUser,
     getPendingArtists,
     approveArtist,
     rejectArtist,
@@ -20,6 +21,7 @@ router.get('/stats', getDashboardStats);
 // Users Management
 router.get('/users', getAllUsers);
 router.put('/users/:id/role', updateUserRole);
+router.delete('/users/:id', deleteUser);
 
 // Artist Approval
 router.get('/artists/pending', getPendingArtists);

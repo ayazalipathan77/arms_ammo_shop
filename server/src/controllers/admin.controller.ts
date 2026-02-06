@@ -188,6 +188,47 @@ export const updateUserRole = async (req: Request, res: Response): Promise<void>
     }
 };
 
+// Delete User
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = String(req.params.id);
+        const currentUserId = req.user?.userId;
+
+        // Prevent admins from deleting themselves
+        if (userId === currentUserId) {
+            res.status(StatusCodes.FORBIDDEN).json({ message: 'Cannot delete your own account' });
+            return;
+        }
+
+        // Check if user exists
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { role: true }
+        });
+
+        if (!user) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+            return;
+        }
+
+        // Prevent deletion of other admins
+        if (user.role === 'ADMIN') {
+            res.status(StatusCodes.FORBIDDEN).json({ message: 'Cannot delete admin accounts' });
+            return;
+        }
+
+        // Delete user (cascading deletes will handle related records via Prisma schema)
+        await prisma.user.delete({
+            where: { id: userId }
+        });
+
+        res.status(StatusCodes.OK).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Delete user error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete user' });
+    }
+};
+
 // Get Pending Artist Approvals
 export const getPendingArtists = async (req: Request, res: Response): Promise<void> => {
     try {

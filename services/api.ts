@@ -836,6 +836,18 @@ export const adminApi = {
         return response.json();
     },
 
+    // Delete User
+    deleteUser: async (id: string): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/admin/users/${id}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to delete user');
+        }
+        return response.json();
+    },
+
     // Get all orders (Admin only)
     getAllOrders: async (filters: any = {}): Promise<{
         orders: any[];
