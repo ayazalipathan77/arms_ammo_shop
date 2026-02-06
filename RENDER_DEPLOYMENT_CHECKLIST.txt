@@ -1,0 +1,180 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║        MURAQQA GALLERY - RENDER.COM DEPLOYMENT CHECKLIST                 ║
+║        Quick Reference - Print this or keep it open while deploying      ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📋 PRE-DEPLOYMENT (5 min)
+═══════════════════════════════════════════════════════════════════════════
+[ ] All code changes pushed to GitHub main/ver4 branch
+[ ] Render.com account created and logged in
+[ ] GitHub repository connected to Render
+[ ] Cloudinary credentials ready:
+    Cloud Name: didfxynsu
+    API Key: 898752622996387
+    API Secret: (from .env.local)
+
+🗄️ STEP 1: CREATE DATABASE (5 min)
+═══════════════════════════════════════════════════════════════════════════
+[ ] Click "New +" → "PostgreSQL"
+[ ] Name: muraqqa-db
+[ ] Region: (choose closest to you)
+[ ] Plan: Free (or paid)
+[ ] Click "Create Database"
+[ ] Wait for "Available" status
+[ ] Copy "External Database URL" from dashboard
+    Format: postgresql://user:pass@host:port/db?sslmode=require
+    Store it: _____________________________________________________
+
+⚙️ STEP 2: CREATE BACKEND SERVICE (10 min)
+═══════════════════════════════════════════════════════════════════════════
+[ ] Click "New +" → "Web Service"
+[ ] Connect GitHub repo
+[ ] Configuration:
+    Name: muraqqa-backend
+    Region: (same as database)
+    Branch: main (or ver4)
+    Root Directory: server
+    Runtime: Node
+    Build Command: (leave default or paste from render.yaml)
+    Start Command: npm start
+
+[ ] Environment Variables - Click "Add Environment Variable":
+    KEY                         VALUE
+    ──────────────────────────  ─────────────────────────────────────
+    [ ] NODE_ENV                production
+    [ ] DATABASE_URL            <paste from Step 1>
+    [ ] JWT_SECRET              <click "Generate" or create strong secret>
+    [ ] JWT_EXPIRES_IN          7d
+    [ ] CLOUDINARY_CLOUD_NAME   didfxynsu
+    [ ] CLOUDINARY_API_KEY      898752622996387
+    [ ] CLOUDINARY_API_SECRET   <from your .env.local>
+
+[ ] Click "Create Web Service"
+[ ] Wait for build to complete (5-10 min)
+    Watch logs for errors
+[ ] Note Backend URL: ____________________________________________
+
+🎨 STEP 3: CREATE FRONTEND SERVICE (5 min)
+═══════════════════════════════════════════════════════════════════════════
+[ ] Click "New +" → "Static Site"
+[ ] Connect same GitHub repo
+[ ] Configuration:
+    Name: muraqqa-frontend
+    Branch: main (or ver4)
+    Root Directory: . (leave empty or put dot)
+    Build Command: npm install && npm run build
+    Publish Directory: dist
+
+[ ] Environment Variables:
+    KEY                         VALUE
+    ──────────────────────────  ─────────────────────────────────────
+    [ ] VITE_API_URL            <backend-url-from-step-2>/api
+                                Example: https://muraqqa-backend.onrender.com/api
+
+[ ] Click "Create Static Site"
+[ ] Wait for build to complete (3-5 min)
+[ ] Note Frontend URL: ___________________________________________
+
+🔄 STEP 4: UPDATE CLIENT_URL IN BACKEND (2 min)
+═══════════════════════════════════════════════════════════════════════════
+[ ] Go back to Backend Service (muraqqa-backend)
+[ ] Click "Environment" tab
+[ ] Find or Add:
+    KEY                         VALUE
+    ──────────────────────────  ─────────────────────────────────────
+    [ ] CLIENT_URL              <frontend-url-from-step-3>
+                                Example: https://muraqqa-frontend.onrender.com
+                                (NO trailing slash!)
+
+[ ] Click "Save Changes"
+[ ] Backend will auto-redeploy
+
+🌱 STEP 5: SEED DATABASE (2 min)
+═══════════════════════════════════════════════════════════════════════════
+[ ] Go to Backend Service (muraqqa-backend)
+[ ] Click "Shell" tab
+[ ] Run command: npm run seed
+    [ ] Wait for completion
+    [ ] Should see: ✅ Admin user created, ✅ Artists created, etc.
+[ ] Run command: npm run seed:landing
+    [ ] Wait for completion
+    [ ] Should see: ✅ Landing page content seeded
+
+✅ STEP 6: TEST DEPLOYMENT (5 min)
+═══════════════════════════════════════════════════════════════════════════
+Backend API Test:
+[ ] Open: <backend-url>/api/artworks
+    Should return JSON array of artworks
+
+Frontend Test:
+[ ] Open: <frontend-url>
+    [ ] Homepage loads
+    [ ] Artworks visible
+    [ ] Navigation works
+
+Authentication Test:
+[ ] Click Login
+[ ] Test credentials:
+    Admin:   admin@muraqqa.com / admin123
+    Artist:  sadequain@muraqqa.com / artist123
+    User:    user@example.com / user123
+[ ] Should successfully log in
+
+Cloudinary Test:
+[ ] Login as Admin or Artist
+[ ] Go to Dashboard
+[ ] Try uploading an artwork
+[ ] Should upload successfully
+
+🎉 STEP 7: POST-DEPLOYMENT (5 min)
+═══════════════════════════════════════════════════════════════════════════
+[ ] Change admin password (admin@muraqqa.com)
+[ ] Verify all pages work:
+    [ ] Home / Gallery
+    [ ] Artworks listing
+    [ ] Artwork detail pages
+    [ ] Artist profiles
+    [ ] Shopping cart
+    [ ] Admin dashboard
+    [ ] Artist dashboard
+
+[ ] Set up monitoring:
+    [ ] Check "Metrics" tab in each service
+    [ ] Set up notification emails in Render settings
+
+[ ] Optional - Custom Domain:
+    [ ] Settings → Custom Domains
+    [ ] Add your domain
+    [ ] Update DNS records
+
+📊 DEPLOYMENT URLS & CREDENTIALS
+═══════════════════════════════════════════════════════════════════════════
+Frontend URL:     _____________________________________________________
+Backend URL:      _____________________________________________________
+Database URL:     _____________________________________________________
+
+Default Logins (CHANGE PASSWORDS AFTER FIRST LOGIN!):
+Admin:    admin@muraqqa.com / admin123
+Artist 1: sadequain@muraqqa.com / artist123
+Artist 2: ahmed.khan@muraqqa.com / artist123
+Artist 3: alia.syed@muraqqa.com / artist123
+User:     user@example.com / user123
+
+🆘 TROUBLESHOOTING QUICK FIXES
+═══════════════════════════════════════════════════════════════════════════
+❌ Build fails → Check logs, verify DATABASE_URL is set
+❌ CORS errors → Verify CLIENT_URL matches frontend URL exactly
+❌ Cannot connect to DB → Ensure DATABASE_URL has ?sslmode=require
+❌ Images not uploading → Check all 3 Cloudinary env vars
+❌ Frontend shows errors → Check VITE_API_URL format
+❌ Seed fails → Ignore "unique constraint" errors (data already exists)
+
+📚 DOCUMENTATION REFERENCES
+═══════════════════════════════════════════════════════════════════════════
+Full Guide:       render-deployment-guide.md
+Summary:          DEPLOYMENT_SUMMARY.md
+Environment Vars: RENDER_ENV_VARIABLES.md
+
+═══════════════════════════════════════════════════════════════════════════
+                    ✨ HAPPY DEPLOYING! ✨
+═══════════════════════════════════════════════════════════════════════════

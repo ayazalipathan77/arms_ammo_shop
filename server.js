@@ -1,28 +1,12 @@
-const { execSync, spawn } = require('child_process');
+const { spawn } = require('child_process');
 const path = require('path');
 
-console.log('🚀 Starting Deployment Process...');
+console.log('🚀 Starting Server...');
+console.log('📝 Note: Database migrations and seeding are handled in the build phase');
 
 try {
-    // 1. Run Prisma Migrations
-    console.log('📦 Running Database Migrations...');
-    execSync('npx prisma migrate deploy', {
-        cwd: path.join(__dirname, 'server'),
-        stdio: 'inherit'
-    });
-
-    // 2. Seed Database
-    console.log('🌱 Seeding Initial Data...');
-    try {
-        execSync('npm run seed', {
-            cwd: path.join(__dirname, 'server'),
-            stdio: 'inherit'
-        });
-    } catch (seedError) {
-        console.warn('⚠️ Seeding failed (might be already seeded):', seedError.message);
-    }
-
-    // 3. Start Backend Server
+    // Start Backend Server
+    // Migrations and seeding already ran during the build command
     console.log('⚡ Starting Backend Server...');
     const server = spawn('node', ['dist/server.js'], {
         cwd: path.join(__dirname, 'server'),
@@ -35,7 +19,12 @@ try {
         process.exit(code);
     });
 
+    server.on('error', (error) => {
+        console.error('❌ Server Error:', error);
+        process.exit(1);
+    });
+
 } catch (error) {
-    console.error('❌ Deployment Failed:', error);
+    console.error('❌ Server Start Failed:', error);
     process.exit(1);
 }
