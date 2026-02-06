@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { Mail, ArrowRight, ArrowLeft, Loader2, Star, CheckCircle, Shield } from 'lucide-react';
 import { useRecaptcha, RECAPTCHA_ACTIONS } from '../hooks/useRecaptcha';
 
-const API_URL = 'http://localhost:5000/api';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
 export const ForgotPassword: React.FC = () => {
    const [email, setEmail] = useState('');

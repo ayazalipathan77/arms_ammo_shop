@@ -7,7 +7,8 @@ import { useRecaptcha, RECAPTCHA_ACTIONS } from '../hooks/useRecaptcha';
 import { cn } from '../lib/utils';
 import ParticleSystem from '../components/features/ParticleSystem';
 
-const API_URL = 'http://localhost:5000/api';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
 export const Auth: React.FC = () => {
    const [isLogin, setIsLogin] = useState(true);

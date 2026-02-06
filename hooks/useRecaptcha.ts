@@ -14,7 +14,9 @@ interface RecaptchaConfig {
     enabled: boolean;
 }
 
-const API_URL = 'http://localhost:5000/api';
+// Use relative URL for production (same-origin) or localhost for development
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
 export const useRecaptcha = () => {
     const [config, setConfig] = useState<RecaptchaConfig>({ siteKey: null, enabled: false });

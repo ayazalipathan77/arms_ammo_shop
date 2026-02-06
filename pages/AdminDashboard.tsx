@@ -25,6 +25,10 @@ export const AdminDashboard: React.FC = () => {
 
    const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
 
+   // Dynamic API URL detection
+   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+   const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+
    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'LANDING PAGE' | 'THEME'>('OVERVIEW');
 
    // Dashboard Stats
@@ -252,7 +256,7 @@ export const AdminDashboard: React.FC = () => {
       setIsLoadingPending(true);
       try {
          const token = localStorage.getItem('authToken');
-         const response = await fetch('http://localhost:5000/api/admin/artists/pending', {
+         const response = await fetch(`${API_URL}/admin/artists/pending`, {
             headers: { 'Authorization': `Bearer ${token}` }
          });
          const data = await response.json();
@@ -268,7 +272,7 @@ export const AdminDashboard: React.FC = () => {
       setApprovingId(userId);
       try {
          const token = localStorage.getItem('authToken');
-         const response = await fetch(`http://localhost:5000/api/admin/artists/${userId}/approve`, {
+         const response = await fetch(`${API_URL}/admin/artists/${userId}/approve`, {
             method: 'PUT',
             headers: {
                'Authorization': `Bearer ${token}`,
@@ -296,7 +300,7 @@ export const AdminDashboard: React.FC = () => {
       setRejectingId(userId);
       try {
          const token = localStorage.getItem('authToken');
-         const response = await fetch(`http://localhost:5000/api/admin/artists/${userId}/reject`, {
+         const response = await fetch(`${API_URL}/admin/artists/${userId}/reject`, {
             method: 'PUT',
             headers: {
                'Authorization': `Bearer ${token}`,

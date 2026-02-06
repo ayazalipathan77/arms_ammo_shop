@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lock, Eye, EyeOff, CheckCircle, XCircle, Loader2, ArrowRight, Star, KeyRound } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
 export const ResetPassword: React.FC = () => {
    const [searchParams] = useSearchParams();
