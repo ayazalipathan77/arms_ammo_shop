@@ -100,20 +100,53 @@ export const InvoiceView: React.FC = () => {
    const itemsTotal = order.items.reduce((sum, item) => sum + item.finalPrice, 0);
    const shippingAndTax = order.totalAmount - itemsTotal;
 
-   return (
-      <div className="min-h-screen bg-white text-black font-sans py-12 px-4 print:p-0">
+   const handleDownloadPDF = () => {
+      // Trigger browser print dialog (user can save as PDF)
+      window.print();
+   };
 
-         {/* Actions */}
-         <div className="max-w-[210mm] mx-auto mb-12 flex justify-between items-center print:hidden">
-            <Link to="/" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:opacity-50 transition-opacity">
-               <ArrowLeft size={14} /> Back
-            </Link>
-            <div className="flex gap-4">
-               <button onClick={() => window.print()} className="bg-black text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors flex items-center gap-2">
-                  <Printer size={14} /> Print Invoice
-               </button>
+   return (
+      <>
+         {/* Print-specific styles */}
+         <style>{`
+            @media print {
+               @page {
+                  size: A4;
+                  margin: 0;
+               }
+               body {
+                  -webkit-print-color-adjust: exact;
+                  print-color-adjust: exact;
+               }
+               /* Ensure clean black/white print */
+               * {
+                  color: black !important;
+                  background: white !important;
+               }
+               /* Hide all non-invoice elements */
+               nav, header, footer, .print\\:hidden {
+                  display: none !important;
+               }
+            }
+         `}</style>
+
+         <div className="min-h-screen bg-white text-black font-sans py-12 px-4 print:p-0">
+
+            {/* Actions */}
+            <div className="max-w-[210mm] mx-auto mb-12 flex justify-between items-center print:hidden">
+               <Link to="/" className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest hover:opacity-50 transition-opacity">
+                  <ArrowLeft size={14} /> Back
+               </Link>
+               <div className="flex gap-4">
+                  <button
+                     onClick={handleDownloadPDF}
+                     className="bg-black text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors flex items-center gap-2"
+                  >
+                     <Printer size={14} /> Download PDF
+                  </button>
+               </div>
             </div>
-         </div>
+      </>
 
          {/* Invoice Layout */}
          <div className="max-w-[210mm] mx-auto bg-white min-h-[297mm] relative p-12 md:p-16 border border-zinc-100 shadow-xl print:shadow-none print:border-none print:w-full">
