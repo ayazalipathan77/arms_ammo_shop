@@ -34,7 +34,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compression());
-app.use(helmet());
+// Configure Helmet with relaxed CSP for production
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://js.stripe.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
+            imgSrc: ["'self'", "data:", "https:", "http:"],
+            connectSrc: ["'self'", "https://api.stripe.com"],
+            frameSrc: ["'self'", "https://js.stripe.com"],
+            fontSrc: ["'self'", "data:"],
+        },
+    },
+}));
 app.use(morgan(env.NODE_ENV === 'development' ? 'dev' : 'combined'));
 app.use(passport.initialize());
 
