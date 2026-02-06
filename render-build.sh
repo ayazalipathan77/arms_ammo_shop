@@ -37,3 +37,20 @@ echo "Build complete!"
 if [ ! -f "server.cjs" ] && [ -f "server.js" ]; then
     mv server.js server.cjs
 fi
+
+# Optional: Run database seeds if RUN_SEED environment variable is set to "true"
+if [ "$RUN_SEED" = "true" ]; then
+    echo "🌱 RUN_SEED is enabled - Running database seeds..."
+    cd server
+
+    echo "Running main seed data..."
+    npm run seed
+
+    echo "Running landing page seed..."
+    npm run seed:landing
+
+    cd ..
+    echo "✅ Database seeding completed!"
+else
+    echo "ℹ️  Skipping seeds (set RUN_SEED=true to enable)"
+fi
