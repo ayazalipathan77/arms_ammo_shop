@@ -1,28 +1,30 @@
+import { Resend } from 'resend';
 import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 
-// Create reusable transporter object using the default SMTP transport
-// Supports Gmail (port 587), Resend (port 465), and other SMTP services
-const transporter = nodemailer.createTransport({
+// Initialize Resend client (preferred method - more reliable with hosting providers)
+const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
+
+// Fallback SMTP transporter (if Resend API key is not provided)
+const transporter = !env.RESEND_API_KEY && env.SMTP_USER ? nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: parseInt(env.SMTP_PORT),
-    secure: env.SMTP_PORT === '465', // true for 465 (SSL), false for 587 (TLS/STARTTLS)
+    secure: env.SMTP_PORT === '465',
     auth: {
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
     },
-    connectionTimeout: 90000, // 90s connection timeout (increased for slower networks)
-    socketTimeout: 90000,     // 90s socket timeout
-    greetingTimeout: 30000,   // 30s greeting timeout
-    logger: env.NODE_ENV === 'development', // Enable debug logs in development
-    debug: env.NODE_ENV === 'development',  // Enable debug output
-});
+    connectionTimeout: 90000,
+    socketTimeout: 90000,
+    greetingTimeout: 30000,
+    logger: env.NODE_ENV === 'development',
+    debug: env.NODE_ENV === 'development',
+}) : null;
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
     try {
         // In development, always log email details to console
         if (env.NODE_ENV === 'development') {
-            // Extract plain-text links from HTML for easy copy-paste
             const links = html.match(/href="([^"]+)"/g)?.map(m => m.replace(/href="|"/g, '')) || [];
             console.log('\n========== EMAIL ==========');
             console.log(`To: ${to}`);
@@ -32,27 +34,55 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
                 links.forEach(l => console.log(`  → ${l}`));
             }
             console.log('===========================\n');
-
-            // If no SMTP credentials, skip sending
-            if (!env.SMTP_USER) {
-                return true;
-            }
         }
 
-        const info = await transporter.sendMail({
-            from: `"Muraqqa Art Gallery" <${env.SMTP_FROM || env.SMTP_USER}>`,
-            to,
-            subject,
-            html,
-        });
+        // Prefer Resend HTTP API (more reliable with hosting providers like Render)
+        if (resend) {
+            console.log('📧 Sending email via Resend HTTP API...');
+            const { data, error } = await resend.emails.send({
+                from: 'Muraqqa Art Gallery <onboarding@resend.dev>',
+                to: [to],
+                subject,
+                html,
+            });
 
-        console.log('Email sent:', info.messageId);
-        return true;
-    } catch (error: any) {
-        console.error('Error sending email:', error.message || error);
-        // Don't block the flow in development if SMTP fails
+            if (error) {
+                console.error('❌ Resend API error:', error);
+                return false;
+            }
+
+            console.log('✅ Email sent via Resend:', data?.id);
+            return true;
+        }
+
+        // Fallback to SMTP if Resend is not configured
+        if (transporter) {
+            console.log('📧 Sending email via SMTP...');
+            const info = await transporter.sendMail({
+                from: `"Muraqqa Art Gallery" <${env.SMTP_FROM || env.SMTP_USER}>`,
+                to,
+                subject,
+                html,
+            });
+
+            console.log('✅ Email sent via SMTP:', info.messageId);
+            return true;
+        }
+
+        // No email service configured
         if (env.NODE_ENV === 'development') {
-            console.log('[DEV] Email send failed but continuing (check SMTP connectivity)');
+            console.log('[DEV] No email service configured - skipping send');
+            return true;
+        }
+
+        console.error('❌ No email service configured (RESEND_API_KEY or SMTP credentials required)');
+        return false;
+    } catch (error: any) {
+        console.error('❌ Error sending email:', error.message || error);
+
+        // Don't block the flow in development if email fails
+        if (env.NODE_ENV === 'development') {
+            console.log('[DEV] Email send failed but continuing');
             return true;
         }
         return false;

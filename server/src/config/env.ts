@@ -20,6 +20,9 @@ const envSchema = z.object({
     CLOUDINARY_API_KEY: z.string().optional(),
     CLOUDINARY_API_SECRET: z.string().optional(),
 
+    // Resend Email API
+    RESEND_API_KEY: z.string().optional(),
+
     // reCAPTCHA v3
     RECAPTCHA_SITE_KEY: z.string().optional(),
     RECAPTCHA_SECRET_KEY: z.string().optional(),
