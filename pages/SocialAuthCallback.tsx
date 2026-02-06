@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -8,29 +8,45 @@ export const SocialAuthCallback: React.FC = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
     const [error, setError] = useState<string | null>(null);
+    const hasProcessed = useRef(false);
 
     useEffect(() => {
+        // Prevent multiple executions using ref
+        if (hasProcessed.current) return;
+        hasProcessed.current = true;
+
         const token = searchParams.get('token');
         const errorParam = searchParams.get('error');
 
+        console.log('🔐 OAuth Callback - Token:', token ? 'Present' : 'Missing', 'Error:', errorParam);
+
         if (errorParam) {
+            console.error('❌ OAuth error:', errorParam);
             setError('Social login failed. Please try again.');
             return;
         }
 
         if (token) {
-            // Set token first
-            login(token);
-            // Small delay to ensure localStorage is persisted and state is stable
-            const timer = setTimeout(() => {
-                navigate('/', { replace: true });
-            }, 200);
+            console.log('✅ Processing token...');
 
-            return () => clearTimeout(timer);
+            try {
+                // Set token in auth context
+                login(token);
+                console.log('✅ Token set successfully');
+
+                // Navigate to home
+                console.log('🚀 Navigating to home page...');
+                navigate('/', { replace: true });
+            } catch (err) {
+                console.error('❌ Error during login:', err);
+                setError('Login failed. Please try again.');
+            }
         } else {
+            console.error('❌ No token in URL');
             setError('No authentication token received. Please try again.');
         }
-    }, [searchParams, login, navigate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Empty deps - only run once on mount
 
     if (error) {
         return (
