@@ -1,5 +1,7 @@
 // Use relative URL for production (same-origin) or env variable for development
-const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? '/api' : 'http://localhost:5000/api');
+// Check if running on localhost, otherwise use relative path
+const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const API_URL = import.meta.env.VITE_API_URL || (isLocalhost ? 'http://localhost:5000/api' : '/api');
 
 // Helper to get auth token
 const getAuthToken = (): string | null => {

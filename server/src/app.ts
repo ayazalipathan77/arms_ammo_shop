@@ -29,6 +29,9 @@ import adminRoutes from './routes/admin.routes';
 
 const app: Application = express();
 
+// Trust proxy for Render.com (needed for rate limiting and correct IP detection)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
