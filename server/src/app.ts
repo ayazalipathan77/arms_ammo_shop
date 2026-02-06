@@ -92,12 +92,12 @@ app.use('/api/admin', adminRoutes);
 if (env.NODE_ENV === 'production') {
     const path = require('path');
     // Serve static files from the frontend dist directory
-    // Assuming dist is in the root directory (parent of server)
-    app.use(express.static(path.join(__dirname, '../../../dist')));
+    // Path: server/dist/ -> ../../dist (two levels up from server/dist/)
+    app.use(express.static(path.join(__dirname, '../../dist')));
 
     app.get('*', (req: Request, res: Response) => {
         if (!req.path.startsWith('/api')) {
-            res.sendFile(path.resolve(__dirname, '../../../dist', 'index.html'));
+            res.sendFile(path.resolve(__dirname, '../../dist', 'index.html'));
         } else {
             res.status(StatusCodes.NOT_FOUND).json({ message: 'Route not found' });
         }
