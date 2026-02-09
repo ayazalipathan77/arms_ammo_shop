@@ -3,7 +3,7 @@ import {
    LayoutDashboard, Package, Users, DollarSign, Settings,
    Plus, Edit, Trash2, Truck, CreditCard, Check, X, Search,
    Video, Globe, MessageSquare, Save, Facebook, Instagram, Image as ImageIcon, Calendar,
-   UserCheck, UserX, Clock, Mail, Shield, AlertCircle, Loader2, Palette, Type
+   UserCheck, UserX, Clock, Mail, Shield, AlertCircle, Loader2, Palette, Type, Upload
 } from 'lucide-react';
 import { useGallery } from '../context/GalleryContext';
 import { useTheme, PRESET_THEMES, ThemeConfig } from '../context/ThemeContext';
