@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import Button from '../ui/Button';
 import { useGallery } from '../../context/GalleryContext';
 
@@ -26,8 +27,20 @@ const DEFAULT_BANNERS = [
 ];
 
 const Hero = () => {
-    const { landingPageContent } = useGallery();
+    const { landingPageContent, isContentLoading } = useGallery();
     const [current, setCurrent] = useState(0);
+
+    // Show loader while initial content is loading
+    if (isContentLoading) {
+        return (
+            <section className="relative h-screen w-full bg-void overflow-hidden flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="w-12 h-12 text-tangerine animate-spin mx-auto mb-4" />
+                    <p className="text-pearl/60 text-sm uppercase tracking-widest font-mono">Loading Gallery...</p>
+                </div>
+            </section>
+        );
+    }
 
     // Determine content source
     const heroConfig = landingPageContent?.hero;

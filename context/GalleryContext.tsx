@@ -14,6 +14,7 @@ interface GalleryContextType {
 
   // Loading states
   isLoading: boolean;
+  isContentLoading: boolean; // For initial site content/landing page loading
   error: string | null;
 
   // Filters data
@@ -78,6 +79,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isContentLoading, setIsContentLoading] = useState(true); // Track initial content loading
 
   // --- Filters State ---
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
@@ -165,12 +167,15 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
 
   const fetchSettings = useCallback(async () => {
     try {
+      setIsContentLoading(true);
       const { settings } = await settingsApi.getSettings();
       if (settings.shippingConfig) setShippingConfig(settings.shippingConfig);
       if (settings.siteContent) setSiteContent(settings.siteContent);
       if (settings.landingPageContent) setLandingPageContent(settings.landingPageContent);
     } catch (err) {
       console.error('Error fetching settings:', err);
+    } finally {
+      setIsContentLoading(false);
     }
   }, []);
 
@@ -338,6 +343,7 @@ export const GalleryProvider: React.FC<{ children: ReactNode }> = ({ children })
       siteContent,
       landingPageContent,
       isLoading,
+      isContentLoading,
       error,
       availableCategories,
       availableMediums,
