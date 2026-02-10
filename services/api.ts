@@ -14,6 +14,16 @@ const getCsrfToken = (): string | null => {
     return match ? match[2] : null;
 };
 
+// Helper to handle token expiration
+const handleTokenExpiration = () => {
+    // Clear the invalid token
+    localStorage.removeItem('authToken');
+    // Show popup to user
+    alert('Your session has expired. Please sign in again.');
+    // Redirect to login page
+    window.location.href = '/auth';
+};
+
 // Helper to make authenticated requests
 const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
     const token = getAuthToken();
@@ -28,7 +38,24 @@ const authFetch = async (url: string, options: RequestInit = {}): Promise<Respon
         (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
     }
 
-    return fetch(url, { ...options, headers });
+    const response = await fetch(url, { ...options, headers });
+    
+    // Check for 401 Unauthorized or token expiration
+    if (response.status === 401) {
+        const errorData = await response.json().catch(() => ({ message: 'Unauthorized' }));
+        if (errorData.message?.toLowerCase().includes('token') || 
+            errorData.message?.toLowerCase().includes('unauthorized') ||
+            errorData.message?.toLowerCase().includes('expired')) {
+            handleTokenExpiration();
+            // After handling token expiration (clearing token, showing alert, redirecting),
+            // we still need to throw to stop the current operation
+            throw new Error('Session expired');
+        }
+        // For other 401 errors, throw the error
+        throw new Error(errorData.message || 'Unauthorized');
+    }
+    
+    return response;
 };
 
 // API Response types

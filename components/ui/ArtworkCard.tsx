@@ -40,9 +40,10 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
         e.preventDefault(); // Prevent navigation to artwork detail
         e.stopPropagation(); // Stop event from bubbling
 
-        if (!user) {
-            // TODO: Show login prompt or toast
+        if (!user || !token) {
+            // User not logged in, redirect to login with message
             alert('Please sign in to save favorites');
+            window.location.href = '/auth';
             return;
         }
 
@@ -55,9 +56,14 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
                 await favoriteApi.add(artwork.id);
                 setIsFavorited(true);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to toggle favorite:', error);
-            alert('Failed to update favorites. Please try again.');
+            // Don't show alert here - authFetch will handle 401 errors by redirecting
+            // Only show error for non-auth related errors
+            if (!error.message?.toLowerCase().includes('token') && 
+                !error.message?.toLowerCase().includes('unauthorized')) {
+                alert('Failed to update favorites. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }
