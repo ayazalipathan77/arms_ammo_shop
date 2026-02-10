@@ -30,18 +30,6 @@ const Hero = () => {
     const { landingPageContent, isContentLoading } = useGallery();
     const [current, setCurrent] = useState(0);
 
-    // Show loader while initial content is loading
-    if (isContentLoading) {
-        return (
-            <section className="relative h-screen w-full bg-void overflow-hidden flex items-center justify-center">
-                <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-tangerine animate-spin mx-auto mb-4" />
-                    <p className="text-pearl/60 text-sm uppercase tracking-widest font-mono">Loading Gallery...</p>
-                </div>
-            </section>
-        );
-    }
-
     // Determine content source
     const heroConfig = landingPageContent?.hero;
     const hasDynamicContent = heroConfig?.enabled && heroConfig?.backgroundImages && heroConfig.backgroundImages.length > 0;
@@ -55,6 +43,7 @@ const Hero = () => {
         }))
         : DEFAULT_BANNERS;
 
+    // useEffect must be called before any conditional returns
     useEffect(() => {
         if (banners.length <= 1) return;
         const timer = setInterval(() => {
@@ -62,6 +51,18 @@ const Hero = () => {
         }, 7000);
         return () => clearInterval(timer);
     }, [banners.length]);
+
+    // Show loader while initial content is loading
+    if (isContentLoading) {
+        return (
+            <section className="relative h-screen w-full bg-void overflow-hidden flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="w-12 h-12 text-tangerine animate-spin mx-auto mb-4" />
+                    <p className="text-pearl/60 text-sm uppercase tracking-widest font-mono">Loading Gallery...</p>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section className="relative h-screen w-full bg-void overflow-hidden">
