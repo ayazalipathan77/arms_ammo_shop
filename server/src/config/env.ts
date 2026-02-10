@@ -9,8 +9,19 @@ const envSchema = z.object({
     DATABASE_URL: z.string().url(),
     JWT_SECRET: z.string()
         .min(32, 'JWT_SECRET must be at least 32 characters for security')
-        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
-            'JWT_SECRET must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
+        .refine(
+            (val) => {
+                // In production, accept Render's auto-generated values (any 32+ char string)
+                if (process.env.NODE_ENV === 'production') {
+                    return val.length >= 32;
+                }
+                // Development: enforce complexity requirements
+                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/.test(val);
+            },
+            {
+                message: 'JWT_SECRET must be at least 32 characters. In development, must also contain uppercase, lowercase, number, and special character (@$!%*?&)',
+            }
+        ),
     JWT_EXPIRES_IN: z.string().default('7d'),
     CLIENT_URL: z.string().url().default('http://localhost:5173'),
     // Stripe - optional in development, required in production
