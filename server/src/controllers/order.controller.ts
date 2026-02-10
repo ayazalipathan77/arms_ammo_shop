@@ -776,11 +776,30 @@ export const cancelOrder = async (req: Request, res: Response): Promise<void> =>
     }
 };
 
-// Update order notes (Admin)
+// Update order notes (Admin only)
 export const updateOrderNotes = async (req: Request, res: Response): Promise<void> => {
     try {
         const orderId = req.params.id as string;
         const notes = typeof req.body.notes === 'string' ? req.body.notes : undefined;
+        const userRole = req.user?.role;
+
+        // CRITICAL SECURITY FIX: Verify admin role before allowing note updates
+        if (userRole !== 'ADMIN') {
+            res.status(StatusCodes.FORBIDDEN).json({
+                message: 'Only administrators can update order notes'
+            });
+            return;
+        }
+
+        // Verify order exists before attempting update
+        const existingOrder = await prisma.order.findUnique({
+            where: { id: orderId }
+        });
+
+        if (!existingOrder) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Order not found' });
+            return;
+        }
 
         const order = await prisma.order.update({
             where: { id: orderId },

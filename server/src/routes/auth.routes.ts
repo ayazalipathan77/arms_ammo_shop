@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import passport from 'passport';
 import { register, login, getMe, forgotPassword, resetPassword, verifyEmail, resendVerificationEmail } from '../controllers/auth.controller';
-import { googleCallback, facebookCallback } from '../controllers/social-auth.controller';
+import { googleCallback, facebookCallback, getSocialAuthToken } from '../controllers/social-auth.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { authLimiter } from '../middleware/rateLimiter';
 import { verifyRecaptcha, RECAPTCHA_ACTIONS } from '../middleware/recaptcha.middleware';
@@ -80,5 +80,13 @@ if (env.FACEBOOK_APP_ID && env.FACEBOOK_APP_SECRET) {
         facebookCallback
     );
 }
+
+/**
+ * @route   GET /api/auth/social-token
+ * @desc    Retrieve social auth token from secure cookie
+ * @access  Public
+ * @security Used after OAuth redirect to retrieve token securely
+ */
+router.get('/social-token', getSocialAuthToken);
 
 export default router;

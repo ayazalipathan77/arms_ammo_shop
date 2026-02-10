@@ -7,7 +7,10 @@ const envSchema = z.object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
     PORT: z.string().default('5000'),
     DATABASE_URL: z.string().url(),
-    JWT_SECRET: z.string().min(12),
+    JWT_SECRET: z.string()
+        .min(32, 'JWT_SECRET must be at least 32 characters for security')
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+            'JWT_SECRET must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'),
     JWT_EXPIRES_IN: z.string().default('7d'),
     CLIENT_URL: z.string().url().default('http://localhost:5173'),
     // Stripe - optional in development, required in production

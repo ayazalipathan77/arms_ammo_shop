@@ -8,6 +8,7 @@ import passport from 'passport';
 import { StatusCodes } from 'http-status-codes';
 import { env } from './config/env';
 import { apiLimiter } from './middleware/rateLimiter';
+import { csrfProtection } from './middleware/csrf.middleware';
 
 // Initialize passport strategies
 import './config/passport';
@@ -36,6 +37,7 @@ app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(csrfProtection);
 app.use(compression());
 // Configure Helmet with relaxed CSP for production
 app.use(helmet({

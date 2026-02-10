@@ -76,6 +76,7 @@ export const findOrCreateSocialUser = async (profile: SocialProfile) => {
 };
 
 // Google OAuth callback handler
+// SECURITY FIX: Use secure cookie instead of URL parameter to prevent token theft
 export const googleCallback = (req: Request, res: Response): void => {
     const user = req.user;
     if (!user) {
@@ -90,10 +91,21 @@ export const googleCallback = (req: Request, res: Response): void => {
         fullName: user.fullName,
     });
 
-    res.redirect(`${env.CLIENT_URL}/auth/social-callback?token=${token}`);
+    // Store token in a short-lived secure cookie instead of URL
+    res.cookie('auth_token_temp', token, {
+        httpOnly: true, // Cannot be accessed by JavaScript
+        secure: env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 5 * 60 * 1000, // 5 minutes only
+        path: '/api/auth/social-token'
+    });
+
+    // Redirect WITHOUT token in URL - prevents token exposure in browser history and referer headers
+    res.redirect(`${env.CLIENT_URL}/auth/social-callback`);
 };
 
 // Facebook OAuth callback handler
+// SECURITY FIX: Use secure cookie instead of URL parameter to prevent token theft
 export const facebookCallback = (req: Request, res: Response): void => {
     const user = req.user;
     if (!user) {
@@ -108,5 +120,40 @@ export const facebookCallback = (req: Request, res: Response): void => {
         fullName: user.fullName,
     });
 
-    res.redirect(`${env.CLIENT_URL}/auth/social-callback?token=${token}`);
+    // Store token in a short-lived secure cookie instead of URL
+    res.cookie('auth_token_temp', token, {
+        httpOnly: true, // Cannot be accessed by JavaScript
+        secure: env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 5 * 60 * 1000, // 5 minutes only
+        path: '/api/auth/social-token'
+    });
+
+    // Redirect WITHOUT token in URL - prevents token exposure in browser history and referer headers
+    res.redirect(`${env.CLIENT_URL}/auth/social-callback`);
+};
+
+// New endpoint: Retrieve social auth token from secure cookie
+// This endpoint is called by the frontend after OAuth redirect
+export const getSocialAuthToken = async (req: Request, res: Response): Promise<void> => {
+    const tempToken = req.cookies?.auth_token_temp;
+    
+    if (!tempToken) {
+        res.status(401).json({ 
+            message: 'No authentication token found',
+            code: 'TOKEN_MISSING'
+        });
+        return;
+    }
+    
+    // Clear the temporary cookie immediately
+    res.clearCookie('auth_token_temp', {
+        path: '/api/auth/social-token'
+    });
+    
+    // Return token in response body (not URL)
+    res.json({ 
+        token: tempToken,
+        message: 'Authentication successful'
+    });
 };

@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Loader2, AlertCircle } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
 export const SocialAuthCallback: React.FC = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -22,13 +24,9 @@ export const SocialAuthCallback: React.FC = () => {
         }
         hasProcessed.current = true;
 
-        const token = searchParams.get('token');
         const errorParam = searchParams.get('error');
-        const fullUrl = window.location.href;
 
         console.log('🔐 OAuth Callback:');
-        console.log('  - Full URL:', fullUrl);
-        console.log('  - Token:', token ? `${token.substring(0, 20)}...` : 'Missing');
         console.log('  - Error param:', errorParam);
 
         if (errorParam) {
@@ -37,29 +35,48 @@ export const SocialAuthCallback: React.FC = () => {
             return;
         }
 
-        if (token) {
-            console.log('✅ Token found, processing login...');
-
+        // SECURITY FIX: Fetch token from secure endpoint instead of URL
+        // This prevents token exposure in browser history and referer headers
+        const fetchToken = async () => {
             try {
-                // Set token in auth context
-                login(token);
-                console.log('✅ Token set successfully in AuthContext');
-                console.log('✅ localStorage authToken:', localStorage.getItem('authToken') ? 'Set' : 'Not set');
+                console.log('🔐 Fetching token from secure endpoint...');
+                const response = await fetch(`${API_URL}/auth/social-token`, {
+                    method: 'GET',
+                    credentials: 'include', // Important: includes cookies
+                });
 
-                // Small delay to ensure state updates
-                setTimeout(() => {
-                    console.log('🚀 Navigating to home page...');
-                    navigate('/', { replace: true });
-                    console.log('✅ Navigate called');
-                }, 100);
-            } catch (err) {
-                console.error('❌ Error during login:', err);
-                setError('Login failed. Please try again.');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to retrieve authentication token');
+                }
+
+                const data = await response.json();
+                const token = data.token;
+
+                if (token) {
+                    console.log('✅ Token retrieved securely, processing login...');
+                    
+                    // Set token in auth context
+                    login(token);
+                    console.log('✅ Token set successfully in AuthContext');
+                    console.log('✅ localStorage authToken:', localStorage.getItem('authToken') ? 'Set' : 'Not set');
+
+                    // Small delay to ensure state updates
+                    setTimeout(() => {
+                        console.log('🚀 Navigating to home page...');
+                        navigate('/', { replace: true });
+                        console.log('✅ Navigate called');
+                    }, 100);
+                } else {
+                    throw new Error('No token received from server');
+                }
+            } catch (err: any) {
+                console.error('❌ Error during token retrieval:', err);
+                setError(err.message || 'Login failed. Please try again.');
             }
-        } else {
-            console.error('❌ No token in URL parameters');
-            setError('No authentication token received. Please try again.');
-        }
+        };
+
+        fetchToken();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Empty deps - only run once on mount
 

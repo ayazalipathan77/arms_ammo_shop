@@ -8,11 +8,19 @@ const getAuthToken = (): string | null => {
     return localStorage.getItem('authToken');
 };
 
+// Helper to get CSRF token from cookies
+const getCsrfToken = (): string | null => {
+    const match = document.cookie.match(new RegExp('(^| )XSRF-TOKEN=([^;]+)'));
+    return match ? match[2] : null;
+};
+
 // Helper to make authenticated requests
 const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
     const token = getAuthToken();
+    const csrfToken = getCsrfToken();
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
+        ...(csrfToken && { 'X-XSRF-TOKEN': csrfToken }),
         ...options.headers,
     };
 
