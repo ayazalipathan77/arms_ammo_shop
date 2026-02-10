@@ -8,8 +8,9 @@ import {
 import { useGallery } from '../context/GalleryContext';
 import { useTheme, PRESET_THEMES, ThemeConfig } from '../context/ThemeContext';
 import { OrderStatus, Artwork, Conversation, PrintSizeOption } from '../types';
-import { uploadApi, adminApi, artistApi } from '../services/api';
+import { uploadApi, adminApi, artistApi, reviewApi } from '../services/api';
 import Button from '../components/ui/Button';
+import StarRating from '../components/ui/StarRating';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
 
@@ -29,7 +30,7 @@ export const AdminDashboard: React.FC = () => {
    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
    const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
-   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'LANDING PAGE' | 'THEME'>('OVERVIEW');
+   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'REVIEWS' | 'LANDING PAGE' | 'THEME'>('OVERVIEW');
 
    // Dashboard Stats
    const [stats, setStats] = useState<any>(null);
@@ -48,6 +49,12 @@ export const AdminDashboard: React.FC = () => {
 
    // Artists State
    const [artists, setArtists] = useState<any[]>([]);
+
+   // Reviews State
+   const [reviews, setReviews] = useState<any[]>([]);
+   const [reviewFilter, setReviewFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
+   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+   const [reviewActionLoading, setReviewActionLoading] = useState<string | null>(null);
 
    // Local State for Artworks
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -347,6 +354,24 @@ export const AdminDashboard: React.FC = () => {
          fetchArtworks(); // Ensure artworks are loaded for the landing page selectors
       }
    }, [activeTab, fetchArtworks]);
+
+   // Load reviews when REVIEWS tab is active
+   useEffect(() => {
+      const loadReviews = async () => {
+         if (activeTab === 'REVIEWS') {
+            setIsLoadingReviews(true);
+            try {
+               const { reviews: fetchedReviews } = await reviewApi.getAllForModeration(reviewFilter);
+               setReviews(fetchedReviews);
+            } catch (error) {
+               console.error('Failed to fetch reviews:', error);
+            } finally {
+               setIsLoadingReviews(false);
+            }
+         }
+      };
+      loadReviews();
+   }, [activeTab, reviewFilter]);
 
    // Sync landingForm with landingPageContent when it loads
    useEffect(() => {
@@ -693,7 +718,7 @@ export const AdminDashboard: React.FC = () => {
 
          {/* Tabs */}
          <div className="flex flex-wrap gap-2 mb-12 border-b border-pearl/10 pb-8 overflow-x-auto">
-            {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'FINANCE', 'CONTENT', 'EXHIBITIONS', 'LANDING PAGE', 'THEME'].map(tab => (
+            {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'REVIEWS', 'FINANCE', 'CONTENT', 'EXHIBITIONS', 'LANDING PAGE', 'THEME'].map(tab => (
                <TabButton key={tab} tab={tab} active={activeTab === tab} onClick={() => setActiveTab(tab as any)} />
             ))}
          </div>
@@ -1132,6 +1157,162 @@ export const AdminDashboard: React.FC = () => {
                      </tbody>
                   </table>
                </div>
+            </div>
+         )}
+
+         {/* REVIEWS TAB */}
+         {activeTab === 'REVIEWS' && (
+            <div className="space-y-6 animate-fade-in">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-2xl font-display text-pearl">Review Moderation</h3>
+                  <div className="flex gap-2">
+                     {(['pending', 'approved', 'rejected'] as const).map(status => (
+                        <button
+                           key={status}
+                           onClick={() => setReviewFilter(status)}
+                           className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${reviewFilter === status ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-pearl'}`}
+                        >
+                           {status}
+                        </button>
+                     ))}
+                  </div>
+               </div>
+
+               {isLoadingReviews ? (
+                  <div className="text-center py-12">
+                     <Loader2 className="w-8 h-8 text-tangerine animate-spin mx-auto mb-4" />
+                     <p className="text-warm-gray">Loading reviews...</p>
+                  </div>
+               ) : reviews.length === 0 ? (
+                  <div className="text-center py-12 border border-pearl/10 rounded bg-charcoal/30">
+                     <MessageSquare className="w-12 h-12 text-warm-gray/50 mx-auto mb-4" />
+                     <p className="text-warm-gray">No {reviewFilter} reviews found</p>
+                  </div>
+               ) : (
+                  <div className="space-y-4">
+                     {reviews.map((review) => (
+                        <div key={review.id} className="border border-pearl/10 rounded bg-charcoal/20 p-6">
+                           <div className="flex items-start justify-between mb-4">
+                              <div className="flex-1">
+                                 <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 bg-warm-gray/20 rounded-full flex items-center justify-center text-sm font-bold text-pearl">
+                                       {review.user?.fullName?.[0] || 'U'}
+                                    </div>
+                                    <div>
+                                       <div className="text-pearl font-medium">{review.user?.fullName || 'Anonymous'}</div>
+                                       <div className="text-xs text-warm-gray">{review.user?.email}</div>
+                                    </div>
+                                    {review.isVerifiedPurchase && (
+                                       <span className="flex items-center gap-1 bg-green-500/10 text-green-500 px-2 py-1 rounded text-xs font-medium">
+                                          <Check className="w-3 h-3" />
+                                          Verified Purchase
+                                       </span>
+                                    )}
+                                 </div>
+                                 <div className="mb-3">
+                                    <StarRating rating={review.rating} readonly size="sm" />
+                                 </div>
+                                 {review.comment && (
+                                    <p className="text-pearl/80 mb-3">{review.comment}</p>
+                                 )}
+                                 {review.photos && review.photos.length > 0 && (
+                                    <div className="flex gap-2 mb-3">
+                                       {review.photos.map((photo: string, idx: number) => (
+                                          <img key={idx} src={photo} alt={`Review ${idx + 1}`} className="w-16 h-16 object-cover rounded border border-pearl/10" />
+                                       ))}
+                                    </div>
+                                 )}
+                                 <div className="text-xs text-warm-gray font-mono">
+                                    Posted: {new Date(review.createdAt).toLocaleString()}
+                                 </div>
+                              </div>
+                              <div className="ml-4">
+                                 <div className="text-xs text-warm-gray mb-2">Artwork:</div>
+                                 <div className="flex items-center gap-2 mb-4">
+                                    {review.artwork?.imageUrl && (
+                                       <img src={review.artwork.imageUrl} alt={review.artwork.title} className="w-12 h-12 object-cover rounded" />
+                                    )}
+                                    <div>
+                                       <div className="text-pearl text-sm font-medium">{review.artwork?.title}</div>
+                                       <div className="text-xs text-warm-gray">ID: {review.artworkId.slice(-8)}</div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div className="flex items-center justify-between pt-4 border-t border-pearl/10">
+                              <div className="text-xs text-warm-gray">
+                                 Helpful: {review.helpfulCount} | Unhelpful: {review.unhelpfulCount}
+                              </div>
+                              {reviewFilter === 'pending' && (
+                                 <div className="flex gap-2">
+                                    <button
+                                       onClick={async () => {
+                                          setReviewActionLoading(review.id);
+                                          try {
+                                             await reviewApi.approveReview(review.id);
+                                             setReviews(prev => prev.filter(r => r.id !== review.id));
+                                          } catch (error) {
+                                             console.error('Failed to approve review:', error);
+                                             alert('Failed to approve review');
+                                          } finally {
+                                             setReviewActionLoading(null);
+                                          }
+                                       }}
+                                       disabled={reviewActionLoading === review.id}
+                                       className="flex items-center gap-2 px-4 py-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors disabled:opacity-50"
+                                    >
+                                       {reviewActionLoading === review.id ? (
+                                          <Loader2 className="w-4 h-4 animate-spin" />
+                                       ) : (
+                                          <Check className="w-4 h-4" />
+                                       )}
+                                       <span className="text-xs uppercase tracking-widest font-bold">Approve</span>
+                                    </button>
+                                    <button
+                                       onClick={async () => {
+                                          const reason = prompt('Rejection reason (optional):');
+                                          if (reason === null) return; // User cancelled
+
+                                          setReviewActionLoading(review.id);
+                                          try {
+                                             await reviewApi.rejectReview(review.id, reason || 'Does not meet quality guidelines');
+                                             setReviews(prev => prev.filter(r => r.id !== review.id));
+                                          } catch (error) {
+                                             console.error('Failed to reject review:', error);
+                                             alert('Failed to reject review');
+                                          } finally {
+                                             setReviewActionLoading(null);
+                                          }
+                                       }}
+                                       disabled={reviewActionLoading === review.id}
+                                       className="flex items-center gap-2 px-4 py-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50"
+                                    >
+                                       {reviewActionLoading === review.id ? (
+                                          <Loader2 className="w-4 h-4 animate-spin" />
+                                       ) : (
+                                          <X className="w-4 h-4" />
+                                       )}
+                                       <span className="text-xs uppercase tracking-widest font-bold">Reject</span>
+                                    </button>
+                                 </div>
+                              )}
+                              {reviewFilter === 'approved' && (
+                                 <span className="text-green-500 text-xs flex items-center gap-1">
+                                    <Check className="w-4 h-4" />
+                                    Approved
+                                 </span>
+                              )}
+                              {reviewFilter === 'rejected' && review.rejectionReason && (
+                                 <div className="text-red-500 text-xs">
+                                    Rejected: {review.rejectionReason}
+                                 </div>
+                              )}
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+               )}
             </div>
          )}
 

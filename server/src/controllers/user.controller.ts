@@ -145,3 +145,98 @@ export const deleteAddress = async (req: Request, res: Response): Promise<void> 
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to delete address' });
     }
 };
+
+// Generate unique referral code helper
+const generateReferralCode = (fullName: string, userId: string): string => {
+    const namePrefix = fullName.replace(/\s+/g, '').substring(0, 3).toUpperCase();
+    const uniqueSuffix = userId.substring(0, 6).toUpperCase();
+    return `${namePrefix}${uniqueSuffix}`;
+};
+
+// Get or create referral code
+export const getReferralCode = async (req: Request, res: Response): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authenticated' });
+            return;
+        }
+
+        let user = await prisma.user.findUnique({
+            where: { id: req.user.userId },
+            select: {
+                id: true,
+                fullName: true,
+                referralCode: true,
+                referredBy: true,
+            },
+        });
+
+        if (!user) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+            return;
+        }
+
+        // Generate referral code if doesn't exist
+        if (!user.referralCode) {
+            const code = generateReferralCode(user.fullName, user.id);
+            user = await prisma.user.update({
+                where: { id: req.user.userId },
+                data: { referralCode: code },
+                select: {
+                    id: true,
+                    fullName: true,
+                    referralCode: true,
+                    referredBy: true,
+                },
+            });
+        }
+
+        // Get referral stats
+        const referralCount = await prisma.user.count({
+            where: { referredBy: req.user.userId },
+        });
+
+        res.status(StatusCodes.OK).json({
+            referralCode: user.referralCode,
+            referralUrl: `${env.CLIENT_URL}/auth?ref=${user.referralCode}`,
+            referralCount,
+            wasReferred: !!user.referredBy,
+        });
+    } catch (error) {
+        console.error('Get referral code error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: 'Failed to get referral code',
+        });
+    }
+};
+
+// Get referral stats
+export const getReferralStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authenticated' });
+            return;
+        }
+
+        const referrals = await prisma.user.findMany({
+            where: { referredBy: req.user.userId },
+            select: {
+                id: true,
+                fullName: true,
+                email: true,
+                createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        res.status(StatusCodes.OK).json({
+            referrals,
+            totalReferrals: referrals.length,
+        });
+    } catch (error) {
+        console.error('Get referral stats error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            message: 'Failed to get referral stats',
+        });
+    }
+};

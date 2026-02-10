@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Heart, Package, LogOut, MapPin, Plus, Trash2, Edit, User, Mail, Phone, Globe, Save, CheckCircle, Smartphone, Box } from 'lucide-react';
+import { Heart, Package, LogOut, MapPin, Plus, Trash2, Edit, User, Mail, Phone, Globe, Save, CheckCircle, Smartphone, Box, Gift, Copy, Users } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { userApi, orderApi } from '../services/api';
@@ -12,7 +12,7 @@ export const UserProfile: React.FC = () => {
    const { user, logout } = useAuth();
    const navigate = useNavigate();
 
-   const [activeTab, setActiveTab] = useState<'SETTINGS' | 'ORDERS' | 'ADDRESSES'>('SETTINGS');
+   const [activeTab, setActiveTab] = useState<'SETTINGS' | 'ORDERS' | 'ADDRESSES' | 'REFERRALS'>('SETTINGS');
    const [profile, setProfile] = useState<any>(null);
    const [orders, setOrders] = useState<Order[]>([]);
    const [addresses, setAddresses] = useState<Address[]>([]);
@@ -30,6 +30,11 @@ export const UserProfile: React.FC = () => {
    const [newAddress, setNewAddress] = useState({
       address: '', city: '', country: 'Pakistan', zipCode: '', type: 'SHIPPING', isDefault: false
    });
+
+   // Referral state
+   const [referralData, setReferralData] = useState<any>(null);
+   const [copiedReferral, setCopiedReferral] = useState(false);
+   const [referralStats, setReferralStats] = useState<any>(null);
 
    useEffect(() => {
       const loadData = async () => {
@@ -63,6 +68,29 @@ export const UserProfile: React.FC = () => {
       if (user) loadData();
       else navigate('/auth');
    }, [user, navigate]);
+
+   // Load referral data when REFERRALS tab is active
+   useEffect(() => {
+      const loadReferralData = async () => {
+         if (activeTab === 'REFERRALS' && user) {
+            try {
+               const [codeData, statsData] = await Promise.all([
+                  fetch('/api/users/referral/code', {
+                     headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                  }).then(r => r.json()),
+                  fetch('/api/users/referral/stats', {
+                     headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                  }).then(r => r.json())
+               ]);
+               setReferralData(codeData);
+               setReferralStats(statsData);
+            } catch (error) {
+               console.error('Failed to load referral data:', error);
+            }
+         }
+      };
+      loadReferralData();
+   }, [activeTab, user]);
 
    const handleLogout = () => { logout(); navigate('/'); };
 
@@ -140,6 +168,7 @@ export const UserProfile: React.FC = () => {
                      { id: 'SETTINGS', icon: User, label: 'Settings' },
                      { id: 'ORDERS', icon: Package, label: 'Orders' },
                      { id: 'ADDRESSES', icon: MapPin, label: 'Addresses' },
+                     { id: 'REFERRALS', icon: Gift, label: 'Referrals' },
                   ].map(tab => (
                      <button
                         key={tab.id}
@@ -287,6 +316,142 @@ export const UserProfile: React.FC = () => {
                                  </div>
                               ))}
                            </div>
+                        </motion.div>
+                     )}
+
+                     {/* REFERRALS */}
+                     {activeTab === 'REFERRALS' && (
+                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+                           <div>
+                              <h3 className="font-display text-2xl text-pearl mb-2">Referral Program</h3>
+                              <p className="text-warm-gray text-sm">Share Muraqqa with friends and earn rewards</p>
+                           </div>
+
+                           {referralData ? (
+                              <div className="space-y-6">
+                                 {/* Referral Code Card */}
+                                 <div className="bg-gradient-to-br from-amber-500/10 to-amber-600/5 border border-amber-500/20 rounded-lg p-8">
+                                    <div className="flex items-center justify-between mb-6">
+                                       <div>
+                                          <p className="text-xs uppercase tracking-widest text-warm-gray mb-2">Your Referral Code</p>
+                                          <div className="font-display text-4xl text-amber-500 tracking-wider">
+                                             {referralData.referralCode || 'Loading...'}
+                                          </div>
+                                       </div>
+                                       <Gift className="w-16 h-16 text-amber-500/30" />
+                                    </div>
+
+                                    <div className="space-y-3">
+                                       <div className="flex gap-2">
+                                          <input
+                                             type="text"
+                                             value={referralData.referralUrl || ''}
+                                             readOnly
+                                             className="flex-1 bg-void border border-pearl/20 p-3 text-sm text-pearl font-mono rounded"
+                                          />
+                                          <button
+                                             onClick={() => {
+                                                navigator.clipboard.writeText(referralData.referralUrl);
+                                                setCopiedReferral(true);
+                                                setTimeout(() => setCopiedReferral(false), 2000);
+                                             }}
+                                             className="px-6 py-3 bg-amber-500 text-void font-bold uppercase tracking-widest text-xs hover:bg-amber-600 transition-colors rounded flex items-center gap-2"
+                                          >
+                                             {copiedReferral ? (
+                                                <>
+                                                   <CheckCircle size={16} />
+                                                   Copied!
+                                                </>
+                                             ) : (
+                                                <>
+                                                   <Copy size={16} />
+                                                   Copy Link
+                                                </>
+                                             )}
+                                          </button>
+                                       </div>
+                                       <p className="text-xs text-warm-gray">
+                                          Share this link with friends. When they sign up using your code, you'll both get rewards!
+                                       </p>
+                                    </div>
+                                 </div>
+
+                                 {/* Stats Cards */}
+                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="bg-charcoal/50 border border-pearl/10 rounded-lg p-6">
+                                       <Users className="w-8 h-8 text-tangerine mb-3" />
+                                       <div className="text-3xl font-display text-pearl mb-1">
+                                          {referralData.referralCount || 0}
+                                       </div>
+                                       <p className="text-xs uppercase tracking-widest text-warm-gray">Referrals</p>
+                                    </div>
+
+                                    <div className="bg-charcoal/50 border border-pearl/10 rounded-lg p-6">
+                                       <Gift className="w-8 h-8 text-green-500 mb-3" />
+                                       <div className="text-3xl font-display text-pearl mb-1">
+                                          PKR 0
+                                       </div>
+                                       <p className="text-xs uppercase tracking-widest text-warm-gray">Earned</p>
+                                    </div>
+
+                                    <div className="bg-charcoal/50 border border-pearl/10 rounded-lg p-6">
+                                       <CheckCircle className="w-8 h-8 text-blue-500 mb-3" />
+                                       <div className="text-3xl font-display text-pearl mb-1">
+                                          {referralData.wasReferred ? 'Yes' : 'No'}
+                                       </div>
+                                       <p className="text-xs uppercase tracking-widest text-warm-gray">You Were Referred</p>
+                                    </div>
+                                 </div>
+
+                                 {/* Referral List */}
+                                 {referralStats && referralStats.referrals && referralStats.referrals.length > 0 && (
+                                    <div>
+                                       <h4 className="font-display text-xl text-pearl mb-4">Your Referrals</h4>
+                                       <div className="space-y-2">
+                                          {referralStats.referrals.map((ref: any) => (
+                                             <div key={ref.id} className="bg-charcoal/30 border border-pearl/10 rounded p-4 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                   <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 font-bold">
+                                                      {ref.fullName?.charAt(0) || 'U'}
+                                                   </div>
+                                                   <div>
+                                                      <div className="text-pearl font-medium">{ref.fullName}</div>
+                                                      <div className="text-xs text-warm-gray">{ref.email}</div>
+                                                   </div>
+                                                </div>
+                                                <div className="text-xs text-warm-gray font-mono">
+                                                   {new Date(ref.createdAt).toLocaleDateString()}
+                                                </div>
+                                             </div>
+                                          ))}
+                                       </div>
+                                    </div>
+                                 )}
+
+                                 {/* How it Works */}
+                                 <div className="bg-charcoal/20 border border-pearl/10 rounded-lg p-6">
+                                    <h4 className="font-display text-lg text-pearl mb-4">How It Works</h4>
+                                    <div className="space-y-3 text-sm text-warm-gray">
+                                       <div className="flex gap-3">
+                                          <span className="flex-shrink-0 w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 font-bold text-xs">1</span>
+                                          <p>Share your unique referral link with friends and art enthusiasts</p>
+                                       </div>
+                                       <div className="flex gap-3">
+                                          <span className="flex-shrink-0 w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 font-bold text-xs">2</span>
+                                          <p>When they sign up using your link, they become your referral</p>
+                                       </div>
+                                       <div className="flex gap-3">
+                                          <span className="flex-shrink-0 w-6 h-6 bg-amber-500/20 rounded-full flex items-center justify-center text-amber-500 font-bold text-xs">3</span>
+                                          <p>Both you and your friend receive exclusive benefits and discounts</p>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           ) : (
+                              <div className="text-center py-12">
+                                 <div className="animate-pulse text-warm-gray">Loading referral data...</div>
+                              </div>
+                           )}
                         </motion.div>
                      )}
                   </AnimatePresence>

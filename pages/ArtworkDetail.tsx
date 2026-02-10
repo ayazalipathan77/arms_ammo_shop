@@ -9,6 +9,8 @@ import { artworkApi, transformArtwork } from '../services/api';
 import { formatCurrency, cn } from '../lib/utils';
 import Button from '../components/ui/Button';
 import ArtworkCard from '../components/ui/ArtworkCard';
+import { ReviewSection } from '../components/features/ReviewSection';
+import { ShareButtons } from '../components/ui/ShareButtons';
 
 export const ArtworkDetail: React.FC = () => {
    const { id } = useParams<{ id: string }>();
@@ -163,12 +165,20 @@ export const ArtworkDetail: React.FC = () => {
                      <Link to={`/artists/${artwork.artistId}`} className="text-tangerine uppercase tracking-[0.2em] text-xs font-bold hover:text-white transition-colors block mb-2">
                         {artwork.artistName}
                      </Link>
-                     <button
-                        onClick={() => setIsSaved(!isSaved)}
-                        className={`transition-colors ${isSaved ? 'text-red-500' : 'text-warm-gray hover:text-red-500'}`}
-                     >
-                        <Heart size={20} fill={isSaved ? "currentColor" : "none"} />
-                     </button>
+                     <div className="flex items-center gap-3">
+                        <ShareButtons
+                           url={`/artwork/${artwork.id}`}
+                           title={`${artwork.title} by ${artwork.artistName}`}
+                           description={artwork.description || `Beautiful artwork from Muraqqa Art Gallery`}
+                           image={artwork.imageUrl}
+                        />
+                        <button
+                           onClick={() => setIsSaved(!isSaved)}
+                           className={`transition-colors ${isSaved ? 'text-red-500' : 'text-warm-gray hover:text-red-500'}`}
+                        >
+                           <Heart size={20} fill={isSaved ? "currentColor" : "none"} />
+                        </button>
+                     </div>
                   </div>
                   <h1 className="font-display text-4xl md:text-5xl text-pearl leading-tight">{artwork.title}</h1>
                   <p className="text-warm-gray text-xs uppercase tracking-widest font-mono">{artwork.year} • {artwork.medium}</p>
@@ -292,9 +302,14 @@ export const ArtworkDetail: React.FC = () => {
             </div>
          </div>
 
+         {/* Reviews Section */}
+         <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-16 border-t border-pearl/10 mt-8">
+            <ReviewSection artworkId={artwork.id} />
+         </div>
+
          {/* More from this Artist */}
          {relatedArtworks.length > 0 && (
-            <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-16 border-t border-pearl/10 mt-8 bg-void">
+            <div className="max-w-screen-2xl mx-auto px-6 md:px-12 py-16 border-t border-pearl/10 bg-void">
                <div className="flex items-end justify-between mb-8">
                   <div>
                      <p className="text-tangerine text-xs uppercase tracking-[0.3em] mb-2 font-bold">Collection</p>

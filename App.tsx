@@ -25,6 +25,8 @@ import { VerifyEmail } from './pages/VerifyEmail';
 import { ArtistConfirmation } from './pages/ArtistConfirmation';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
+import { Wishlist } from './pages/Wishlist';
+import { GiftCards } from './pages/GiftCards';
 import { ThemeProvider } from './context/ThemeContext';
 import { GalleryProvider } from './context/GalleryContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -86,9 +88,11 @@ function App() {
                   <Route path="/artist-confirmation" element={<ArtistConfirmation />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-of-service" element={<TermsOfService />} />
+                  <Route path="/gift-cards" element={<GiftCards />} />
 
                   {/* Protected routes */}
                   <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+                  <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
                   <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
                   <Route path="/invoice/:id" element={<ProtectedRoute><InvoiceView /></ProtectedRoute>} />
                   <Route path="/admin" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />

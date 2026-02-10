@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Heart } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Artwork } from '../../types';
+import { favoriteApi } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
 
@@ -14,6 +16,52 @@ interface ArtworkCardProps {
 
 const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
     const location = useLocation();
+    const { user, token } = useAuth();
+    const [isFavorited, setIsFavorited] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Check if artwork is favorited when component mounts
+    useEffect(() => {
+        const checkFavoriteStatus = async () => {
+            if (user && token) {
+                try {
+                    const { isFavorited: favorited } = await favoriteApi.checkIsFavorited(artwork.id);
+                    setIsFavorited(favorited);
+                } catch (error) {
+                    console.error('Failed to check favorite status:', error);
+                }
+            }
+        };
+        checkFavoriteStatus();
+    }, [artwork.id, user, token]);
+
+    // Toggle favorite status
+    const handleFavoriteClick = async (e: React.MouseEvent) => {
+        e.preventDefault(); // Prevent navigation to artwork detail
+        e.stopPropagation(); // Stop event from bubbling
+
+        if (!user) {
+            // TODO: Show login prompt or toast
+            alert('Please sign in to save favorites');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            if (isFavorited) {
+                await favoriteApi.remove(artwork.id);
+                setIsFavorited(false);
+            } else {
+                await favoriteApi.add(artwork.id);
+                setIsFavorited(true);
+            }
+        } catch (error) {
+            console.error('Failed to toggle favorite:', error);
+            alert('Failed to update favorites. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <Link to={`/artwork/${artwork.id}`} state={{ from: location.pathname + location.search }} className="block w-full h-full">
@@ -92,6 +140,25 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
                     </p>
                     <p className="text-[clamp(0.6rem,2.8cqi,0.8rem)] font-mono font-bold text-void/90 mt-1 leading-tight">{convertPrice(artwork.price)}</p>
                 </motion.div>
+
+                {/* Favorite Button */}
+                <motion.button
+                    onClick={handleFavoriteClick}
+                    disabled={isLoading}
+                    className={cn(
+                        "absolute top-4 left-4 z-30 p-2 bg-stone-900/80 backdrop-blur-sm hover:bg-stone-900 transition-all duration-300",
+                        isLoading && "opacity-50 cursor-not-allowed"
+                    )}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                >
+                    <Heart
+                        className={cn(
+                            "w-5 h-5 transition-all duration-300",
+                            isFavorited ? "fill-amber-500 text-amber-500" : "text-white/80 hover:text-amber-500"
+                        )}
+                    />
+                </motion.button>
 
                 {/* Hover Reveal Action */}
                 <motion.div

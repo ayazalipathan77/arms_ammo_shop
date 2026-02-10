@@ -216,7 +216,8 @@ export const handleStripeWebhook = async (req: Request, res: Response): Promise<
                         where: { id: orderId },
                         data: {
                             status: 'PAID',
-                            transactionId: paymentIntent.id,
+                            stripePaymentId: paymentIntent.id,
+                            paidAt: new Date(),
                         },
                         include: {
                             user: {
@@ -245,7 +246,7 @@ export const handleStripeWebhook = async (req: Request, res: Response): Promise<
                                 },
                             },
                         },
-                    });
+                    }) as any;
 
                     console.log(`Order ${orderId} marked as PAID`);
 
@@ -344,6 +345,7 @@ export const confirmBankTransfer = async (req: Request, res: Response): Promise<
             where: { id: validatedData.orderId },
             data: {
                 status: 'PAID',
+                paidAt: new Date(),
             },
             include: {
                 user: {
@@ -372,7 +374,7 @@ export const confirmBankTransfer = async (req: Request, res: Response): Promise<
                     },
                 },
             },
-        });
+        }) as any;
 
         // Send confirmation email to collector
         const collectorEmailSent = await sendEmail(

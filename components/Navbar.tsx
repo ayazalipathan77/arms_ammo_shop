@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, User, Search, Menu, X } from 'lucide-react';
+import { ShoppingBag, User, Search, Menu, X, Heart } from 'lucide-react';
 import { SearchOverlay } from './SearchOverlay';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../App';
@@ -92,6 +92,12 @@ export const Navbar: React.FC<NavbarProps> = () => {
               <Search size={18} />
             </button>
 
+            {user && (
+              <Link to="/wishlist" className="text-stone-400 hover:text-white transition-colors" title="Wishlist">
+                <Heart size={18} />
+              </Link>
+            )}
+
             <Link to="/cart" className="text-stone-400 hover:text-white transition-colors relative">
               <ShoppingBag size={18} />
               {cart.length > 0 && (
@@ -137,6 +143,15 @@ export const Navbar: React.FC<NavbarProps> = () => {
                       className="block px-4 py-2 text-sm text-stone-300 hover:text-white hover:bg-stone-800 transition-colors"
                     >
                       Profile
+                    </Link>
+                    <Link
+                      to="/wishlist"
+                      className="block px-4 py-2 text-sm text-stone-300 hover:text-white hover:bg-stone-800 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Heart className="w-4 h-4" />
+                        Wishlist
+                      </span>
                     </Link>
                     <button
                       onClick={handleLogout}

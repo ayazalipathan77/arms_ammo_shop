@@ -27,6 +27,9 @@ import exhibitionRoutes from './routes/exhibition.routes';
 import userRoutes from './routes/user.routes';
 import shippingRoutes from './routes/shipping.routes';
 import adminRoutes from './routes/admin.routes';
+import favoriteRoutes from './routes/favorite.routes';
+import reviewRoutes from './routes/review.routes';
+import giftcardRoutes from './routes/giftcard.routes';
 
 const app: Application = express();
 
@@ -105,6 +108,9 @@ app.use('/api/exhibitions', exhibitionRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/shipping', shippingRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/favorites', favoriteRoutes);
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/giftcards', giftcardRoutes);
 
 // Serve static files in production
 if (env.NODE_ENV === 'production') {

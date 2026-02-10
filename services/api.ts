@@ -1116,3 +1116,144 @@ export const exhibitionApi = {
         if (!response.ok) throw new Error('Failed to delete exhibition');
     }
 };
+
+// Favorites API
+export const favoriteApi = {
+    getAll: async (): Promise<{ favorites: any[] }> => {
+        const response = await authFetch(`${API_URL}/favorites`);
+        if (!response.ok) throw new Error('Failed to fetch favorites');
+        return response.json();
+    },
+
+    getCount: async (): Promise<{ count: number }> => {
+        const response = await authFetch(`${API_URL}/favorites/count`);
+        if (!response.ok) throw new Error('Failed to fetch favorites count');
+        return response.json();
+    },
+
+    checkIsFavorited: async (artworkId: string): Promise<{ isFavorited: boolean }> => {
+        const response = await authFetch(`${API_URL}/favorites/check/${artworkId}`);
+        if (!response.ok) throw new Error('Failed to check favorite status');
+        return response.json();
+    },
+
+    add: async (artworkId: string): Promise<{ message: string; favorite: any }> => {
+        const response = await authFetch(`${API_URL}/favorites/${artworkId}`, {
+            method: 'POST',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to add to favorites');
+        }
+        return response.json();
+    },
+
+    remove: async (artworkId: string): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/favorites/${artworkId}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to remove from favorites');
+        }
+        return response.json();
+    },
+};
+
+// Review API
+export const reviewApi = {
+    getArtworkReviews: async (artworkId: string, approved: boolean = true): Promise<{ reviews: any[]; stats: any }> => {
+        const query = approved ? '?approved=true' : '';
+        const response = await fetch(`${API_URL}/reviews/artwork/${artworkId}${query}`);
+        if (!response.ok) throw new Error('Failed to fetch reviews');
+        return response.json();
+    },
+
+    createReview: async (data: {
+        artworkId: string;
+        rating: number;
+        comment?: string;
+        photos?: string[];
+    }): Promise<{ message: string; review: any }> => {
+        const response = await authFetch(`${API_URL}/reviews`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to submit review');
+        }
+        return response.json();
+    },
+
+    updateReview: async (reviewId: string, data: {
+        rating?: number;
+        comment?: string;
+        photos?: string[];
+    }): Promise<{ message: string; review: any }> => {
+        const response = await authFetch(`${API_URL}/reviews/${reviewId}`, {
+            method: 'PUT',
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to update review');
+        }
+        return response.json();
+    },
+
+    deleteReview: async (reviewId: string): Promise<{ message: string }> => {
+        const response = await authFetch(`${API_URL}/reviews/${reviewId}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to delete review');
+        }
+        return response.json();
+    },
+
+    voteReview: async (reviewId: string, helpful: boolean): Promise<{ message: string; review: any }> => {
+        const response = await fetch(`${API_URL}/reviews/${reviewId}/vote`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ helpful }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to vote on review');
+        }
+        return response.json();
+    },
+
+    // Admin endpoints
+    getAllForModeration: async (status?: 'pending' | 'approved' | 'rejected'): Promise<{ reviews: any[] }> => {
+        const query = status ? `?status=${status}` : '';
+        const response = await authFetch(`${API_URL}/reviews/moderation/all${query}`);
+        if (!response.ok) throw new Error('Failed to fetch reviews for moderation');
+        return response.json();
+    },
+
+    approveReview: async (reviewId: string): Promise<{ message: string; review: any }> => {
+        const response = await authFetch(`${API_URL}/reviews/${reviewId}/approve`, {
+            method: 'PUT',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to approve review');
+        }
+        return response.json();
+    },
+
+    rejectReview: async (reviewId: string, reason: string): Promise<{ message: string; review: any }> => {
+        const response = await authFetch(`${API_URL}/reviews/${reviewId}/reject`, {
+            method: 'PUT',
+            body: JSON.stringify({ reason }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to reject review');
+        }
+        return response.json();
+    },
+};
