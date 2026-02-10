@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Loader2, Mail, ArrowRight, Clock, Star } from 'lucide-react';
+import { apiFetch } from '../lib/utils';
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
@@ -31,9 +32,8 @@ export const VerifyEmail: React.FC = () => {
 
     const verifyEmail = async () => {
         try {
-            const response = await fetch(`${API_URL}/auth/verify-email`, {
+            const response = await apiFetch(`${API_URL}/auth/verify-email`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, token }),
             });
 
@@ -66,9 +66,8 @@ export const VerifyEmail: React.FC = () => {
 
         setIsResending(true);
         try {
-            const response = await fetch(`${API_URL}/auth/resend-verification`, {
+            const response = await apiFetch(`${API_URL}/auth/resend-verification`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
             });
 

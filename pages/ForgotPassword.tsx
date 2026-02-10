@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, ArrowRight, ArrowLeft, Loader2, Star, CheckCircle, Shield } from 'lucide-react';
 import { useRecaptcha, RECAPTCHA_ACTIONS } from '../hooks/useRecaptcha';
+import { apiFetch } from '../lib/utils';
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
@@ -23,11 +24,10 @@ export const ForgotPassword: React.FC = () => {
          // Get reCAPTCHA token
          const recaptchaToken = await executeRecaptcha(RECAPTCHA_ACTIONS.FORGOT_PASSWORD);
 
-         const response = await fetch(`${API_URL}/auth/forgot-password`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, recaptchaToken }),
-         });
+         const response = await apiFetch(`${API_URL}/auth/forgot-password`, {
+             method: 'POST',
+             body: JSON.stringify({ email, recaptchaToken }),
+          });
 
          const data = await response.json();
 

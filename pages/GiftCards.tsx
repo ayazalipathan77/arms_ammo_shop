@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Gift, Check, Mail, User, MessageSquare, CreditCard, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ParticleSystem from '../components/features/ParticleSystem';
-import { cn } from '../lib/utils';
+import { cn, apiFetch } from '../lib/utils';
 
 const PRESET_AMOUNTS = [500, 1000, 2500, 5000, 10000, 25000];
 
@@ -25,14 +25,15 @@ export const GiftCards: React.FC = () => {
         try {
             const finalAmount = customAmount ? parseFloat(customAmount) : amount;
 
-            const response = await fetch('/api/giftcards/purchase', {
+            const token = localStorage.getItem('authToken');
+            const headers: HeadersInit = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            const response = await apiFetch('/api/giftcards/purchase', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(localStorage.getItem('authToken') && {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    })
-                },
+                headers,
                 body: JSON.stringify({
                     amount: finalAmount,
                     currency: 'PKR',

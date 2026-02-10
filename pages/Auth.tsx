@@ -4,7 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRecaptcha, RECAPTCHA_ACTIONS } from '../hooks/useRecaptcha';
-import { cn } from '../lib/utils';
+import { cn, apiFetch } from '../lib/utils';
 import ParticleSystem from '../components/features/ParticleSystem';
 
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -40,21 +40,22 @@ export const Auth: React.FC = () => {
    const { login } = useAuth();
    const { executeRecaptcha, isEnabled: recaptchaEnabled } = useRecaptcha();
 
-   useEffect(() => {
-      fetch(`${API_URL}/config`)
-         .then(res => res.json())
-         .then(data => setSocialConfig({ googleEnabled: data.googleEnabled, facebookEnabled: data.facebookEnabled }))
-         .catch(() => { });
+    useEffect(() => {
+       // Fetch config and ensure CSRF token is set
+       fetch(`${API_URL}/config`)
+          .then(res => res.json())
+          .then(data => setSocialConfig({ googleEnabled: data.googleEnabled, facebookEnabled: data.facebookEnabled }))
+          .catch(() => { });
 
-      const errorParam = searchParams.get('error');
-      if (errorParam) {
-         const messages: Record<string, string> = {
-            google_failed: 'Google login failed. Please try again.',
-            facebook_failed: 'Facebook login failed. Please try again.',
-         };
-         setError(messages[errorParam] || 'Social login failed. Please try again.');
-      }
-   }, [searchParams]);
+       const errorParam = searchParams.get('error');
+       if (errorParam) {
+          const messages: Record<string, string> = {
+             google_failed: 'Google login failed. Please try again.',
+             facebook_failed: 'Facebook login failed. Please try again.',
+          };
+          setError(messages[errorParam] || 'Social login failed. Please try again.');
+       }
+    }, [searchParams]);
 
    const getPasswordStrength = () => {
       if (!password || isLogin) return 0;
@@ -84,28 +85,26 @@ export const Auth: React.FC = () => {
          const action = isLogin ? RECAPTCHA_ACTIONS.LOGIN : RECAPTCHA_ACTIONS.REGISTER;
          const recaptchaToken = await executeRecaptcha(action);
 
-         if (isLogin) {
-            const response = await fetch(`${API_URL}/auth/login`, {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ email, password, recaptchaToken }),
-            });
+          if (isLogin) {
+             const response = await apiFetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({ email, password, recaptchaToken }),
+             });
 
-            const data = await response.json();
+             const data = await response.json();
 
-            if (!response.ok) {
-               if (data.code === 'RECAPTCHA_LOW_SCORE') setError('Security verification failed.');
-               else if (data.code === 'EMAIL_NOT_VERIFIED') setRegistrationSuccess({ message: 'Please verify your email.', requiresApproval: false, email: data.email || email });
-               else setError(data.message || 'Login failed');
-               return;
-            }
-            handleAuthSuccess(data.token, data.user.role);
-         } else {
-            const response = await fetch(`${API_URL}/auth/register`, {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({ email, password, fullName, role, phoneNumber, address, city, country, zipCode, recaptchaToken }),
-            });
+             if (!response.ok) {
+                if (data.code === 'RECAPTCHA_LOW_SCORE') setError('Security verification failed.');
+                else if (data.code === 'EMAIL_NOT_VERIFIED') setRegistrationSuccess({ message: 'Please verify your email.', requiresApproval: false, email: data.email || email });
+                else setError(data.message || 'Login failed');
+                return;
+             }
+             handleAuthSuccess(data.token, data.user.role);
+          } else {
+             const response = await apiFetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                body: JSON.stringify({ email, password, fullName, role, phoneNumber, address, city, country, zipCode, recaptchaToken }),
+             });
 
             const data = await response.json();
             if (!response.ok) {
@@ -129,12 +128,11 @@ export const Auth: React.FC = () => {
    const handleResendVerification = async () => {
       if (!registrationSuccess?.email) return;
       setIsResendingVerification(true);
-      try {
-         const response = await fetch(`${API_URL}/auth/resend-verification`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: registrationSuccess.email })
-         });
+       try {
+          const response = await apiFetch(`${API_URL}/auth/resend-verification`, {
+             method: 'POST',
+             body: JSON.stringify({ email: registrationSuccess.email })
+          });
          if (response.ok) setResendMessage('Verification email sent!');
          else setResendMessage('Failed to resend email');
       } catch {

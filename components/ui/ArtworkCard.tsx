@@ -147,12 +147,12 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
                     <p className="text-[clamp(0.6rem,2.8cqi,0.8rem)] font-mono font-bold text-void/90 mt-1 leading-tight">{convertPrice(artwork.price)}</p>
                 </motion.div>
 
-                {/* Favorite Button */}
+                {/* Favorite Button - positioned below sold badge area to avoid overlap */}
                 <motion.button
                     onClick={handleFavoriteClick}
                     disabled={isLoading}
                     className={cn(
-                        "absolute top-4 left-4 z-30 p-2 bg-stone-900/80 backdrop-blur-sm hover:bg-stone-900 transition-all duration-300",
+                        "absolute top-14 left-4 z-30 p-2 bg-stone-900/80 backdrop-blur-sm hover:bg-stone-900 transition-all duration-300",
                         isLoading && "opacity-50 cursor-not-allowed"
                     )}
                     whileHover={{ scale: 1.1 }}
