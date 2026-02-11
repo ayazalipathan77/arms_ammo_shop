@@ -165,11 +165,22 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
+   // Refresh order list and update selectedOrder if open
+   const refreshOrders = async (orderId?: string) => {
+      await loadAdminOrders(ordersPagination.page);
+      if (orderId && selectedOrder?.id === orderId) {
+         try {
+            const res = await adminApi.getOrderById(orderId);
+            setSelectedOrder(res.order || res);
+         } catch { /* order detail refresh is best-effort */ }
+      }
+   };
+
    const handleRequestArtistConfirmation = async (orderId: string) => {
       setOrderActionLoading(orderId);
       try {
          await adminApi.requestArtistConfirmation(orderId);
-         await loadAdminOrders(ordersPagination.page);
+         await refreshOrders(orderId);
       } catch (err: any) {
          alert(err.message || 'Failed to send artist confirmation');
       }
@@ -180,7 +191,7 @@ export const AdminDashboard: React.FC = () => {
       setOrderActionLoading(orderId);
       try {
          await adminApi.adminConfirmOrder(orderId);
-         await loadAdminOrders(ordersPagination.page);
+         await refreshOrders(orderId);
       } catch (err: any) {
          alert(err.message || 'Failed to confirm order');
       }
@@ -192,8 +203,9 @@ export const AdminDashboard: React.FC = () => {
       setOrderActionLoading(shipModal.orderId);
       try {
          await adminApi.markOrderShipped(shipModal.orderId, shipModal.trackingNumber, shipModal.carrier || undefined, shipModal.notes || undefined);
+         const oid = shipModal.orderId;
          setShipModal(null);
-         await loadAdminOrders(ordersPagination.page);
+         await refreshOrders(oid);
       } catch (err: any) {
          alert(err.message || 'Failed to mark as shipped');
       }
@@ -204,7 +216,7 @@ export const AdminDashboard: React.FC = () => {
       setOrderActionLoading(orderId);
       try {
          await adminApi.markOrderDelivered(orderId);
-         await loadAdminOrders(ordersPagination.page);
+         await refreshOrders(orderId);
       } catch (err: any) {
          alert(err.message || 'Failed to mark as delivered');
       }
@@ -215,9 +227,10 @@ export const AdminDashboard: React.FC = () => {
       if (!cancelModal) return;
       setOrderActionLoading(cancelModal.orderId);
       try {
-         await adminApi.cancelOrder(cancelModal.orderId, cancelModal.reason || undefined);
+         const oid = cancelModal.orderId;
+         await adminApi.cancelOrder(oid, cancelModal.reason || undefined);
          setCancelModal(null);
-         await loadAdminOrders(ordersPagination.page);
+         await refreshOrders(oid);
       } catch (err: any) {
          alert(err.message || 'Failed to cancel order');
       }
@@ -227,9 +240,10 @@ export const AdminDashboard: React.FC = () => {
    const handleSaveOrderNotes = async () => {
       if (!orderNotesInput) return;
       try {
-         await adminApi.updateOrderNotes(orderNotesInput.orderId, orderNotesInput.notes);
+         const oid = orderNotesInput.orderId;
+         await adminApi.updateOrderNotes(oid, orderNotesInput.notes);
          setOrderNotesInput(null);
-         await loadAdminOrders(ordersPagination.page);
+         await refreshOrders(oid);
       } catch (err: any) {
          alert(err.message || 'Failed to save notes');
       }
@@ -1020,7 +1034,7 @@ export const AdminDashboard: React.FC = () => {
                {/* Order Detail Modal */}
                {selectedOrder && (
                   <div className="fixed inset-0 z-50 bg-void/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSelectedOrder(null)}>
-                     <div className="bg-charcoal border border-pearl/20 w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                     <div className="bg-charcoal border border-pearl/20 w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between p-6 border-b border-pearl/10">
                            <div>
                               <h3 className="text-xl font-display text-pearl">Order #{selectedOrder.id.slice(-6).toUpperCase()}</h3>
@@ -1035,11 +1049,121 @@ export const AdminDashboard: React.FC = () => {
                         </div>
 
                         <div className="p-6 space-y-6">
-                           {/* Customer */}
+                           {/* Actions Bar */}
+                           {!['DELIVERED', 'CANCELLED'].includes(selectedOrder.status) && (
+                              <div className="bg-void/50 border border-pearl/10 p-4">
+                                 <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-3">Change Status</h4>
+                                 <div className="flex flex-wrap gap-2">
+                                    {selectedOrder.status === 'PAID' && (
+                                       <button
+                                          onClick={() => { handleRequestArtistConfirmation(selectedOrder.id); }}
+                                          disabled={orderActionLoading === selectedOrder.id}
+                                          className="px-4 py-2 bg-amber/10 border border-amber/30 text-amber text-xs uppercase tracking-widest hover:bg-amber/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                       >
+                                          <Mail size={14} /> Request Artist Confirmation
+                                       </button>
+                                    )}
+                                    {selectedOrder.status === 'AWAITING_CONFIRMATION' && (
+                                       <button
+                                          onClick={() => { handleAdminConfirm(selectedOrder.id); }}
+                                          disabled={orderActionLoading === selectedOrder.id}
+                                          className="px-4 py-2 bg-tangerine/10 border border-tangerine/30 text-tangerine text-xs uppercase tracking-widest hover:bg-tangerine/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                       >
+                                          <Check size={14} /> Confirm Order
+                                       </button>
+                                    )}
+                                    {selectedOrder.status === 'CONFIRMED' && (
+                                       <button
+                                          onClick={() => { setSelectedOrder(null); setShipModal({ orderId: selectedOrder.id, trackingNumber: '', carrier: '', notes: '' }); }}
+                                          className="px-4 py-2 bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs uppercase tracking-widest hover:bg-purple-500/20 transition-colors flex items-center gap-2"
+                                       >
+                                          <Truck size={14} /> Ship Order
+                                       </button>
+                                    )}
+                                    {selectedOrder.status === 'SHIPPED' && (
+                                       <button
+                                          onClick={() => { handleDeliverOrder(selectedOrder.id); }}
+                                          disabled={orderActionLoading === selectedOrder.id}
+                                          className="px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-400 text-xs uppercase tracking-widest hover:bg-green-500/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                       >
+                                          <Check size={14} /> Mark Delivered
+                                       </button>
+                                    )}
+                                    <button
+                                       onClick={() => { setSelectedOrder(null); setCancelModal({ orderId: selectedOrder.id, reason: '' }); }}
+                                       className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs uppercase tracking-widest hover:bg-red-500/20 transition-colors flex items-center gap-2"
+                                    >
+                                       <X size={14} /> Cancel
+                                    </button>
+                                    <button
+                                       onClick={() => { setSelectedOrder(null); setOrderNotesInput({ orderId: selectedOrder.id, notes: selectedOrder.adminNotes || '' }); }}
+                                       className="px-4 py-2 border border-pearl/20 text-warm-gray text-xs uppercase tracking-widest hover:bg-pearl/5 transition-colors flex items-center gap-2"
+                                    >
+                                       <Edit size={14} /> Notes
+                                    </button>
+                                 </div>
+                              </div>
+                           )}
+
+                           {/* Status History Timeline */}
                            <div>
-                              <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Customer</h4>
-                              <p className="text-pearl">{selectedOrder.user?.fullName || 'Guest'}</p>
-                              <p className="text-warm-gray text-sm">{selectedOrder.user?.email}</p>
+                              <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-3">Order Timeline</h4>
+                              <div className="relative pl-6 space-y-0">
+                                 {[
+                                    { label: 'Order Placed', date: selectedOrder.createdAt, always: true },
+                                    { label: 'Payment Received', date: selectedOrder.paidAt },
+                                    { label: 'Artist Notified', date: selectedOrder.artistNotifiedAt },
+                                    { label: 'Artist Confirmed', date: selectedOrder.artistConfirmedAt },
+                                    { label: 'Admin Confirmed', date: selectedOrder.adminConfirmedAt },
+                                    { label: 'Shipped', date: selectedOrder.shippedAt, extra: selectedOrder.trackingNumber ? `Tracking: ${selectedOrder.trackingNumber}` : undefined },
+                                    { label: 'Delivered', date: selectedOrder.deliveredAt },
+                                    { label: 'Cancelled', date: selectedOrder.cancelledAt, extra: selectedOrder.cancellationReason, isError: true },
+                                 ].filter(e => e.date || e.always).map((event, idx, arr) => (
+                                    <div key={idx} className="relative pb-4">
+                                       {/* Vertical line */}
+                                       {idx < arr.length - 1 && (
+                                          <div className={`absolute left-[-17px] top-3 w-px h-full ${event.date ? (event.isError ? 'bg-red-500/30' : 'bg-tangerine/30') : 'bg-pearl/10'}`} />
+                                       )}
+                                       {/* Dot */}
+                                       <div className={`absolute left-[-20px] top-1.5 w-[7px] h-[7px] rounded-full border ${
+                                          event.date
+                                             ? event.isError ? 'bg-red-500 border-red-500' : 'bg-tangerine border-tangerine'
+                                             : 'bg-charcoal border-pearl/30'
+                                       }`} />
+                                       <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                                          <span className={`text-xs font-medium ${event.date ? (event.isError ? 'text-red-400' : 'text-pearl') : 'text-warm-gray/40'}`}>
+                                             {event.label}
+                                          </span>
+                                          {event.date && (
+                                             <span className="text-warm-gray text-[10px] font-mono">
+                                                {format(new Date(event.date), 'MMM d, yyyy h:mm a')}
+                                             </span>
+                                          )}
+                                       </div>
+                                       {event.extra && (
+                                          <p className={`text-[11px] mt-0.5 ${event.isError ? 'text-red-400/70' : 'text-warm-gray/60'}`}>{event.extra}</p>
+                                       )}
+                                    </div>
+                                 ))}
+                              </div>
+                           </div>
+
+                           {/* Customer */}
+                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                              <div>
+                                 <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Customer</h4>
+                                 <p className="text-pearl">{selectedOrder.user?.fullName || 'Guest'}</p>
+                                 <p className="text-warm-gray text-sm">{selectedOrder.user?.email}</p>
+                                 {selectedOrder.user?.phoneNumber && (
+                                    <p className="text-warm-gray text-sm">{selectedOrder.user.phoneNumber}</p>
+                                 )}
+                              </div>
+                              {selectedOrder.shippingAddress && (
+                                 <div>
+                                    <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Shipping Address</h4>
+                                    <p className="text-pearl text-sm">{selectedOrder.shippingAddress}</p>
+                                 </div>
+                              )}
                            </div>
 
                            {/* Items */}
@@ -1053,7 +1177,10 @@ export const AdminDashboard: React.FC = () => {
                                        )}
                                        <div className="flex-1 min-w-0">
                                           <p className="text-pearl text-sm font-medium truncate">{item.artwork?.title || 'Unknown Artwork'}</p>
-                                          <p className="text-warm-gray text-xs">Qty: {item.quantity} {item.type === 'PRINT' ? `(Print - ${item.printSize})` : '(Original)'}</p>
+                                          <p className="text-warm-gray text-xs">
+                                             Qty: {item.quantity} {item.type === 'PRINT' ? `(Print - ${item.printSize})` : '(Original)'}
+                                             {item.artwork?.artist?.user?.fullName && <span className="ml-2 text-tangerine">by {item.artwork.artist.user.fullName}</span>}
+                                          </p>
                                        </div>
                                        <p className="text-pearl font-mono text-sm">{parseFloat(item.price).toLocaleString()} PKR</p>
                                     </div>
@@ -1061,18 +1188,10 @@ export const AdminDashboard: React.FC = () => {
                               </div>
                            </div>
 
-                           {/* Shipping */}
-                           {selectedOrder.shippingAddress && (
-                              <div>
-                                 <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Shipping Address</h4>
-                                 <p className="text-pearl text-sm">{selectedOrder.shippingAddress}</p>
-                              </div>
-                           )}
-
                            {/* Tracking */}
                            {selectedOrder.trackingNumber && (
-                              <div>
-                                 <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Tracking</h4>
+                              <div className="bg-purple-500/5 border border-purple-500/20 p-4">
+                                 <h4 className="text-xs text-purple-400 uppercase tracking-widest mb-2">Shipping & Tracking</h4>
                                  <p className="text-pearl font-mono text-sm">{selectedOrder.trackingNumber}</p>
                                  {selectedOrder.carrier && <p className="text-warm-gray text-xs mt-1">Carrier: {selectedOrder.carrier}</p>}
                               </div>
@@ -1082,7 +1201,7 @@ export const AdminDashboard: React.FC = () => {
                            {selectedOrder.adminNotes && (
                               <div>
                                  <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Admin Notes</h4>
-                                 <p className="text-warm-gray text-sm">{selectedOrder.adminNotes}</p>
+                                 <p className="text-warm-gray text-sm bg-void/30 p-3 border border-pearl/10">{selectedOrder.adminNotes}</p>
                               </div>
                            )}
 

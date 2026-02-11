@@ -62,7 +62,7 @@ export const Artists: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-void pt-24 pb-20">
+    <div className="min-h-screen bg-void pt-24 pb-20 px-6 md:px-12">
       <ParticleSystem />
 
       {/* Background Decor */}
@@ -71,7 +71,7 @@ export const Artists: React.FC = () => {
         <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[80px]"></div>
       </div>
 
-      <div className="max-w-screen-2xl mx-auto relative z-10">
+      <div className="max-w-[1920px] mx-auto relative z-10">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20 border-b border-pearl/10 pb-10">
@@ -100,7 +100,7 @@ export const Artists: React.FC = () => {
         </div>
 
         {/* Grid */}
-        <div className="w-full max-w-[1920px] mx-auto px-6 md:px-12">
+        <div className="w-full">
           {filteredArtists.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               <AnimatePresence>
