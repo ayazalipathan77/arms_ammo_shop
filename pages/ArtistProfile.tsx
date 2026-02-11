@@ -100,7 +100,8 @@ export const ArtistProfile: React.FC = () => {
     }
 
     return (
-        <div className="pt-32 pb-20 max-w-4xl mx-auto px-4">
+        <div className="pt-32 pb-20 px-6 md:px-12">
+          <div className="max-w-[1920px] mx-auto">
             <div className="flex justify-between items-center mb-10">
                 <h1 className="font-serif text-4xl text-white">Edit Profile</h1>
                 <button
@@ -235,6 +236,7 @@ export const ArtistProfile: React.FC = () => {
 
                 </form>
             </div>
+          </div>
         </div>
     );
 };

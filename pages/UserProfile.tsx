@@ -137,10 +137,10 @@ export const UserProfile: React.FC = () => {
    if (isLoading) return <div className="min-h-screen bg-void flex items-center justify-center text-tangerine font-mono text-xs uppercase tracking-widest">Loading...</div>;
 
    return (
-      <div className="min-h-screen pt-32 pb-20 bg-void text-pearl px-6 relative overflow-hidden">
+      <div className="min-h-screen pt-32 pb-20 bg-void text-pearl px-6 md:px-12 relative overflow-hidden">
          <ParticleSystem />
 
-         <div className="max-w-6xl mx-auto relative z-10">
+         <div className="max-w-[1920px] mx-auto relative z-10">
             {/* Header */}
             <div className="flex flex-col md:flex-row items-end justify-between mb-16 border-b border-pearl/10 pb-8 gap-6">
                <div className="flex items-center gap-6">

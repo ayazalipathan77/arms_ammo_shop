@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useParams as useRouteParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, MapPin, Play, Image as ImageIcon } from 'lucide-react';
 import { exhibitionApi } from '../services/api';
@@ -8,7 +7,7 @@ import { Exhibition } from '../types';
 import { ScrambleText } from '../components/ui/ScrambleText';
 
 export const ExhibitionDetail = () => {
-    const { id } = useRouteParams<{ id: string }>();
+    const { id } = useParams<{ id: string }>();
     const [exhibition, setExhibition] = useState<Exhibition | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -17,8 +16,8 @@ export const ExhibitionDetail = () => {
         const fetchExhibition = async () => {
             if (!id) return;
             try {
-                const data = await exhibitionApi.getExhibition(id);
-                setExhibition(data);
+                const res = await exhibitionApi.getById(id);
+                setExhibition(res.exhibition);
             } catch (error) {
                 console.error('Failed to fetch exhibition', error);
             } finally {

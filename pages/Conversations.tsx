@@ -27,7 +27,7 @@ export const Conversations: React.FC = () => {
    const others = filteredConversations.slice(1);
 
    return (
-      <div className="pt-32 pb-20 min-h-screen relative z-10 px-6 md:px-12 bg-stone-950">
+      <div className="pt-32 pb-20 min-h-screen relative z-10 px-6 md:px-12">
          {/* Header */}
          <div className="max-w-[1920px] mx-auto mb-20 border-b border-pearl/10 pb-8 flex flex-col md:flex-row justify-between items-end gap-8 high-contrast:border-black/20">
             <div>

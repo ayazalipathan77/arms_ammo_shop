@@ -120,6 +120,12 @@ export const Navbar: React.FC<NavbarProps> = () => {
                     {user.role === 'ADMIN' && (
                       <span className="text-[10px] uppercase tracking-wider text-amber-500 font-bold">Admin</span>
                     )}
+                    {user.role === 'ARTIST' && (
+                      <span className="text-[10px] uppercase tracking-wider text-purple-400 font-bold">Artist</span>
+                    )}
+                    {user.role === 'USER' && (
+                      <span className="text-[10px] uppercase tracking-wider text-stone-400 font-bold">Collector</span>
+                    )}
                   </div>
                 </button>
 
@@ -203,6 +209,12 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <div className="text-white text-lg mb-1">{user.fullName}</div>
                 {user.role === 'ADMIN' && (
                   <div className="text-[10px] uppercase tracking-wider text-amber-500 font-bold bg-amber-500/10 px-3 py-1 rounded-full inline-block">Admin</div>
+                )}
+                {user.role === 'ARTIST' && (
+                  <div className="text-[10px] uppercase tracking-wider text-purple-400 font-bold bg-purple-400/10 px-3 py-1 rounded-full inline-block">Artist</div>
+                )}
+                {user.role === 'USER' && (
+                  <div className="text-[10px] uppercase tracking-wider text-stone-400 font-bold bg-stone-400/10 px-3 py-1 rounded-full inline-block">Collector</div>
                 )}
               </div>
               {user.role === 'ADMIN' && (

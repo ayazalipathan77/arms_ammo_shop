@@ -30,7 +30,7 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="pt-32 pb-20 min-h-screen bg-void relative overflow-hidden">
+    <div className="pt-32 pb-20 min-h-screen bg-void relative overflow-hidden px-6 md:px-12">
       {/* Animated Background Gradient Orbs */}
       <motion.div
         animate={{
@@ -49,7 +49,7 @@ export const Contact: React.FC = () => {
         className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber/5 rounded-full blur-3xl pointer-events-none"
       />
 
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12 relative z-10">
+      <div className="max-w-[1920px] mx-auto relative z-10">
 
         {/* Header */}
         <motion.div

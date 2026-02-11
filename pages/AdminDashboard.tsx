@@ -978,7 +978,7 @@ export const AdminDashboard: React.FC = () => {
                      </thead>
                      <tbody className="divide-y divide-pearl/5">
                         {adminOrders.map(order => (
-                           <tr key={order.id} className="hover:bg-pearl/5 transition-colors group">
+                           <tr key={order.id} className="hover:bg-pearl/5 transition-colors group cursor-pointer" onClick={() => setSelectedOrder(order)}>
                               <td className="p-4 font-mono text-tangerine">#{order.id.slice(-6).toUpperCase()}</td>
                               <td className="p-4 text-pearl">
                                  <div>{order.user?.fullName || 'Guest'}</div>
@@ -991,16 +991,24 @@ export const AdminDashboard: React.FC = () => {
                                  </span>
                               </td>
                               <td className="p-4 text-warm-gray text-xs">{format(new Date(order.createdAt), 'MMM d, yyyy')}</td>
-                              <td className="p-4">
+                              <td className="p-4" onClick={e => e.stopPropagation()}>
                                  <div className="flex gap-2">
-                                    {/* Action buttons logic simliar to original but styled */}
                                     {order.status === 'PAID' && (
-                                       <button onClick={() => handleRequestArtistConfirmation(order.id)} className="text-amber hover:text-white" title="Request Artist"><Mail size={16} /></button>
+                                       <button onClick={() => handleRequestArtistConfirmation(order.id)} className="text-amber hover:text-white" title="Request Artist Confirmation" disabled={orderActionLoading === order.id}><Mail size={16} /></button>
+                                    )}
+                                    {order.status === 'AWAITING_CONFIRMATION' && (
+                                       <button onClick={() => handleAdminConfirm(order.id)} className="text-green-400 hover:text-white" title="Confirm Order" disabled={orderActionLoading === order.id}><Check size={16} /></button>
                                     )}
                                     {order.status === 'CONFIRMED' && (
-                                       <button onClick={() => setShipModal({ orderId: order.id, trackingNumber: '', carrier: '', notes: '' })} className="text-purple-400 hover:text-white" title="Ship"><Truck size={16} /></button>
+                                       <button onClick={() => setShipModal({ orderId: order.id, trackingNumber: '', carrier: '', notes: '' })} className="text-purple-400 hover:text-white" title="Ship Order"><Truck size={16} /></button>
                                     )}
-                                    <button onClick={() => setOrderNotesInput({ orderId: order.id, notes: order.adminNotes || '' })} className="text-warm-gray hover:text-pearl"><Edit size={16} /></button>
+                                    {order.status === 'SHIPPED' && (
+                                       <button onClick={() => handleDeliverOrder(order.id)} className="text-green-400 hover:text-white" title="Mark Delivered" disabled={orderActionLoading === order.id}><Check size={16} /></button>
+                                    )}
+                                    {!['DELIVERED', 'CANCELLED'].includes(order.status) && (
+                                       <button onClick={() => setCancelModal({ orderId: order.id, reason: '' })} className="text-red-400 hover:text-red-300" title="Cancel Order"><X size={16} /></button>
+                                    )}
+                                    <button onClick={() => setOrderNotesInput({ orderId: order.id, notes: order.adminNotes || '' })} className="text-warm-gray hover:text-pearl" title="Admin Notes"><Edit size={16} /></button>
                                  </div>
                               </td>
                            </tr>
@@ -1008,6 +1016,188 @@ export const AdminDashboard: React.FC = () => {
                      </tbody>
                   </table>
                </div>
+
+               {/* Order Detail Modal */}
+               {selectedOrder && (
+                  <div className="fixed inset-0 z-50 bg-void/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSelectedOrder(null)}>
+                     <div className="bg-charcoal border border-pearl/20 w-full max-w-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-6 border-b border-pearl/10">
+                           <div>
+                              <h3 className="text-xl font-display text-pearl">Order #{selectedOrder.id.slice(-6).toUpperCase()}</h3>
+                              <p className="text-warm-gray text-xs mt-1">{format(new Date(selectedOrder.createdAt), 'MMM d, yyyy h:mm a')}</p>
+                           </div>
+                           <div className="flex items-center gap-3">
+                              <span className={`px-3 py-1 border text-[10px] font-bold uppercase tracking-wider ${getOrderStatusColor(selectedOrder.status)}`}>
+                                 {getOrderStatusLabel(selectedOrder.status)}
+                              </span>
+                              <button onClick={() => setSelectedOrder(null)} className="text-warm-gray hover:text-pearl"><X size={20} /></button>
+                           </div>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                           {/* Customer */}
+                           <div>
+                              <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Customer</h4>
+                              <p className="text-pearl">{selectedOrder.user?.fullName || 'Guest'}</p>
+                              <p className="text-warm-gray text-sm">{selectedOrder.user?.email}</p>
+                           </div>
+
+                           {/* Items */}
+                           <div>
+                              <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-3">Items</h4>
+                              <div className="space-y-3">
+                                 {(selectedOrder.items || []).map((item: any, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-4 bg-void/50 p-3 border border-pearl/10">
+                                       {item.artwork?.imageUrl && (
+                                          <img src={item.artwork.imageUrl} alt={item.artwork?.title || 'Artwork'} className="w-16 h-16 object-cover border border-pearl/10" />
+                                       )}
+                                       <div className="flex-1 min-w-0">
+                                          <p className="text-pearl text-sm font-medium truncate">{item.artwork?.title || 'Unknown Artwork'}</p>
+                                          <p className="text-warm-gray text-xs">Qty: {item.quantity} {item.type === 'PRINT' ? `(Print - ${item.printSize})` : '(Original)'}</p>
+                                       </div>
+                                       <p className="text-pearl font-mono text-sm">{parseFloat(item.price).toLocaleString()} PKR</p>
+                                    </div>
+                                 ))}
+                              </div>
+                           </div>
+
+                           {/* Shipping */}
+                           {selectedOrder.shippingAddress && (
+                              <div>
+                                 <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Shipping Address</h4>
+                                 <p className="text-pearl text-sm">{selectedOrder.shippingAddress}</p>
+                              </div>
+                           )}
+
+                           {/* Tracking */}
+                           {selectedOrder.trackingNumber && (
+                              <div>
+                                 <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Tracking</h4>
+                                 <p className="text-pearl font-mono text-sm">{selectedOrder.trackingNumber}</p>
+                                 {selectedOrder.carrier && <p className="text-warm-gray text-xs mt-1">Carrier: {selectedOrder.carrier}</p>}
+                              </div>
+                           )}
+
+                           {/* Notes */}
+                           {selectedOrder.adminNotes && (
+                              <div>
+                                 <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-2">Admin Notes</h4>
+                                 <p className="text-warm-gray text-sm">{selectedOrder.adminNotes}</p>
+                              </div>
+                           )}
+
+                           {/* Total */}
+                           <div className="flex justify-between items-center pt-4 border-t border-pearl/10">
+                              <span className="text-warm-gray uppercase text-xs tracking-widest">Total</span>
+                              <span className="text-pearl font-mono text-xl">{parseFloat(selectedOrder.totalAmount).toLocaleString()} PKR</span>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* Ship Order Modal */}
+               {shipModal && (
+                  <div className="fixed inset-0 z-50 bg-void/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShipModal(null)}>
+                     <div className="bg-charcoal border border-pearl/20 w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-display text-pearl mb-6">Ship Order</h3>
+                        <div className="space-y-4">
+                           <div>
+                              <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Tracking Number *</label>
+                              <input
+                                 type="text"
+                                 value={shipModal.trackingNumber}
+                                 onChange={e => setShipModal({ ...shipModal, trackingNumber: e.target.value })}
+                                 className="w-full bg-void border border-pearl/20 text-pearl p-3 text-sm focus:border-tangerine focus:outline-none"
+                                 placeholder="Enter tracking number"
+                              />
+                           </div>
+                           <div>
+                              <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Carrier</label>
+                              <input
+                                 type="text"
+                                 value={shipModal.carrier}
+                                 onChange={e => setShipModal({ ...shipModal, carrier: e.target.value })}
+                                 className="w-full bg-void border border-pearl/20 text-pearl p-3 text-sm focus:border-tangerine focus:outline-none"
+                                 placeholder="e.g. DHL, TCS, Leopards"
+                              />
+                           </div>
+                           <div>
+                              <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Notes</label>
+                              <textarea
+                                 value={shipModal.notes}
+                                 onChange={e => setShipModal({ ...shipModal, notes: e.target.value })}
+                                 className="w-full bg-void border border-pearl/20 text-pearl p-3 text-sm focus:border-tangerine focus:outline-none h-20 resize-none"
+                                 placeholder="Optional notes..."
+                              />
+                           </div>
+                           <div className="flex gap-3 pt-2">
+                              <button onClick={() => setShipModal(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:bg-pearl/5 transition-colors">Cancel</button>
+                              <button
+                                 onClick={handleShipOrder}
+                                 disabled={!shipModal.trackingNumber || orderActionLoading === shipModal.orderId}
+                                 className="flex-1 py-3 bg-purple-500 text-white text-xs uppercase tracking-widest hover:bg-purple-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                              >
+                                 <Truck size={14} /> Ship Order
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* Cancel Order Modal */}
+               {cancelModal && (
+                  <div className="fixed inset-0 z-50 bg-void/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setCancelModal(null)}>
+                     <div className="bg-charcoal border border-pearl/20 w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-display text-red-400 mb-6">Cancel Order</h3>
+                        <div className="space-y-4">
+                           <div>
+                              <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Reason (optional)</label>
+                              <textarea
+                                 value={cancelModal.reason}
+                                 onChange={e => setCancelModal({ ...cancelModal, reason: e.target.value })}
+                                 className="w-full bg-void border border-pearl/20 text-pearl p-3 text-sm focus:border-red-500 focus:outline-none h-24 resize-none"
+                                 placeholder="Reason for cancellation..."
+                              />
+                           </div>
+                           <div className="flex gap-3 pt-2">
+                              <button onClick={() => setCancelModal(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:bg-pearl/5 transition-colors">Back</button>
+                              <button
+                                 onClick={handleCancelOrder}
+                                 disabled={orderActionLoading === cancelModal.orderId}
+                                 className="flex-1 py-3 bg-red-500 text-white text-xs uppercase tracking-widest hover:bg-red-600 transition-colors disabled:opacity-50"
+                              >
+                                 Confirm Cancel
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
+
+               {/* Admin Notes Modal */}
+               {orderNotesInput && (
+                  <div className="fixed inset-0 z-50 bg-void/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setOrderNotesInput(null)}>
+                     <div className="bg-charcoal border border-pearl/20 w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-display text-pearl mb-6">Admin Notes</h3>
+                        <div className="space-y-4">
+                           <textarea
+                              value={orderNotesInput.notes}
+                              onChange={e => setOrderNotesInput({ ...orderNotesInput, notes: e.target.value })}
+                              className="w-full bg-void border border-pearl/20 text-pearl p-3 text-sm focus:border-tangerine focus:outline-none h-32 resize-none"
+                              placeholder="Internal notes about this order..."
+                           />
+                           <div className="flex gap-3 pt-2">
+                              <button onClick={() => setOrderNotesInput(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:bg-pearl/5 transition-colors">Cancel</button>
+                              <button onClick={handleSaveOrderNotes} className="flex-1 py-3 bg-tangerine text-void text-xs uppercase tracking-widest hover:bg-amber-600 transition-colors flex items-center justify-center gap-2">
+                                 <Save size={14} /> Save Notes
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
             </div>
          )}
 

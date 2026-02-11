@@ -3,6 +3,7 @@ import { useGallery } from '../context/GalleryContext';
 import { Monitor, Calendar, MapPin, ArrowRight, Award, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 
 export const Exhibitions: React.FC = () => {
@@ -149,9 +150,11 @@ export const Exhibitions: React.FC = () => {
                               </div>
 
                               <div className="pt-6">
-                                 <Button variant="primary">
-                                    Explore Exhibition <ArrowRight className="ml-2" size={16} />
-                                 </Button>
+                                 <Link to={`/exhibitions/${ex.id}`}>
+                                    <Button variant="primary">
+                                       Explore Exhibition <ArrowRight className="ml-2" size={16} />
+                                    </Button>
+                                 </Link>
                               </div>
                            </div>
                         </motion.div>
