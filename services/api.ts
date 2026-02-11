@@ -817,12 +817,16 @@ export const paymentApi = {
 export const uploadApi = {
     uploadImage: async (file: File): Promise<string> => {
         const token = getAuthToken();
+        const csrfToken = getCsrfToken();
         const formData = new FormData();
         formData.append('image', file);
 
         const headers: Record<string, string> = {};
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
+        }
+        if (csrfToken) {
+            headers['X-XSRF-TOKEN'] = csrfToken;
         }
 
         const response = await fetch(`${API_URL}/upload`, {
@@ -1025,10 +1029,17 @@ export const userApi = {
 // Shipping API
 export const shippingApi = {
     getRates: async (data: { country: string; items?: any[] }): Promise<{ rates: any[] }> => {
+        const csrfToken = getCsrfToken();
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+        if (csrfToken) {
+            headers['X-XSRF-TOKEN'] = csrfToken;
+        }
         const response = await fetch(`${API_URL}/shipping/rates`, {
             method: 'POST',
             body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' }
+            headers,
         });
         if (!response.ok) throw new Error('Failed to fetch shipping rates');
         return response.json();
@@ -1241,9 +1252,16 @@ export const reviewApi = {
     },
 
     voteReview: async (reviewId: string, helpful: boolean): Promise<{ message: string; review: any }> => {
+        const csrfToken = getCsrfToken();
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+        if (csrfToken) {
+            headers['X-XSRF-TOKEN'] = csrfToken;
+        }
         const response = await fetch(`${API_URL}/reviews/${reviewId}/vote`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ helpful }),
         });
         if (!response.ok) {

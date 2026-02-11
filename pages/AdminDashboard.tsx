@@ -14,6 +14,12 @@ import StarRating from '../components/ui/StarRating';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
 
+// Helper to get CSRF token from cookies
+const getCsrfToken = (): string | null => {
+    const match = document.cookie.match(new RegExp('(^| )XSRF-TOKEN=([^;]+)'));
+    return match ? match[2] : null;
+};
+
 const ORDER_STATUSES = ['PENDING', 'PAID', 'AWAITING_CONFIRMATION', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
 export const AdminDashboard: React.FC = () => {
@@ -275,17 +281,19 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
-   const handleApproveArtist = async (userId: string) => {
-      setApprovingId(userId);
-      try {
-         const token = localStorage.getItem('authToken');
-         const response = await fetch(`${API_URL}/admin/artists/${userId}/approve`, {
-            method: 'PUT',
-            headers: {
-               'Authorization': `Bearer ${token}`,
-               'Content-Type': 'application/json'
-            }
-         });
+    const handleApproveArtist = async (userId: string) => {
+       setApprovingId(userId);
+       try {
+          const token = localStorage.getItem('authToken');
+          const csrfToken = getCsrfToken();
+          const response = await fetch(`${API_URL}/admin/artists/${userId}/approve`, {
+             method: 'PUT',
+             headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                ...(csrfToken && { 'X-XSRF-TOKEN': csrfToken })
+             }
+          });
 
          if (response.ok) {
             loadPendingArtists();
@@ -303,18 +311,20 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
-   const handleRejectArtist = async (userId: string, deleteAccount: boolean = false) => {
-      setRejectingId(userId);
-      try {
-         const token = localStorage.getItem('authToken');
-         const response = await fetch(`${API_URL}/admin/artists/${userId}/reject`, {
-            method: 'PUT',
-            headers: {
-               'Authorization': `Bearer ${token}`,
-               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ reason: rejectReason, deleteAccount })
-         });
+    const handleRejectArtist = async (userId: string, deleteAccount: boolean = false) => {
+       setRejectingId(userId);
+       try {
+          const token = localStorage.getItem('authToken');
+          const csrfToken = getCsrfToken();
+          const response = await fetch(`${API_URL}/admin/artists/${userId}/reject`, {
+             method: 'PUT',
+             headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                ...(csrfToken && { 'X-XSRF-TOKEN': csrfToken })
+             },
+             body: JSON.stringify({ reason: rejectReason, deleteAccount })
+          });
 
          if (response.ok) {
             setShowRejectModal(null);
