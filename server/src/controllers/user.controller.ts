@@ -191,16 +191,20 @@ export const getReferralCode = async (req: Request, res: Response): Promise<void
             });
         }
 
-        // Get referral stats
-        const referralCount = await prisma.user.count({
-            where: { referredBy: req.user.userId },
-        });
+        // Get referral stats and config
+        const [referralCount, referralConfig] = await Promise.all([
+            prisma.user.count({ where: { referredBy: req.user.userId } }),
+            prisma.setting.findUnique({ where: { key: 'referralConfig' } }),
+        ]);
+
+        const config = referralConfig?.value as any;
 
         res.status(StatusCodes.OK).json({
             referralCode: user.referralCode,
             referralUrl: `${env.CLIENT_URL}/auth?ref=${user.referralCode}`,
             referralCount,
             wasReferred: !!user.referredBy,
+            programEnabled: config?.isEnabled ?? false,
         });
     } catch (error) {
         console.error('Get referral code error:', error);

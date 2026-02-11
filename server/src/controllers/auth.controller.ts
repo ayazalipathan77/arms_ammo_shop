@@ -61,6 +61,24 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             });
         }
 
+        // Link referral if provided
+        if (validatedData.referralCode) {
+            const referralConfig = await prisma.setting.findUnique({ where: { key: 'referralConfig' } });
+            const config = referralConfig?.value as any;
+            if (config?.isEnabled) {
+                const referrer = await prisma.user.findUnique({
+                    where: { referralCode: validatedData.referralCode },
+                    select: { id: true },
+                });
+                if (referrer) {
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { referredBy: referrer.id },
+                    });
+                }
+            }
+        }
+
         // Create address if provided
         if (validatedData.address && validatedData.city) {
             await prisma.address.create({

@@ -13,6 +13,7 @@ export const registerSchema = z.object({
     country: z.string().default('Pakistan'),
     zipCode: z.preprocess(emptyToUndefined, z.string().optional()),
     recaptchaToken: z.any().optional(),
+    referralCode: z.string().optional(),
 });
 
 export const loginSchema = z.object({

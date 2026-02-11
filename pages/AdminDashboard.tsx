@@ -8,7 +8,7 @@ import {
 import { useGallery } from '../context/GalleryContext';
 import { useTheme, PRESET_THEMES, ThemeConfig } from '../context/ThemeContext';
 import { OrderStatus, Artwork, Conversation, PrintSizeOption } from '../types';
-import { uploadApi, adminApi, artistApi, reviewApi } from '../services/api';
+import { uploadApi, adminApi, artistApi, reviewApi, settingsApi } from '../services/api';
 import Button from '../components/ui/Button';
 import StarRating from '../components/ui/StarRating';
 import { cn } from '../lib/utils';
@@ -36,7 +36,7 @@ export const AdminDashboard: React.FC = () => {
    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
    const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
-   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'REVIEWS' | 'LANDING PAGE' | 'THEME'>('OVERVIEW');
+   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'REVIEWS' | 'REFERRALS' | 'LANDING PAGE' | 'THEME'>('OVERVIEW');
 
    // Dashboard Stats
    const [stats, setStats] = useState<any>(null);
@@ -52,6 +52,18 @@ export const AdminDashboard: React.FC = () => {
    const [rejectingId, setRejectingId] = useState<string | null>(null);
    const [rejectReason, setRejectReason] = useState('');
    const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
+   const [usersPagination, setUsersPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+   const [userCounts, setUserCounts] = useState({ all: 0, collectors: 0, artists: 0, pending: 0 });
+   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+   const [userSortField, setUserSortField] = useState<'role' | 'createdAt'>('createdAt');
+   const [userSortDir, setUserSortDir] = useState<'asc' | 'desc'>('desc');
+   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+   // Referral Admin State
+   const [referralConfig, setReferralConfig] = useState({ isEnabled: false, rewardPercentage: 0, rewardAmount: 0, maxRewardsPerUser: 10 });
+   const [referralStats, setReferralStats] = useState<{ totalReferredUsers: number; totalReferrers: number; topReferrers: any[] } | null>(null);
+   const [isLoadingReferrals, setIsLoadingReferrals] = useState(false);
+   const [isSavingReferralConfig, setIsSavingReferralConfig] = useState(false);
 
    // Artists State
    const [artists, setArtists] = useState<any[]>([]);
@@ -249,12 +261,23 @@ export const AdminDashboard: React.FC = () => {
       return labels[status] || status;
    };
 
-   const loadUsers = async () => {
+   const loadUsers = async (page = 1) => {
+      setIsLoadingUsers(true);
       try {
-         const data = await adminApi.getUsers({ search: userSearch });
+         const roleFilter = userSubTab === 'COLLECTORS' ? 'USER' : userSubTab === 'ARTISTS' ? 'ARTIST' : undefined;
+         const data = await adminApi.getUsers({
+            search: debouncedSearch || undefined,
+            role: roleFilter,
+            page,
+            limit: 20,
+         });
          setUsers(data.users);
+         setUsersPagination({ page: data.page, limit: 20, total: data.total, totalPages: data.totalPages });
+         setUserCounts(data.counts);
       } catch (err) {
          console.error('Failed to load users', err);
+      } finally {
+         setIsLoadingUsers(false);
       }
    };
 
@@ -283,12 +306,13 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
-    const handleApproveArtist = async (userId: string) => {
+    const handleApproveArtist = async (userId: string, force: boolean = false) => {
        setApprovingId(userId);
        try {
           const token = localStorage.getItem('authToken');
           const csrfToken = getCsrfToken();
-          const response = await fetch(`${API_URL}/admin/artists/${userId}/approve`, {
+          const forceParam = force ? '?force=true' : '';
+          const response = await fetch(`${API_URL}/admin/artists/${userId}/approve${forceParam}`, {
              method: 'PUT',
              headers: {
                 'Authorization': `Bearer ${token}`,
@@ -300,10 +324,16 @@ export const AdminDashboard: React.FC = () => {
          if (response.ok) {
             loadPendingArtists();
             loadUsers();
-            loadStats(); // Update pending count in stats
+            loadStats();
          } else {
             const data = await response.json();
-            alert(data.message || 'Failed to approve artist');
+            if (data.message?.includes('email is not verified') && !force) {
+               if (confirm('Artist email is not verified. Approve anyway? This will also verify their email.')) {
+                  return handleApproveArtist(userId, true);
+               }
+            } else {
+               alert(data.message || 'Failed to approve artist');
+            }
          }
       } catch (err) {
          console.error('Failed to approve artist', err);
@@ -346,14 +376,39 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
+   // Debounce search input
+   useEffect(() => {
+      const timer = setTimeout(() => setDebouncedSearch(userSearch), 300);
+      return () => clearTimeout(timer);
+   }, [userSearch]);
+
    useEffect(() => {
       if (activeTab === 'USERS') {
-         loadUsers();
+         loadUsers(1);
          if (userSubTab === 'PENDING') {
             loadPendingArtists();
          }
       }
-   }, [activeTab, userSearch, userSubTab]);
+   }, [activeTab, debouncedSearch, userSubTab]);
+
+   // Load referral admin data
+   useEffect(() => {
+      if (activeTab === 'REFERRALS') {
+         const loadReferralAdmin = async () => {
+            setIsLoadingReferrals(true);
+            try {
+               const data = await adminApi.getReferralStats();
+               setReferralStats({ totalReferredUsers: data.totalReferredUsers, totalReferrers: data.totalReferrers, topReferrers: data.topReferrers });
+               setReferralConfig(data.config);
+            } catch (err) {
+               console.error('Failed to load referral data', err);
+            } finally {
+               setIsLoadingReferrals(false);
+            }
+         };
+         loadReferralAdmin();
+      }
+   }, [activeTab]);
 
    useEffect(() => {
       if (activeTab === 'INVENTORY') {
@@ -414,6 +469,34 @@ export const AdminDashboard: React.FC = () => {
          alert(err.message || 'Failed to delete user');
       }
    };
+
+   const handleSaveReferralConfig = async () => {
+      setIsSavingReferralConfig(true);
+      try {
+         await settingsApi.updateSetting('referralConfig', referralConfig);
+         alert('Referral program settings saved successfully');
+      } catch (err: any) {
+         alert(err.message || 'Failed to save referral config');
+      } finally {
+         setIsSavingReferralConfig(false);
+      }
+   };
+
+   const toggleSort = (field: 'role' | 'createdAt') => {
+      if (userSortField === field) {
+         setUserSortDir(d => d === 'asc' ? 'desc' : 'asc');
+      } else {
+         setUserSortField(field);
+         setUserSortDir('asc');
+      }
+   };
+
+   const sortedUsers = [...users].sort((a, b) => {
+      const dir = userSortDir === 'asc' ? 1 : -1;
+      if (userSortField === 'role') return a.role.localeCompare(b.role) * dir;
+      if (userSortField === 'createdAt') return (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) * dir;
+      return 0;
+   });
 
    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -732,7 +815,7 @@ export const AdminDashboard: React.FC = () => {
 
          {/* Tabs */}
          <div className="flex flex-wrap gap-2 mb-12 border-b border-pearl/10 pb-8 overflow-x-auto">
-            {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'REVIEWS', 'FINANCE', 'CONTENT', 'EXHIBITIONS', 'LANDING PAGE', 'THEME'].map(tab => (
+            {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'REVIEWS', 'FINANCE', 'CONTENT', 'EXHIBITIONS', 'REFERRALS', 'LANDING PAGE', 'THEME'].map(tab => (
                <TabButton key={tab} tab={tab} active={activeTab === tab} onClick={() => setActiveTab(tab as any)} />
             ))}
          </div>
@@ -1061,35 +1144,63 @@ export const AdminDashboard: React.FC = () => {
 
          {/* USERS TAB */}
          {activeTab === 'USERS' && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-4 animate-fade-in">
                <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-display text-pearl">User Directory</h3>
                   <div className="flex gap-2">
-                     {['ALL', 'COLLECTORS', 'ARTISTS', 'PENDING'].map(sub => (
-                        <button
-                           key={sub}
-                           onClick={() => setUserSubTab(sub as any)}
-                           className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${userSubTab === sub ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-pearl'}`}
-                        >
-                           {sub}
-                        </button>
-                     ))}
+                     {(['ALL', 'COLLECTORS', 'ARTISTS', 'PENDING'] as const).map(sub => {
+                        const countMap = { ALL: userCounts.all, COLLECTORS: userCounts.collectors, ARTISTS: userCounts.artists, PENDING: userCounts.pending };
+                        return (
+                           <button
+                              key={sub}
+                              onClick={() => setUserSubTab(sub)}
+                              className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border flex items-center gap-1.5 ${userSubTab === sub ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-pearl'}`}
+                           >
+                              {sub}
+                              <span className={`px-1.5 py-0.5 text-[9px] rounded-full ${userSubTab === sub ? 'bg-void/20 text-void' : 'bg-pearl/10 text-warm-gray'}`}>
+                                 {countMap[sub]}
+                              </span>
+                           </button>
+                        );
+                     })}
                   </div>
                </div>
 
+               {/* Search Bar */}
+               <div className="relative">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-gray" />
+                  <input
+                     type="text"
+                     placeholder="Search by name or email..."
+                     value={userSearch}
+                     onChange={(e) => setUserSearch(e.target.value)}
+                     className="w-full pl-10 pr-4 py-2.5 bg-charcoal/50 border border-pearl/10 text-pearl text-sm placeholder:text-warm-gray/50 focus:border-tangerine/50 focus:outline-none"
+                  />
+               </div>
+
                <div className="border border-pearl/10 rounded overflow-hidden">
+                  {isLoadingUsers ? (
+                     <div className="flex items-center justify-center py-16">
+                        <Loader2 size={24} className="animate-spin text-tangerine" />
+                        <span className="ml-3 text-warm-gray text-sm">Loading users...</span>
+                     </div>
+                  ) : (
                   <table className="w-full text-left text-sm">
                      <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
                         <tr>
                            <th className="p-4">User</th>
-                           <th className="p-4">Role</th>
+                           <th className="p-4 cursor-pointer hover:text-pearl select-none" onClick={() => toggleSort('role')}>
+                              <span className="flex items-center gap-1">Role {userSortField === 'role' && (userSortDir === 'asc' ? '↑' : '↓')}</span>
+                           </th>
                            <th className="p-4">Status</th>
-                           <th className="p-4">Joined</th>
+                           <th className="p-4 cursor-pointer hover:text-pearl select-none" onClick={() => toggleSort('createdAt')}>
+                              <span className="flex items-center gap-1">Joined {userSortField === 'createdAt' && (userSortDir === 'asc' ? '↑' : '↓')}</span>
+                           </th>
                            <th className="p-4">Actions</th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-pearl/5">
-                        {(userSubTab === 'PENDING' ? pendingArtists : users).map((u: any) => (
+                        {(userSubTab === 'PENDING' ? pendingArtists : sortedUsers).map((u: any) => (
                            <tr key={u.id} className="hover:bg-pearl/5 transition-colors">
                               <td className="p-4">
                                  <div className="flex items-center gap-3">
@@ -1108,8 +1219,12 @@ export const AdminDashboard: React.FC = () => {
                                  </span>
                               </td>
                               <td className="p-4">
-                                 {(u.artistStatus === 'PENDING' || userSubTab === 'PENDING') ? (
-                                    <span className="text-amber-500 text-xs font-bold uppercase tracking-wider">Pending Approval</span>
+                                 {(userSubTab === 'PENDING' || (u.role === 'ARTIST' && !u.isApproved)) ? (
+                                    <span className="text-amber-500 text-xs font-bold uppercase tracking-wider">
+                                       {!u.isEmailVerified ? 'Unverified' : 'Pending Approval'}
+                                    </span>
+                                 ) : !u.isEmailVerified ? (
+                                    <span className="text-warm-gray text-xs font-bold uppercase tracking-wider">Unverified</span>
                                  ) : (
                                     <span className="text-green-500 text-xs font-bold uppercase tracking-wider">Active</span>
                                  )}
@@ -1118,7 +1233,7 @@ export const AdminDashboard: React.FC = () => {
                                  {u.createdAt ? format(new Date(u.createdAt), 'MMM d, yyyy') : '-'}
                               </td>
                               <td className="p-4">
-                                 {(u.artistStatus === 'PENDING' || userSubTab === 'PENDING') ? (
+                                 {(userSubTab === 'PENDING' || (u.role === 'ARTIST' && !u.isApproved)) ? (
                                     <div className="flex gap-2">
                                        <button onClick={() => handleApproveArtist(u.id)} disabled={approvingId === u.id} className="p-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors disabled:opacity-50" title="Approve Artist">
                                           {approvingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
@@ -1130,38 +1245,16 @@ export const AdminDashboard: React.FC = () => {
                                  ) : (
                                     <div className="flex gap-2">
                                        {u.role === 'USER' && (
-                                          <button
-                                             onClick={() => handleUpdateUserRole(u.id, 'ARTIST')}
-                                             className="p-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 rounded transition-colors"
-                                             title="Promote to Artist"
-                                          >
+                                          <button onClick={() => handleUpdateUserRole(u.id, 'ARTIST')} className="p-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 rounded transition-colors" title="Promote to Artist">
                                              <Palette size={16} />
                                           </button>
                                        )}
                                        {u.role === 'ARTIST' && u.isApproved && (
-                                          <button
-                                             onClick={() => handleUpdateUserRole(u.id, 'USER')}
-                                             className="p-2 border border-warm-gray/30 text-warm-gray hover:bg-warm-gray/10 rounded transition-colors"
-                                             title="Demote to User"
-                                          >
+                                          <button onClick={() => handleUpdateUserRole(u.id, 'USER')} className="p-2 border border-warm-gray/30 text-warm-gray hover:bg-warm-gray/10 rounded transition-colors" title="Demote to User">
                                              <UserX size={16} />
                                           </button>
                                        )}
-                                       {u.role === 'ARTIST' && !u.isApproved && (
-                                          <button
-                                             onClick={() => handleApproveArtist(u.id)}
-                                             disabled={approvingId === u.id}
-                                             className="p-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors disabled:opacity-50"
-                                             title="Approve Artist"
-                                          >
-                                             {approvingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <UserCheck size={16} />}
-                                          </button>
-                                       )}
-                                       <button
-                                          onClick={() => handleDeleteUser(u.id, u.fullName || u.email)}
-                                          className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors"
-                                          title="Delete User"
-                                       >
+                                       <button onClick={() => handleDeleteUser(u.id, u.fullName || u.email)} className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete User">
                                           <Trash2 size={16} />
                                        </button>
                                     </div>
@@ -1169,8 +1262,40 @@ export const AdminDashboard: React.FC = () => {
                               </td>
                            </tr>
                         ))}
+                        {(userSubTab === 'PENDING' ? pendingArtists : sortedUsers).length === 0 && (
+                           <tr><td colSpan={5} className="p-8 text-center text-warm-gray">No users found</td></tr>
+                        )}
                      </tbody>
                   </table>
+                  )}
+
+                  {/* Pagination */}
+                  {userSubTab !== 'PENDING' && usersPagination.totalPages > 1 && !isLoadingUsers && (
+                     <div className="flex items-center justify-between px-4 py-3 border-t border-pearl/10">
+                        <span className="text-xs text-warm-gray font-mono">
+                           Showing {((usersPagination.page - 1) * 20) + 1}–{Math.min(usersPagination.page * 20, usersPagination.total)} of {usersPagination.total}
+                        </span>
+                        <div className="flex gap-2">
+                           <button
+                              disabled={usersPagination.page <= 1}
+                              onClick={() => loadUsers(usersPagination.page - 1)}
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-pearl disabled:opacity-30 disabled:cursor-not-allowed"
+                           >
+                              Previous
+                           </button>
+                           <span className="px-3 py-1 text-xs text-warm-gray font-mono">
+                              {usersPagination.page} / {usersPagination.totalPages}
+                           </span>
+                           <button
+                              disabled={usersPagination.page >= usersPagination.totalPages}
+                              onClick={() => loadUsers(usersPagination.page + 1)}
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-pearl disabled:opacity-30 disabled:cursor-not-allowed"
+                           >
+                              Next
+                           </button>
+                        </div>
+                     </div>
+                  )}
                </div>
             </div>
          )}
@@ -1352,6 +1477,107 @@ export const AdminDashboard: React.FC = () => {
                      </div>
                   </div>
                </div>
+            </div>
+         )}
+
+         {/* REFERRALS TAB */}
+         {activeTab === 'REFERRALS' && (
+            <div className="space-y-8 animate-fade-in">
+               <div className="flex justify-between items-center">
+                  <h3 className="text-2xl font-display text-pearl">Referral Program</h3>
+                  <div className="flex items-center gap-3">
+                     <span className="text-xs text-warm-gray uppercase tracking-widest">
+                        {referralConfig.isEnabled ? 'Active' : 'Inactive'}
+                     </span>
+                     <button
+                        onClick={() => setReferralConfig(c => ({ ...c, isEnabled: !c.isEnabled }))}
+                        className={`relative w-12 h-6 rounded-full transition-colors ${referralConfig.isEnabled ? 'bg-green-500' : 'bg-warm-gray/30'}`}
+                     >
+                        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${referralConfig.isEnabled ? 'left-7' : 'left-1'}`} />
+                     </button>
+                  </div>
+               </div>
+
+               {isLoadingReferrals ? (
+                  <div className="flex items-center justify-center py-16">
+                     <Loader2 size={24} className="animate-spin text-tangerine" />
+                     <span className="ml-3 text-warm-gray text-sm">Loading referral data...</span>
+                  </div>
+               ) : (
+               <>
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                     <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
+                        <Users size={32} className="text-tangerine mx-auto mb-3" />
+                        <div className="text-3xl font-display text-pearl mb-1">{referralStats?.totalReferredUsers || 0}</div>
+                        <div className="text-xs text-warm-gray uppercase tracking-widest">Total Referrals</div>
+                     </div>
+                     <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
+                        <UserCheck size={32} className="text-tangerine mx-auto mb-3" />
+                        <div className="text-3xl font-display text-pearl mb-1">{referralStats?.totalReferrers || 0}</div>
+                        <div className="text-xs text-warm-gray uppercase tracking-widest">Active Referrers</div>
+                     </div>
+                     <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
+                        <DollarSign size={32} className="text-tangerine mx-auto mb-3" />
+                        <div className="text-3xl font-display text-pearl mb-1">{referralConfig.isEnabled ? `${referralConfig.rewardPercentage}%` : 'Off'}</div>
+                        <div className="text-xs text-warm-gray uppercase tracking-widest">Reward Rate</div>
+                     </div>
+                  </div>
+
+                  {/* Configuration Form */}
+                  <div className="bg-charcoal/30 border border-pearl/10 p-8 space-y-6">
+                     <h4 className="text-warm-gray text-xs uppercase tracking-widest">Program Settings</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Reward Percentage (%)</label>
+                           <input type="number" min="0" max="100" value={referralConfig.rewardPercentage} onChange={(e) => setReferralConfig(c => ({ ...c, rewardPercentage: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Fixed Reward Amount (PKR)</label>
+                           <input type="number" min="0" value={referralConfig.rewardAmount} onChange={(e) => setReferralConfig(c => ({ ...c, rewardAmount: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                        </div>
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Max Rewards Per User</label>
+                           <input type="number" min="1" value={referralConfig.maxRewardsPerUser} onChange={(e) => setReferralConfig(c => ({ ...c, maxRewardsPerUser: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                        </div>
+                     </div>
+                     <Button variant="primary" onClick={handleSaveReferralConfig} disabled={isSavingReferralConfig}>
+                        {isSavingReferralConfig ? <><Loader2 size={16} className="animate-spin mr-2" /> Saving...</> : 'Save Configuration'}
+                     </Button>
+                  </div>
+
+                  {/* Top Referrers Table */}
+                  <div className="border border-pearl/10 rounded overflow-hidden">
+                     <div className="bg-charcoal/30 px-6 py-4 border-b border-pearl/10">
+                        <h4 className="text-warm-gray text-xs uppercase tracking-widest">Top Referrers</h4>
+                     </div>
+                     <table className="w-full text-left text-sm">
+                        <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
+                           <tr>
+                              <th className="p-4">User</th>
+                              <th className="p-4">Referral Code</th>
+                              <th className="p-4">Referrals</th>
+                           </tr>
+                        </thead>
+                        <tbody className="divide-y divide-pearl/5">
+                           {referralStats?.topReferrers.map((r: any) => (
+                              <tr key={r.id} className="hover:bg-pearl/5 transition-colors">
+                                 <td className="p-4">
+                                    <div className="text-pearl font-medium">{r.fullName}</div>
+                                    <div className="text-xs text-warm-gray">{r.email}</div>
+                                 </td>
+                                 <td className="p-4 font-mono text-tangerine text-xs">{r.referralCode}</td>
+                                 <td className="p-4 text-pearl font-display text-lg">{r.referralCount}</td>
+                              </tr>
+                           ))}
+                           {(!referralStats?.topReferrers || referralStats.topReferrers.length === 0) && (
+                              <tr><td colSpan={3} className="p-8 text-center text-warm-gray">No referrals yet</td></tr>
+                           )}
+                        </tbody>
+                     </table>
+                  </div>
+               </>
+               )}
             </div>
          )}
 

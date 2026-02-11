@@ -103,7 +103,7 @@ export const Auth: React.FC = () => {
           } else {
              const response = await apiFetch(`${API_URL}/auth/register`, {
                 method: 'POST',
-                body: JSON.stringify({ email, password, fullName, role, phoneNumber, address, city, country, zipCode, recaptchaToken }),
+                body: JSON.stringify({ email, password, fullName, role, phoneNumber, address, city, country, zipCode, recaptchaToken, referralCode: searchParams.get('ref') || undefined }),
              });
 
             const data = await response.json();

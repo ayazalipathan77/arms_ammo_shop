@@ -7,6 +7,7 @@ import {
     getPendingArtists,
     approveArtist,
     rejectArtist,
+    getReferralStats,
 } from '../controllers/admin.controller';
 import { authenticate, authorizeRole } from '../middleware/auth.middleware';
 
@@ -27,5 +28,8 @@ router.delete('/users/:id', deleteUser);
 router.get('/artists/pending', getPendingArtists);
 router.put('/artists/:id/approve', approveArtist);
 router.put('/artists/:id/reject', rejectArtist);
+
+// Referral Management
+router.get('/referrals/stats', getReferralStats);
 
 export default router;

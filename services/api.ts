@@ -854,11 +854,19 @@ export const adminApi = {
         return response.json();
     },
 
-    // Get All Users
-    getUsers: async (filters: { role?: string; search?: string } = {}): Promise<{ users: any[] }> => {
+    // Get All Users (paginated with counts)
+    getUsers: async (filters: { role?: string; search?: string; page?: number; limit?: number } = {}): Promise<{
+        users: any[];
+        total: number;
+        page: number;
+        totalPages: number;
+        counts: { all: number; collectors: number; artists: number; pending: number };
+    }> => {
         const params = new URLSearchParams();
         if (filters.role) params.append('role', filters.role);
         if (filters.search) params.append('search', filters.search);
+        if (filters.page) params.append('page', String(filters.page));
+        if (filters.limit) params.append('limit', String(filters.limit));
 
         const response = await authFetch(`${API_URL}/admin/users?${params}`);
         if (!response.ok) throw new Error('Failed to fetch users');
@@ -884,6 +892,18 @@ export const adminApi = {
             const error = await response.json();
             throw new Error(error.message || 'Failed to delete user');
         }
+        return response.json();
+    },
+
+    // Get Referral Program Stats (Admin)
+    getReferralStats: async (): Promise<{
+        totalReferredUsers: number;
+        totalReferrers: number;
+        topReferrers: Array<{ id: string; fullName: string; email: string; referralCode: string; referralCount: number }>;
+        config: { isEnabled: boolean; rewardPercentage: number; rewardAmount: number; maxRewardsPerUser: number };
+    }> => {
+        const response = await authFetch(`${API_URL}/admin/referrals/stats`);
+        if (!response.ok) throw new Error('Failed to fetch referral stats');
         return response.json();
     },
 

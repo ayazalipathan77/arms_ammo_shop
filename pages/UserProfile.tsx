@@ -322,6 +322,14 @@ export const UserProfile: React.FC = () => {
                      {/* REFERRALS */}
                      {activeTab === 'REFERRALS' && (
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+                           {referralData?.programEnabled === false ? (
+                              <div className="text-center py-16 space-y-4">
+                                 <Gift className="w-16 h-16 text-warm-gray/30 mx-auto" />
+                                 <h3 className="font-display text-xl text-pearl">Referral Program Inactive</h3>
+                                 <p className="text-warm-gray text-sm">The referral program is currently not available. Check back later!</p>
+                              </div>
+                           ) : (
+                           <>
                            <div>
                               <h3 className="font-display text-2xl text-pearl mb-2">Referral Program</h3>
                               <p className="text-warm-gray text-sm">Share Muraqqa with friends and earn rewards</p>
@@ -451,6 +459,8 @@ export const UserProfile: React.FC = () => {
                               <div className="text-center py-12">
                                  <div className="animate-pulse text-warm-gray">Loading referral data...</div>
                               </div>
+                           )}
+                           </>
                            )}
                         </motion.div>
                      )}

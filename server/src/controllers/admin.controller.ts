@@ -109,11 +109,14 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
     }
 };
 
-// Get All Users (with filtering)
+// Get All Users (with filtering, pagination, counts)
 export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
     try {
         const role = typeof req.query.role === 'string' ? req.query.role : undefined;
         const search = typeof req.query.search === 'string' ? req.query.search : undefined;
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 20;
+        const skip = (page - 1) * limit;
 
         const where: any = {};
         if (role) where.role = role;
@@ -124,31 +127,51 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
             ];
         }
 
-        const users = await prisma.user.findMany({
-            where,
-            select: {
-                id: true,
-                fullName: true,
-                email: true,
-                role: true,
-                isEmailVerified: true,
-                isApproved: true,
-                approvedAt: true,
-                createdAt: true,
-                artistProfile: {
-                    select: {
-                        id: true,
-                        bio: true,
-                        portfolioUrl: true,
-                        originCity: true,
-                        imageUrl: true
+        const [users, total, countAll, countCollectors, countArtists, countPending] = await Promise.all([
+            prisma.user.findMany({
+                where,
+                select: {
+                    id: true,
+                    fullName: true,
+                    email: true,
+                    role: true,
+                    isEmailVerified: true,
+                    isApproved: true,
+                    approvedAt: true,
+                    createdAt: true,
+                    artistProfile: {
+                        select: {
+                            id: true,
+                            bio: true,
+                            portfolioUrl: true,
+                            originCity: true,
+                            imageUrl: true
+                        }
                     }
-                }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit,
+            }),
+            prisma.user.count({ where }),
+            prisma.user.count(),
+            prisma.user.count({ where: { role: 'USER' } }),
+            prisma.user.count({ where: { role: 'ARTIST' } }),
+            prisma.user.count({ where: { role: 'ARTIST', isApproved: false } }),
+        ]);
 
-        res.status(StatusCodes.OK).json({ users });
+        res.status(StatusCodes.OK).json({
+            users,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+            counts: {
+                all: countAll,
+                collectors: countCollectors,
+                artists: countArtists,
+                pending: countPending,
+            },
+        });
     } catch (error) {
         console.error('Get all users error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to fetch users' });
@@ -288,18 +311,20 @@ export const approveArtist = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        if (!user.isEmailVerified) {
-            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Artist email is not verified yet' });
+        const force = req.query.force === 'true';
+        if (!user.isEmailVerified && !force) {
+            res.status(StatusCodes.BAD_REQUEST).json({ message: 'Artist email is not verified yet. Use force approve to override.' });
             return;
         }
 
-        // Approve the artist
+        // Approve the artist (force also verifies email)
         const updatedUser = await prisma.user.update({
             where: { id: artistUserId },
             data: {
                 isApproved: true,
                 approvedAt: new Date(),
-                approvedBy: adminUserId
+                approvedBy: adminUserId,
+                ...(force && !user.isEmailVerified ? { isEmailVerified: true } : {}),
             }
         });
 
@@ -382,5 +407,45 @@ export const rejectArtist = async (req: Request, res: Response): Promise<void> =
     } catch (error) {
         console.error('Reject artist error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to reject artist' });
+    }
+};
+
+// Get Referral Program Stats (Admin)
+export const getReferralStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const [totalReferredUsers, totalReferrers, referrers, referralConfig] = await Promise.all([
+            prisma.user.count({ where: { referredBy: { not: null } } }),
+            prisma.user.count({ where: { referralCode: { not: null } } }),
+            prisma.user.findMany({
+                where: { referralCode: { not: null } },
+                select: { id: true, fullName: true, email: true, referralCode: true },
+            }),
+            prisma.setting.findUnique({ where: { key: 'referralConfig' } }),
+        ]);
+
+        // Get referral counts per referrer
+        const topReferrers = await Promise.all(
+            referrers.map(async (user) => {
+                const count = await prisma.user.count({ where: { referredBy: user.id } });
+                return { ...user, referralCount: count };
+            })
+        );
+
+        const sortedTopReferrers = topReferrers
+            .filter(u => u.referralCount > 0)
+            .sort((a, b) => b.referralCount - a.referralCount)
+            .slice(0, 10);
+
+        const defaultConfig = { isEnabled: false, rewardPercentage: 0, rewardAmount: 0, maxRewardsPerUser: 10 };
+
+        res.status(StatusCodes.OK).json({
+            totalReferredUsers,
+            totalReferrers,
+            topReferrers: sortedTopReferrers,
+            config: (referralConfig?.value as any) || defaultConfig,
+        });
+    } catch (error) {
+        console.error('Get referral stats error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to fetch referral stats' });
     }
 };
