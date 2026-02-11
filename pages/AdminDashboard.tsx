@@ -81,8 +81,10 @@ export const AdminDashboard: React.FC = () => {
    const [isExhModalOpen, setIsExhModalOpen] = useState(false);
    const [editingExhId, setEditingExhId] = useState<string | null>(null);
    const [isUploadingExhImage, setIsUploadingExhImage] = useState(false);
+   const [isUploadingExhGallery, setIsUploadingExhGallery] = useState(false);
    const [newExh, setNewExh] = useState({
-      title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING'
+      title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '', isVirtual: false, status: 'UPCOMING',
+      galleryImages: [] as string[], videoUrl: '', virtualUrl: '', venueName: ''
    });
 
    // Order Management State
@@ -533,7 +535,7 @@ export const AdminDashboard: React.FC = () => {
          setEditingExhId(null);
          setNewExh({
             title: '', description: '', startDate: '', endDate: '', location: '', imageUrl: '',
-            isVirtual: false, status: 'UPCOMING', galleryImages: [], videoUrl: ''
+            isVirtual: false, status: 'UPCOMING', galleryImages: [], videoUrl: '', virtualUrl: '', venueName: ''
          });
       } catch (err) {
          alert(`Failed to ${editingExhId ? 'update' : 'add'} exhibition`);
@@ -547,12 +549,14 @@ export const AdminDashboard: React.FC = () => {
          description: ex.description,
          startDate: ex.startDate.split('T')[0],
          endDate: ex.endDate ? ex.endDate.split('T')[0] : '',
-         location: ex.location,
+         location: ex.location || '',
          imageUrl: ex.imageUrl,
          isVirtual: ex.isVirtual,
          status: ex.status,
          galleryImages: ex.galleryImages || [],
-         videoUrl: ex.videoUrl || ''
+         videoUrl: ex.videoUrl || '',
+         virtualUrl: ex.virtualUrl || '',
+         venueName: ex.venueName || ''
       });
       setIsExhModalOpen(true);
    };
@@ -935,21 +939,22 @@ export const AdminDashboard: React.FC = () => {
                   </Button>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                   {exhibitions.map((ex: any) => (
                      <div key={ex.id} className="group relative border border-pearl/10 bg-charcoal/30 overflow-hidden hover:border-tangerine transition-colors duration-300">
-                        <div className="aspect-video relative overflow-hidden">
+                        <div className="h-32 relative overflow-hidden">
                            <img src={ex.imageUrl} alt={ex.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-                           <div className={`absolute top-2 left-2 px-2 py-1 text-[10px] uppercase font-bold tracking-widest bg-void border ${ex.status === 'CURRENT' ? 'border-tangerine text-tangerine' : 'border-warm-gray text-warm-gray'}`}>
+                           <div className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] uppercase font-bold tracking-widest bg-void border ${ex.status === 'CURRENT' ? 'border-tangerine text-tangerine' : 'border-warm-gray text-warm-gray'}`}>
                               {ex.status}
                            </div>
                         </div>
-                        <div className="p-4">
-                           <h4 className="font-display text-lg text-pearl mb-1">{ex.title}</h4>
-                           <p className="text-warm-gray text-xs mb-4">{format(new Date(ex.startDate), 'MMM d, yyyy')}</p>
-                           <div className="flex gap-2">
-                              <button onClick={() => handleEditExhibition(ex)} className="flex-1 py-2 text-xs border border-pearl/20 text-pearl hover:bg-pearl hover:text-void transition-colors uppercase tracking-widest">Edit</button>
-                              <button onClick={() => deleteExhibition(ex.id)} className="px-3 border border-pearl/20 text-warm-gray hover:border-red-500 hover:text-red-500"><Trash2 size={14} /></button>
+                        <div className="p-3">
+                           <h4 className="font-display text-sm font-medium text-pearl mb-0.5 truncate">{ex.title}</h4>
+                           <p className="text-warm-gray text-[10px] mb-0.5">{format(new Date(ex.startDate), 'MMM d, yyyy')}</p>
+                           {ex.location && <p className="text-warm-gray/60 text-[10px] mb-2 truncate">{ex.location}</p>}
+                           <div className="flex gap-1.5">
+                              <button onClick={() => handleEditExhibition(ex)} className="flex-1 py-1.5 text-[10px] border border-pearl/20 text-pearl hover:bg-pearl hover:text-void transition-colors uppercase tracking-widest">Edit</button>
+                              <button onClick={() => deleteExhibition(ex.id)} className="px-2 border border-pearl/20 text-warm-gray hover:border-red-500 hover:text-red-500"><Trash2 size={12} /></button>
                            </div>
                         </div>
                      </div>
@@ -1672,24 +1677,55 @@ export const AdminDashboard: React.FC = () => {
          {/* Exhibition Modal */}
          {isExhModalOpen && (
             <div className="fixed inset-0 z-[100] bg-void/90 backdrop-blur-sm flex items-center justify-center p-4">
-               <div className="bg-charcoal border border-pearl/20 w-full max-w-2xl p-8 relative">
-                  <button onClick={() => setIsExhModalOpen(false)} className="absolute top-4 right-4 text-warm-gray hover:text-pearl"><X size={24} /></button>
+               <div className="bg-charcoal border border-pearl/20 w-full max-w-5xl p-8 relative max-h-[90vh] overflow-y-auto">
+                  <button onClick={() => setIsExhModalOpen(false)} className="absolute top-4 right-4 text-warm-gray hover:text-pearl z-10"><X size={24} /></button>
                   <h3 className="text-2xl font-display text-pearl mb-6">{editingExhId ? 'Edit Exhibition' : 'Curate Exhibition'}</h3>
                   <div className="space-y-4">
                      {/* Title & Location */}
-                     <div className="grid grid-cols-2 gap-4">
-                        <div>
+                     <div className="grid grid-cols-3 gap-4">
+                        <div className="col-span-2">
                            <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Title</label>
                            <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Exhibition Title" value={newExh.title} onChange={e => setNewExh({ ...newExh, title: e.target.value })} />
                         </div>
                         <div>
                            <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Location</label>
-                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Gallery or Virtual URL" value={newExh.location} onChange={e => setNewExh({ ...newExh, location: e.target.value })} />
+                           <select
+                              className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none"
+                              value={newExh.location}
+                              onChange={e => {
+                                 const val = e.target.value;
+                                 setNewExh(prev => ({
+                                    ...prev,
+                                    location: val,
+                                    isVirtual: val === 'Virtual Exhibition',
+                                 }));
+                              }}
+                           >
+                              <option value="" disabled>Select Location...</option>
+                              <option value="Muraqqa Main Gallery">Muraqqa Main Gallery</option>
+                              <option value="Muraqqa North Wing">Muraqqa North Wing</option>
+                              <option value="Virtual Exhibition">Virtual Exhibition</option>
+                              <option value="External Venue">External Venue</option>
+                           </select>
                         </div>
                      </div>
 
-                     {/* Dates & Status */}
-                     <div className="grid grid-cols-3 gap-4">
+                     {/* Conditional: Virtual URL or External Venue Name */}
+                     {newExh.location === 'Virtual Exhibition' && (
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Virtual Exhibition URL</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="https://..." value={newExh.virtualUrl || ''} onChange={e => setNewExh({ ...newExh, virtualUrl: e.target.value })} />
+                        </div>
+                     )}
+                     {newExh.location === 'External Venue' && (
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Venue Name & Address</label>
+                           <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Venue name and address" value={newExh.venueName || ''} onChange={e => setNewExh({ ...newExh, venueName: e.target.value })} />
+                        </div>
+                     )}
+
+                     {/* Dates, Status & Virtual */}
+                     <div className="grid grid-cols-4 gap-4">
                         <div>
                            <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Start Date</label>
                            <input type="date" className="w-full bg-void border border-pearl/20 p-3 text-pearl" value={newExh.startDate} onChange={e => setNewExh({ ...newExh, startDate: e.target.value })} />
@@ -1706,6 +1742,12 @@ export const AdminDashboard: React.FC = () => {
                               <option value="PAST">Past Reflection</option>
                            </select>
                         </div>
+                        <div className="flex items-end pb-1">
+                           <label className="flex items-center gap-2 text-sm text-pearl cursor-pointer p-3">
+                              <input type="checkbox" checked={newExh.isVirtual} onChange={e => setNewExh({ ...newExh, isVirtual: e.target.checked })} className="accent-tangerine" />
+                              Virtual
+                           </label>
+                        </div>
                      </div>
 
                      {/* Description */}
@@ -1714,91 +1756,108 @@ export const AdminDashboard: React.FC = () => {
                         <textarea className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" rows={3} placeholder="Description" value={newExh.description} onChange={e => setNewExh({ ...newExh, description: e.target.value })} />
                      </div>
 
-                     {/* Main Image */}
-                     <div>
-                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Cover Image</label>
-                        <div className="flex gap-4 items-center">
-                           {newExh.imageUrl ? (
-                              <div className="relative w-32 h-20 group">
-                                 <img src={newExh.imageUrl} alt="Cover" className="w-full h-full object-cover border border-pearl/20" />
-                                 <button onClick={() => setNewExh({ ...newExh, imageUrl: '' })} className="absolute top-1 right-1 bg-red-500/80 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
-                              </div>
-                           ) : (
-                              <label className="w-32 h-20 border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-pearl hover:border-pearl cursor-pointer">
-                                 <Upload size={20} className="mb-1" />
-                                 <span className="text-[10px] uppercase">Upload</span>
-                                 <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                       try {
-                                          setIsUploadingExhImage(true);
-                                          const url = await uploadApi.uploadImage(file);
-                                          setNewExh({ ...newExh, imageUrl: url });
-                                       } catch (err: any) {
-                                          alert(err.message || 'Upload failed');
-                                       } finally {
-                                          setIsUploadingExhImage(false);
+                     {/* Cover Image & Video URL side by side */}
+                     <div className="grid grid-cols-2 gap-6">
+                        {/* Cover Image */}
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Cover Image</label>
+                           <div className="flex gap-4 items-center">
+                              {newExh.imageUrl ? (
+                                 <div className="relative w-32 h-20 group">
+                                    <img src={newExh.imageUrl} alt="Cover" className="w-full h-full object-cover border border-pearl/20" />
+                                    <button onClick={() => setNewExh({ ...newExh, imageUrl: '' })} className="absolute top-1 right-1 bg-red-500/80 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
+                                 </div>
+                              ) : isUploadingExhImage ? (
+                                 <div className="w-32 h-20 border border-dashed border-tangerine/50 flex flex-col items-center justify-center bg-void/50">
+                                    <Loader2 size={20} className="animate-spin text-tangerine mb-1" />
+                                    <span className="text-[10px] uppercase text-tangerine">Uploading...</span>
+                                 </div>
+                              ) : (
+                                 <label className="w-32 h-20 border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-pearl hover:border-pearl cursor-pointer">
+                                    <Upload size={20} className="mb-1" />
+                                    <span className="text-[10px] uppercase">Upload</span>
+                                    <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
+                                       const file = e.target.files?.[0];
+                                       if (file) {
+                                          try {
+                                             setIsUploadingExhImage(true);
+                                             const url = await uploadApi.uploadImage(file);
+                                             setNewExh(prev => ({ ...prev, imageUrl: url }));
+                                          } catch (err: any) {
+                                             alert(err.message || 'Upload failed');
+                                          } finally {
+                                             setIsUploadingExhImage(false);
+                                          }
                                        }
-                                    }
-                                 }} />
-                              </label>
+                                    }} />
+                                 </label>
+                              )}
+                           </div>
+                        </div>
+
+                        {/* Youtube Video URL */}
+                        <div>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">YouTube Video URL</label>
+                           <input
+                              className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none"
+                              placeholder="https://www.youtube.com/watch?v=..."
+                              value={newExh.videoUrl || ''}
+                              onChange={e => setNewExh({ ...newExh, videoUrl: e.target.value })}
+                           />
+                           {newExh.videoUrl && (
+                              <p className="text-[10px] text-warm-gray mt-1 flex items-center gap-1">
+                                 <span className="text-tangerine">●</span> Video will appear in the exhibition details
+                              </p>
                            )}
                         </div>
                      </div>
 
-                     {/* Gallery Images (Multi-select) */}
+                     {/* Gallery Images (Multi-select) - Scrollable Container */}
                      <div>
-                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Exhibition Gallery</label>
-                        <div className="grid grid-cols-4 gap-4 mb-2">
-                           {(newExh.galleryImages || []).map((url, idx) => (
-                              <div key={idx} className="relative w-full aspect-square group bg-void">
-                                 <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover border border-pearl/20" />
-                                 <button onClick={() => setNewExh({ ...newExh, galleryImages: newExh.galleryImages!.filter((_, i) => i !== idx) })} className="absolute top-1 right-1 bg-red-500/80 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X size={12} /></button>
-                              </div>
-                           ))}
-                           <label className="w-full aspect-square border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-pearl hover:border-pearl cursor-pointer bg-void/50">
-                              <Upload size={20} className="mb-1" />
-                              <span className="text-[10px] uppercase text-center px-1">Add Photos</span>
-                              <input type="file" className="hidden" accept="image/*" multiple onChange={async (e) => {
-                                 const files = Array.from(e.target.files || []);
-                                 if (files.length > 0) {
-                                    try {
-                                       // Parallel uploads
-                                       const promises = files.map(file => uploadApi.uploadImage(file));
-                                       const urls = await Promise.all(promises);
-                                       setNewExh(prev => ({ ...prev, galleryImages: [...(prev.galleryImages || []), ...urls] }));
-                                    } catch (err: any) {
-                                       alert(err.message || 'One or more uploads failed');
-                                    }
-                                 }
-                              }} />
-                           </label>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">
+                           Exhibition Gallery {(newExh.galleryImages || []).length > 0 && <span className="text-tangerine ml-1">({(newExh.galleryImages || []).length} photos)</span>}
+                        </label>
+                        <div className="max-h-44 overflow-y-auto border border-pearl/10 bg-void/30 p-2 rounded" style={{ scrollbarWidth: 'thin', scrollbarColor: '#6b7280 transparent' }}>
+                           <div className="flex flex-wrap gap-2">
+                              {(newExh.galleryImages || []).map((url, idx) => (
+                                 <div key={idx} className="relative w-20 h-20 flex-shrink-0 group">
+                                    <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover border border-pearl/20" />
+                                    <button onClick={() => setNewExh({ ...newExh, galleryImages: newExh.galleryImages!.filter((_, i) => i !== idx) })} className="absolute top-0.5 right-0.5 bg-red-500/80 p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X size={10} /></button>
+                                 </div>
+                              ))}
+                              {isUploadingExhGallery ? (
+                                 <div className="w-20 h-20 flex-shrink-0 border border-dashed border-tangerine/50 flex flex-col items-center justify-center bg-void/50">
+                                    <Loader2 size={16} className="animate-spin text-tangerine mb-1" />
+                                    <span className="text-[8px] uppercase text-tangerine">Uploading...</span>
+                                 </div>
+                              ) : (
+                                 <label className="w-20 h-20 flex-shrink-0 border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-pearl hover:border-pearl cursor-pointer bg-void/50">
+                                    <Upload size={16} className="mb-1" />
+                                    <span className="text-[8px] uppercase text-center px-1">Add Photos</span>
+                                    <input type="file" className="hidden" accept="image/*" multiple onChange={async (e) => {
+                                       const files = Array.from(e.target.files || []);
+                                       if (files.length > 0) {
+                                          try {
+                                             setIsUploadingExhGallery(true);
+                                             const promises = files.map(file => uploadApi.uploadImage(file));
+                                             const urls = await Promise.all(promises);
+                                             setNewExh(prev => ({ ...prev, galleryImages: [...(prev.galleryImages || []), ...urls] }));
+                                          } catch (err: any) {
+                                             alert(err.message || 'One or more uploads failed');
+                                          } finally {
+                                             setIsUploadingExhGallery(false);
+                                          }
+                                       }
+                                    }} />
+                                 </label>
+                              )}
+                           </div>
                         </div>
                      </div>
 
-                     {/* Youtube Video URL */}
-                     <div>
-                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">YouTube Video URL</label>
-                        <input
-                           className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none"
-                           placeholder="https://www.youtube.com/watch?v=..."
-                           value={newExh.videoUrl || ''}
-                           onChange={e => setNewExh({ ...newExh, videoUrl: e.target.value })}
-                        />
-                        {newExh.videoUrl && (
-                           <p className="text-[10px] text-warm-gray mt-1 flex items-center gap-1">
-                              <span className="text-tangerine">●</span> Video will appear in the exhibition details
-                           </p>
-                        )}
-                     </div>
-
-                     {/* Virtual & Actions */}
-                     <div className="flex justify-between items-center pt-4 border-t border-pearl/10">
-                        <label className="flex items-center gap-2 text-sm text-pearl cursor-pointer">
-                           <input type="checkbox" checked={newExh.isVirtual} onChange={e => setNewExh({ ...newExh, isVirtual: e.target.checked })} className="accent-tangerine" />
-                           Virtual Exhibition
-                        </label>
-                        <Button variant="primary" onClick={handleAddExhibition} className="w-full max-w-[200px]">
+                     {/* Actions */}
+                     <div className="flex justify-end pt-4 border-t border-pearl/10">
+                        <Button variant="primary" onClick={handleAddExhibition} className="w-full max-w-[220px]">
                            {editingExhId ? 'Update' : 'Launch'} Exhibition
                         </Button>
                      </div>
