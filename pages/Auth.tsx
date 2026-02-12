@@ -159,16 +159,16 @@ export const Auth: React.FC = () => {
                   </div>
                   {!registrationSuccess.requiresApproval && (
                      <div className="text-center space-y-4">
-                        <button onClick={handleResendVerification} disabled={isResendingVerification} className="text-tangerine hover:text-white transition-colors text-xs font-bold uppercase tracking-widest">
-                           {isResendingVerification ? 'Sending...' : 'Resend Email'}
-                        </button>
+                         <button onClick={handleResendVerification} disabled={isResendingVerification} className="text-tangerine hover:text-amber transition-colors text-xs font-bold uppercase tracking-widest">
+                            {isResendingVerification ? 'Sending...' : 'Resend Email'}
+                         </button>
                         {resendMessage && <p className="text-xs text-pearl">{resendMessage}</p>}
                      </div>
                   )}
                   <div className="mt-8 pt-6 border-t border-pearl/10">
-                     <button onClick={() => { setRegistrationSuccess(null); setIsLogin(true); }} className="w-full bg-tangerine text-void font-bold uppercase py-3 hover:bg-white transition-colors">
-                        Back to Login
-                     </button>
+                      <button onClick={() => { setRegistrationSuccess(null); setIsLogin(true); }} className="w-full bg-tangerine text-void font-bold uppercase py-3 hover:bg-amber transition-colors">
+                         Back to Login
+                      </button>
                   </div>
                </div>
             </motion.div>
@@ -192,11 +192,11 @@ export const Auth: React.FC = () => {
             <div className="bg-charcoal/50 backdrop-blur-xl border border-pearl/10 p-8 md:p-10 shadow-2xl relative">
                {/* Tabs */}
                <div className="flex mb-8 border-b border-pearl/10">
-                  <button onClick={() => { setIsLogin(true); setError(''); }} className={cn("flex-1 pb-4 text-xs font-bold uppercase tracking-widest transition-colors relative", isLogin ? "text-tangerine" : "text-warm-gray hover:text-pearl")}>
-                     Sign In
-                     {isLogin && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 w-full h-0.5 bg-tangerine" />}
-                  </button>
-                  <button onClick={() => { setIsLogin(false); setError(''); }} className={cn("flex-1 pb-4 text-xs font-bold uppercase tracking-widest transition-colors relative", !isLogin ? "text-tangerine" : "text-warm-gray hover:text-pearl")}>
+                   <button onClick={() => { setIsLogin(true); setError(''); }} className={cn("flex-1 pb-4 text-xs font-bold uppercase tracking-widest transition-colors relative", isLogin ? "text-tangerine" : "text-warm-gray hover:text-tangerine")}>
+                      Sign In
+                      {isLogin && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 w-full h-0.5 bg-tangerine" />}
+                   </button>
+                   <button onClick={() => { setIsLogin(false); setError(''); }} className={cn("flex-1 pb-4 text-xs font-bold uppercase tracking-widest transition-colors relative", !isLogin ? "text-tangerine" : "text-warm-gray hover:text-tangerine")}>
                      Register
                      {!isLogin && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 w-full h-0.5 bg-tangerine" />}
                   </button>
@@ -267,9 +267,9 @@ export const Auth: React.FC = () => {
                      )}
                   </AnimatePresence>
 
-                  <button type="submit" disabled={loading} className="group relative w-full bg-tangerine text-void font-bold uppercase py-4 tracking-[0.2em] text-xs hover:bg-white transition-colors disabled:opacity-50">
-                     {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : (isLogin ? 'Enter Gallery' : 'Create Account')}
-                  </button>
+                    <button type="submit" disabled={loading} className="group relative w-full bg-tangerine text-void font-bold uppercase py-4 tracking-[0.2em] text-xs border border-pearl/20 hover:bg-pearl/5 transition-colors disabled:opacity-50">
+                       {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : <span className="group-hover:text-tangerine transition-colors">{isLogin ? 'Enter Gallery' : 'Create Account'}</span>}
+                    </button>
 
                   <div className="relative py-4">
                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-pearl/10"></div></div>
@@ -277,18 +277,18 @@ export const Auth: React.FC = () => {
                   </div>
 
                   <div className="flex gap-4">
-                     {socialConfig.googleEnabled && (
-                        <button type="button" onClick={() => window.location.href = `${API_URL}/auth/google`} className="flex-1 border border-pearl/10 p-3 flex items-center justify-center gap-2 hover:bg-pearl/5 transition-colors group">
-                           <Chrome size={16} className="text-pearl group-hover:text-tangerine transition-colors" />
-                           <span className="text-xs uppercase font-bold text-pearl">Google</span>
-                        </button>
-                     )}
-                     {socialConfig.facebookEnabled && (
-                        <button type="button" onClick={() => window.location.href = `${API_URL}/auth/facebook`} className="flex-1 border border-pearl/10 p-3 flex items-center justify-center gap-2 hover:bg-pearl/5 transition-colors group">
-                           <Facebook size={16} className="text-pearl group-hover:text-tangerine transition-colors" />
-                           <span className="text-xs uppercase font-bold text-pearl">Facebook</span>
-                        </button>
-                     )}
+                      {socialConfig.googleEnabled && (
+                         <button type="button" onClick={() => window.location.href = `${API_URL}/auth/google`} className="flex-1 border border-pearl/10 p-3 flex items-center justify-center gap-2 hover:bg-pearl/5 hover:border-tangerine transition-colors group">
+                            <Chrome size={16} className="text-pearl group-hover:text-tangerine transition-colors" />
+                            <span className="text-xs uppercase font-bold text-pearl group-hover:text-tangerine transition-colors">Google</span>
+                         </button>
+                      )}
+                      {socialConfig.facebookEnabled && (
+                         <button type="button" onClick={() => window.location.href = `${API_URL}/auth/facebook`} className="flex-1 border border-pearl/10 p-3 flex items-center justify-center gap-2 hover:bg-pearl/5 hover:border-tangerine transition-colors group">
+                            <Facebook size={16} className="text-pearl group-hover:text-tangerine transition-colors" />
+                            <span className="text-xs uppercase font-bold text-pearl group-hover:text-tangerine transition-colors">Facebook</span>
+                         </button>
+                      )}
                   </div>
                </form>
                <div className="mt-8 text-center">

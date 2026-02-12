@@ -6,43 +6,6 @@ import { Menu, X, User, ShoppingBag, LogOut, ChevronDown, Layers } from 'lucide-
 import { useAuth } from '../../context/AuthContext';
 import { useCartContext } from '../../context/CartContext';
 
-const ScrambleText = ({ text }: { text: string }) => {
-    const [display, setDisplay] = useState(text);
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
-
-    const scramble = () => {
-        let iterations = 0;
-        const interval = setInterval(() => {
-            setDisplay(
-                text
-                    .split('')
-                    .map((letter, index) => {
-                        if (index < iterations) {
-                            return text[index];
-                        }
-                        return chars[Math.floor(Math.random() * chars.length)];
-                    })
-                    .join('')
-            );
-
-            if (iterations >= text.length) {
-                clearInterval(interval);
-            }
-
-            iterations += 1 / 3;
-        }, 30);
-    };
-
-    return (
-        <span
-            onMouseEnter={scramble}
-            className="font-display tracking-widest uppercase cursor-pointer block"
-        >
-            {display}
-        </span>
-    );
-};
-
 const Navbar = () => {
     const { scrollY } = useScroll();
     const [isScrolled, setIsScrolled] = useState(false);
@@ -100,7 +63,7 @@ const Navbar = () => {
                     {/* Desktop Links */}
                     <div className="hidden md:flex items-center gap-12">
                         {navItems.map((item) => (
-                            <Link key={item.name} to={item.path} className="text-sm font-medium text-pearl hover:text-white transition-colors relative overflow-hidden">
+                            <Link key={item.name} to={item.path} className="text-sm font-medium text-pearl hover:text-tangerine transition-colors relative overflow-hidden">
                                 <ScrambleText text={item.name} />
                             </Link>
                         ))}
@@ -121,7 +84,7 @@ const Navbar = () => {
                                 <div className="relative">
                                     <button
                                         onClick={() => setUserMenuOpen(!userMenuOpen)}
-                                        className="flex items-center gap-2 text-pearl hover:text-white transition-colors font-mono text-xs uppercase tracking-wider"
+                                        className="flex items-center gap-2 text-pearl hover:text-tangerine transition-colors font-mono text-xs uppercase tracking-wider"
                                     >
                                         <div className="w-8 h-8 rounded-full bg-charcoal border border-pearl/10 flex items-center justify-center text-tangerine">
                                             {user.fullName.charAt(0)}

@@ -75,7 +75,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`text-xs uppercase tracking-[0.2em] font-medium transition-colors hover:text-amber-400 ${isActive ? 'text-amber-500' : 'text-stone-400'}`}
+                  className={`text-xs uppercase tracking-[0.2em] font-medium transition-colors hover:text-tangerine ${isActive ? 'text-tangerine' : 'text-stone-400'}`}
                 >
                   {link.name}
                 </Link>
@@ -87,18 +87,18 @@ export const Navbar: React.FC<NavbarProps> = () => {
           <div className="flex items-center gap-8 z-50">
             <button
               onClick={() => setSearchOpen(true)}
-              className="text-stone-400 hover:text-white transition-colors"
+              className="text-stone-400 hover:text-tangerine transition-colors"
             >
               <Search size={18} />
             </button>
 
             {user && (
-              <Link to="/wishlist" className="text-stone-400 hover:text-white transition-colors" title="Wishlist">
+              <Link to="/wishlist" className="text-stone-400 hover:text-tangerine transition-colors" title="Wishlist">
                 <Heart size={18} />
               </Link>
             )}
 
-            <Link to="/cart" className="text-stone-400 hover:text-white transition-colors relative">
+            <Link to="/cart" className="text-stone-400 hover:text-tangerine transition-colors relative">
               <ShoppingBag size={18} />
               {cart.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-amber-500 text-stone-950 text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
@@ -112,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
-                  className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors focus:outline-none group"
+                  className="flex items-center gap-2 text-stone-400 hover:text-tangerine transition-colors focus:outline-none group"
                 >
                   <User size={18} />
                   <div className="flex flex-col items-start">
@@ -146,13 +146,13 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-sm text-stone-300 hover:text-white hover:bg-stone-800 transition-colors"
+                      className="block px-4 py-2 text-sm text-stone-300 hover:text-tangerine hover:bg-stone-800 transition-colors"
                     >
                       Profile
                     </Link>
                     <Link
                       to="/wishlist"
-                      className="block px-4 py-2 text-sm text-stone-300 hover:text-white hover:bg-stone-800 transition-colors"
+                      className="block px-4 py-2 text-sm text-stone-300 hover:text-tangerine hover:bg-stone-800 transition-colors"
                     >
                       <span className="flex items-center gap-2">
                         <Heart className="w-4 h-4" />
@@ -169,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 </div>
               </div>
             ) : (
-              <Link to="/auth" className="hidden md:block text-xs uppercase tracking-widest text-stone-400 hover:text-white">
+              <Link to="/auth" className="hidden md:block text-xs uppercase tracking-widest text-stone-400 hover:text-tangerine">
                 Log In
               </Link>
             )}
@@ -196,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`font-serif text-3xl transition-colors hover:text-amber-400 ${isActive ? 'text-amber-500' : 'text-white'}`}
+                className={`font-serif text-3xl transition-colors hover:text-tangerine ${isActive ? 'text-tangerine' : 'text-white'}`}
               >
                 {link.name}
               </Link>
@@ -218,9 +218,9 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 )}
               </div>
               {user.role === 'ADMIN' && (
-                <Link to="/admin" className="text-sm uppercase tracking-widest text-amber-500 hover:text-amber-400 font-bold">Admin Dashboard</Link>
+                <Link to="/admin" className="text-sm uppercase tracking-widest text-tangerine hover:text-amber font-bold">Admin Dashboard</Link>
               )}
-              <Link to="/profile" className="text-sm uppercase tracking-widest text-stone-400 hover:text-white">Profile</Link>
+              <Link to="/profile" className="text-sm uppercase tracking-widest text-stone-400 hover:text-tangerine">Profile</Link>
               <button onClick={handleLogout} className="text-sm uppercase tracking-widest text-red-500 hover:text-red-400">Sign Out</button>
             </div>
           ) : (

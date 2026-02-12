@@ -106,7 +106,7 @@ export const ArtistProfile: React.FC = () => {
                 <h1 className="font-serif text-4xl text-white">Edit Profile</h1>
                 <button
                     onClick={() => navigate('/artist-dashboard')}
-                    className="text-stone-500 hover:text-white transition-colors"
+                    className="text-stone-500 hover:text-tangerine transition-colors"
                 >
                     Back to Dashboard
                 </button>

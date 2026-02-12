@@ -198,7 +198,7 @@ export const Collections: React.FC = () => {
                 {checked && <div className="w-2 h-2 bg-void" />}
             </div>
             <input type="radio" name={name} className="hidden" checked={checked} onChange={onChange} />
-            <span className="text-warm-gray group-hover:text-white text-sm font-mono">{label}</span>
+            <span className="text-warm-gray group-hover:text-tangerine text-sm font-mono">{label}</span>
         </label>
     );
 
@@ -314,7 +314,7 @@ export const Collections: React.FC = () => {
                                     <button
                                         key={cat}
                                         onClick={() => updateCategory(cat)}
-                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-white transition-colors ${activeCategory === cat ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
+                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-tangerine transition-colors ${activeCategory === cat ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
                                     >
                                         {cat}
                                     </button>
@@ -330,7 +330,7 @@ export const Collections: React.FC = () => {
                                     <button
                                         key={med}
                                         onClick={() => setActiveMedium(med)}
-                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-white transition-colors ${activeMedium === med ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
+                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-tangerine transition-colors ${activeMedium === med ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
                                     >
                                         {med}
                                     </button>

@@ -20,9 +20,9 @@ const Footer = () => {
                         Exploring the depths of contemporary Pakistani art through a chromatic lens.
                     </p>
                     <div className="flex gap-4">
-                        <a href="#" className="text-warm-gray hover:text-white transition-colors"><Instagram size={18} /></a>
-                        <a href="#" className="text-warm-gray hover:text-white transition-colors"><Facebook size={18} /></a>
-                        <a href="#" className="text-warm-gray hover:text-white transition-colors"><Twitter size={18} /></a>
+                        <a href="#" className="text-warm-gray hover:text-tangerine transition-colors"><Instagram size={18} /></a>
+                        <a href="#" className="text-warm-gray hover:text-tangerine transition-colors"><Facebook size={18} /></a>
+                        <a href="#" className="text-warm-gray hover:text-tangerine transition-colors"><Twitter size={18} /></a>
                     </div>
                 </div>
 
@@ -30,10 +30,10 @@ const Footer = () => {
                 <div>
                     <h3 className="font-display text-sm font-bold uppercase tracking-widest mb-6 text-tangerine">Discover</h3>
                     <ul className="space-y-4 font-mono text-xs">
-                        <li><Link to="/exhibitions" className="text-warm-gray hover:text-pearl transition-colors">Exhibitions</Link></li>
-                        <li><Link to="/artists" className="text-warm-gray hover:text-pearl transition-colors">Artists</Link></li>
-                        <li><Link to="/stories" className="text-warm-gray hover:text-pearl transition-colors">Stories</Link></li>
-                        <li><Link to="/auth" className="text-warm-gray hover:text-pearl transition-colors">Login / Register</Link></li>
+                        <li><Link to="/exhibitions" className="text-warm-gray hover:text-tangerine transition-colors">Exhibitions</Link></li>
+                        <li><Link to="/artists" className="text-warm-gray hover:text-tangerine transition-colors">Artists</Link></li>
+                        <li><Link to="/stories" className="text-warm-gray hover:text-tangerine transition-colors">Stories</Link></li>
+                        <li><Link to="/auth" className="text-warm-gray hover:text-tangerine transition-colors">Login / Register</Link></li>
                     </ul>
                 </div>
 
@@ -41,10 +41,10 @@ const Footer = () => {
                 <div>
                     <h3 className="font-display text-sm font-bold uppercase tracking-widest mb-6 text-tangerine">Support</h3>
                     <ul className="space-y-4 font-mono text-xs">
-                        <li><Link to="/cart" className="text-warm-gray hover:text-pearl transition-colors">Cart</Link></li>
-                        <li><Link to="/contact" className="text-warm-gray hover:text-pearl transition-colors">Shipping Policy</Link></li>
-                        <li><Link to="/terms-of-service" className="text-warm-gray hover:text-pearl transition-colors">Terms of Service</Link></li>
-                        <li><Link to="/privacy-policy" className="text-warm-gray hover:text-pearl transition-colors">Privacy Policy</Link></li>
+                        <li><Link to="/cart" className="text-warm-gray hover:text-tangerine transition-colors">Cart</Link></li>
+                        <li><Link to="/contact" className="text-warm-gray hover:text-tangerine transition-colors">Shipping Policy</Link></li>
+                        <li><Link to="/terms-of-service" className="text-warm-gray hover:text-tangerine transition-colors">Terms of Service</Link></li>
+                        <li><Link to="/privacy-policy" className="text-warm-gray hover:text-tangerine transition-colors">Privacy Policy</Link></li>
                     </ul>
                 </div>
 
@@ -58,7 +58,7 @@ const Footer = () => {
                             placeholder="EMAIL ADDRESS"
                             className="bg-transparent border-none outline-none text-xs font-mono text-pearl w-full placeholder:text-warm-gray/50"
                         />
-                        <button className="text-tangerine hover:text-white transition-colors">
+                        <button className="text-tangerine hover:text-amber transition-colors">
                             <ArrowUpRight size={16} />
                         </button>
                     </div>

@@ -797,7 +797,7 @@ export const AdminDashboard: React.FC = () => {
             "text-xs font-bold px-6 py-2 uppercase tracking-widest transition-all whitespace-nowrap border rounded-sm",
             active
                ? "bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black"
-               : "bg-transparent text-warm-gray border-pearl/10 hover:border-pearl/40 hover:text-pearl high-contrast:text-black high-contrast:border-black/50"
+               : "bg-transparent text-warm-gray border-pearl/10 hover:border-pearl/40 hover:text-tangerine high-contrast:text-black high-contrast:border-black/50"
          )}
       >
          {tab}
@@ -913,7 +913,7 @@ export const AdminDashboard: React.FC = () => {
                               </td>
                               <td className="p-4">
                                  <div className="flex gap-2">
-                                    <button onClick={() => handleEditArtwork(art)} className="text-warm-gray hover:text-pearl transition-colors">
+                                    <button onClick={() => handleEditArtwork(art)} className="text-warm-gray hover:text-tangerine transition-colors">
                                        <Edit size={16} />
                                     </button>
                                     <button onClick={() => deleteArtwork(art.id)} className="text-warm-gray hover:text-red-500 transition-colors">
@@ -1008,21 +1008,21 @@ export const AdminDashboard: React.FC = () => {
                               <td className="p-4" onClick={e => e.stopPropagation()}>
                                  <div className="flex gap-2">
                                     {order.status === 'PAID' && (
-                                       <button onClick={() => handleRequestArtistConfirmation(order.id)} className="text-amber hover:text-white" title="Request Artist Confirmation" disabled={orderActionLoading === order.id}><Mail size={16} /></button>
+                                       <button onClick={() => handleRequestArtistConfirmation(order.id)} className="text-amber hover:text-tangerine" title="Request Artist Confirmation" disabled={orderActionLoading === order.id}><Mail size={16} /></button>
                                     )}
                                     {order.status === 'AWAITING_CONFIRMATION' && (
-                                       <button onClick={() => handleAdminConfirm(order.id)} className="text-green-400 hover:text-white" title="Confirm Order" disabled={orderActionLoading === order.id}><Check size={16} /></button>
+                                       <button onClick={() => handleAdminConfirm(order.id)} className="text-green-400 hover:text-tangerine" title="Confirm Order" disabled={orderActionLoading === order.id}><Check size={16} /></button>
                                     )}
                                     {order.status === 'CONFIRMED' && (
-                                       <button onClick={() => setShipModal({ orderId: order.id, trackingNumber: '', carrier: '', notes: '' })} className="text-purple-400 hover:text-white" title="Ship Order"><Truck size={16} /></button>
+                                       <button onClick={() => setShipModal({ orderId: order.id, trackingNumber: '', carrier: '', notes: '' })} className="text-purple-400 hover:text-tangerine" title="Ship Order"><Truck size={16} /></button>
                                     )}
                                     {order.status === 'SHIPPED' && (
-                                       <button onClick={() => handleDeliverOrder(order.id)} className="text-green-400 hover:text-white" title="Mark Delivered" disabled={orderActionLoading === order.id}><Check size={16} /></button>
+                                       <button onClick={() => handleDeliverOrder(order.id)} className="text-green-400 hover:text-tangerine" title="Mark Delivered" disabled={orderActionLoading === order.id}><Check size={16} /></button>
                                     )}
                                     {!['DELIVERED', 'CANCELLED'].includes(order.status) && (
                                        <button onClick={() => setCancelModal({ orderId: order.id, reason: '' })} className="text-red-400 hover:text-red-300" title="Cancel Order"><X size={16} /></button>
                                     )}
-                                    <button onClick={() => setOrderNotesInput({ orderId: order.id, notes: order.adminNotes || '' })} className="text-warm-gray hover:text-pearl" title="Admin Notes"><Edit size={16} /></button>
+                                    <button onClick={() => setOrderNotesInput({ orderId: order.id, notes: order.adminNotes || '' })} className="text-warm-gray hover:text-tangerine" title="Admin Notes"><Edit size={16} /></button>
                                  </div>
                               </td>
                            </tr>
@@ -1044,7 +1044,7 @@ export const AdminDashboard: React.FC = () => {
                               <span className={`px-3 py-1 border text-[10px] font-bold uppercase tracking-wider ${getOrderStatusColor(selectedOrder.status)}`}>
                                  {getOrderStatusLabel(selectedOrder.status)}
                               </span>
-                              <button onClick={() => setSelectedOrder(null)} className="text-warm-gray hover:text-pearl"><X size={20} /></button>
+                              <button onClick={() => setSelectedOrder(null)} className="text-warm-gray hover:text-tangerine"><X size={20} /></button>
                            </div>
                         </div>
 
@@ -1463,7 +1463,7 @@ export const AdminDashboard: React.FC = () => {
                            <button
                               key={sub}
                               onClick={() => setUserSubTab(sub)}
-                              className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border flex items-center gap-1.5 ${userSubTab === sub ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-pearl'}`}
+                              className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border flex items-center gap-1.5 ${userSubTab === sub ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-tangerine'}`}
                            >
                               {sub}
                               <span className={`px-1.5 py-0.5 text-[9px] rounded-full ${userSubTab === sub ? 'bg-void/20 text-void' : 'bg-pearl/10 text-warm-gray'}`}>
@@ -1498,11 +1498,11 @@ export const AdminDashboard: React.FC = () => {
                      <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
                         <tr>
                            <th className="p-4">User</th>
-                           <th className="p-4 cursor-pointer hover:text-pearl select-none" onClick={() => toggleSort('role')}>
+                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleSort('role')}>
                               <span className="flex items-center gap-1">Role {userSortField === 'role' && (userSortDir === 'asc' ? '↑' : '↓')}</span>
                            </th>
                            <th className="p-4">Status</th>
-                           <th className="p-4 cursor-pointer hover:text-pearl select-none" onClick={() => toggleSort('createdAt')}>
+                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleSort('createdAt')}>
                               <span className="flex items-center gap-1">Joined {userSortField === 'createdAt' && (userSortDir === 'asc' ? '↑' : '↓')}</span>
                            </th>
                            <th className="p-4">Actions</th>
@@ -1588,7 +1588,7 @@ export const AdminDashboard: React.FC = () => {
                            <button
                               disabled={usersPagination.page <= 1}
                               onClick={() => loadUsers(usersPagination.page - 1)}
-                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-pearl disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine disabled:opacity-30 disabled:cursor-not-allowed"
                            >
                               Previous
                            </button>
@@ -1598,7 +1598,7 @@ export const AdminDashboard: React.FC = () => {
                            <button
                               disabled={usersPagination.page >= usersPagination.totalPages}
                               onClick={() => loadUsers(usersPagination.page + 1)}
-                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-pearl disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine disabled:opacity-30 disabled:cursor-not-allowed"
                            >
                               Next
                            </button>
@@ -1619,7 +1619,7 @@ export const AdminDashboard: React.FC = () => {
                         <button
                            key={status}
                            onClick={() => setReviewFilter(status)}
-                           className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${reviewFilter === status ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-pearl'}`}
+                           className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${reviewFilter === status ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-tangerine'}`}
                         >
                            {status}
                         </button>
@@ -2120,7 +2120,7 @@ export const AdminDashboard: React.FC = () => {
          {isAddModalOpen && (
             <div className="fixed inset-0 z-[100] bg-void/90 backdrop-blur-sm flex items-center justify-center p-4">
                <div className="bg-charcoal border border-pearl/20 w-full max-w-2xl max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative">
-                  <button onClick={() => setIsAddModalOpen(false)} className="absolute top-4 right-4 text-warm-gray hover:text-pearl"><X size={24} /></button>
+                  <button onClick={() => setIsAddModalOpen(false)} className="absolute top-4 right-4 text-warm-gray hover:text-tangerine"><X size={24} /></button>
                   <h3 className="text-2xl font-display text-pearl mb-6 border-b border-pearl/10 pb-4">{editingArtworkId ? 'Edit Masterpiece' : 'New Masterpiece'}</h3>
 
                   <div className="space-y-4">
@@ -2213,7 +2213,7 @@ export const AdminDashboard: React.FC = () => {
          {isExhModalOpen && (
             <div className="fixed inset-0 z-[100] bg-void/90 backdrop-blur-sm flex items-center justify-center p-4">
                <div className="bg-charcoal border border-pearl/20 w-full max-w-5xl p-8 relative max-h-[90vh] overflow-y-auto">
-                  <button onClick={() => setIsExhModalOpen(false)} className="absolute top-4 right-4 text-warm-gray hover:text-pearl z-10"><X size={24} /></button>
+                  <button onClick={() => setIsExhModalOpen(false)} className="absolute top-4 right-4 text-warm-gray hover:text-tangerine z-10"><X size={24} /></button>
                   <h3 className="text-2xl font-display text-pearl mb-6">{editingExhId ? 'Edit Exhibition' : 'Curate Exhibition'}</h3>
                   <div className="space-y-4">
                      {/* Title & Location */}
@@ -2308,7 +2308,7 @@ export const AdminDashboard: React.FC = () => {
                                     <span className="text-[10px] uppercase text-tangerine">Uploading...</span>
                                  </div>
                               ) : (
-                                 <label className="w-32 h-20 border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-pearl hover:border-pearl cursor-pointer">
+                                 <label className="w-32 h-20 border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-tangerine hover:border-tangerine cursor-pointer">
                                     <Upload size={20} className="mb-1" />
                                     <span className="text-[10px] uppercase">Upload</span>
                                     <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
@@ -2366,7 +2366,7 @@ export const AdminDashboard: React.FC = () => {
                                     <span className="text-[8px] uppercase text-tangerine">Uploading...</span>
                                  </div>
                               ) : (
-                                 <label className="w-20 h-20 flex-shrink-0 border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-pearl hover:border-pearl cursor-pointer bg-void/50">
+                                 <label className="w-20 h-20 flex-shrink-0 border border-dashed border-pearl/20 flex flex-col items-center justify-center text-warm-gray hover:text-tangerine hover:border-tangerine cursor-pointer bg-void/50">
                                     <Upload size={16} className="mb-1" />
                                     <span className="text-[8px] uppercase text-center px-1">Add Photos</span>
                                     <input type="file" className="hidden" accept="image/*" multiple onChange={async (e) => {

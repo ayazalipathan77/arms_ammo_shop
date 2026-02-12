@@ -228,7 +228,7 @@ export const VerifyEmail: React.FC = () => {
                             <div className="pt-4">
                                 <Link
                                     to="/auth"
-                                    className="text-amber-500 hover:text-amber-400 text-sm underline"
+                                    className="text-amber-500 hover:text-tangerine text-sm underline"
                                 >
                                     Back to Login
                                 </Link>

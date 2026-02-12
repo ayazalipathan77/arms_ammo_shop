@@ -96,7 +96,7 @@ export const ExhibitionDetail = () => {
             <div className="max-w-[1920px] mx-auto">
 
                 {/* Back Link */}
-                <Link to="/exhibitions" className="text-warm-gray hover:text-pearl flex items-center gap-2 mb-8 group w-fit">
+                <Link to="/exhibitions" className="text-warm-gray hover:text-tangerine flex items-center gap-2 mb-8 group w-fit">
                     <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                     <span className="uppercase tracking-widest text-sm">Back to Exhibitions</span>
                 </Link>
@@ -289,7 +289,7 @@ export const ExhibitionDetail = () => {
                             {/* Close */}
                             <button
                                 onClick={() => setSelectedImageIdx(null)}
-                                className="absolute top-6 right-6 text-warm-gray hover:text-pearl transition-colors z-10"
+                                className="absolute top-6 right-6 text-warm-gray hover:text-tangerine transition-colors z-10"
                             >
                                 <X size={28} />
                             </button>
@@ -303,7 +303,7 @@ export const ExhibitionDetail = () => {
                             {allImages.length > 1 && (
                                 <button
                                     onClick={handlePrevImage}
-                                    className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-warm-gray hover:text-pearl transition-colors z-10 bg-void/50 backdrop-blur-sm p-2 border border-pearl/10 hover:border-tangerine"
+                                    className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-warm-gray hover:text-tangerine transition-colors z-10 bg-void/50 backdrop-blur-sm p-2 border border-pearl/10 hover:border-tangerine"
                                 >
                                     <ChevronLeft size={24} />
                                 </button>
@@ -326,7 +326,7 @@ export const ExhibitionDetail = () => {
                             {allImages.length > 1 && (
                                 <button
                                     onClick={handleNextImage}
-                                    className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-warm-gray hover:text-pearl transition-colors z-10 bg-void/50 backdrop-blur-sm p-2 border border-pearl/10 hover:border-tangerine"
+                                    className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-warm-gray hover:text-tangerine transition-colors z-10 bg-void/50 backdrop-blur-sm p-2 border border-pearl/10 hover:border-tangerine"
                                 >
                                     <ChevronRight size={24} />
                                 </button>

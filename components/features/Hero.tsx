@@ -109,7 +109,7 @@ const Hero = () => {
                     </h1>
 
                     <div className="pt-8 pointer-events-auto">
-                        <Button variant="outline" className="text-white border-white hover:bg-white hover:text-void">
+                        <Button variant="outline" className="text-white border-white hover:border-tangerine hover:text-tangerine">
                             EXPLORE COLLECTION
                         </Button>
                     </div>

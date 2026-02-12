@@ -142,7 +142,7 @@ export const ArtistDetail: React.FC = () => {
                 >
                     <AlertCircle className="text-warm-gray mx-auto mb-4" size={48} />
                     <p className="text-stone-400 mb-6">{error || 'Artist not found'}</p>
-                    <Link to="/artists" className="text-tangerine hover:text-amber-400 transition-colors flex items-center gap-2 justify-center text-xs uppercase tracking-widest">
+                    <Link to="/artists" className="text-tangerine hover:text-tangerine transition-colors flex items-center gap-2 justify-center text-xs uppercase tracking-widest">
                         <ArrowLeft size={14} /> Back to Artists
                     </Link>
                 </motion.div>

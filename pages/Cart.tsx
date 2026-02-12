@@ -287,7 +287,7 @@ export const Cart: React.FC = () => {
                      </Link>
                      <Link
                         to="/profile"
-                        className="flex items-center justify-center gap-2 w-full border border-pearl/10 hover:border-pearl/30 px-6 py-4 text-xs text-warm-gray hover:text-pearl transition-colors uppercase tracking-[0.2em]"
+                        className="flex items-center justify-center gap-2 w-full border border-pearl/10 hover:border-tangerine/30 px-6 py-4 text-xs text-warm-gray hover:text-tangerine transition-colors uppercase tracking-[0.2em]"
                      >
                         View My Orders
                      </Link>
@@ -396,14 +396,14 @@ export const Cart: React.FC = () => {
                                  <button
                                     onClick={() => setPaymentMethod('STRIPE')}
                                     disabled={!stripeEnabled}
-                                    className={cn("flex-1 py-4 border text-center transition-all text-xs uppercase tracking-widest font-bold", paymentMethod === 'STRIPE' ? "border-tangerine bg-tangerine/5 text-pearl" : "border-pearl/10 text-warm-gray hover:text-pearl", !stripeEnabled && "opacity-50 cursor-not-allowed")}
+                                    className={cn("flex-1 py-4 border text-center transition-all text-xs uppercase tracking-widest font-bold", paymentMethod === 'STRIPE' ? "border-tangerine bg-tangerine/5 text-pearl" : "border-pearl/10 text-warm-gray hover:text-tangerine", !stripeEnabled && "opacity-50 cursor-not-allowed")}
                                  >
                                     Credit Card
                                     {!stripeEnabled && <span className="block text-[8px] mt-1 normal-case font-medium opacity-50">(Unavailable)</span>}
                                  </button>
                                  <button
                                     onClick={() => setPaymentMethod('BANK')}
-                                    className={cn("flex-1 py-4 border text-center transition-all text-xs uppercase tracking-widest font-bold", paymentMethod === 'BANK' ? "border-tangerine bg-tangerine/5 text-pearl" : "border-pearl/10 text-warm-gray hover:text-pearl")}
+                                    className={cn("flex-1 py-4 border text-center transition-all text-xs uppercase tracking-widest font-bold", paymentMethod === 'BANK' ? "border-tangerine bg-tangerine/5 text-pearl" : "border-pearl/10 text-warm-gray hover:text-tangerine")}
                                  >
                                     Bank Transfer
                                  </button>
@@ -417,7 +417,7 @@ export const Cart: React.FC = () => {
                                  onChange={(e) => setWhatsappNotify(e.target.checked)}
                                  className="accent-tangerine w-4 h-4"
                               />
-                              <span className="group-hover:text-pearl transition-colors uppercase tracking-wider text-[10px] font-bold">Get WhatsApp Updates</span>
+                              <span className="group-hover:text-tangerine transition-colors uppercase tracking-wider text-[10px] font-bold">Get WhatsApp Updates</span>
                            </label>
 
                            {paymentError && (
@@ -551,7 +551,7 @@ export const Cart: React.FC = () => {
 
                               <button
                                  onClick={() => setStep('CART')}
-                                 className="w-full mt-4 text-warm-gray hover:text-pearl py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
+className="w-full mt-4 text-warm-gray hover:text-tangerine py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
                               >
                                  Back
                               </button>
@@ -560,7 +560,7 @@ export const Cart: React.FC = () => {
                         {step === 'PAYMENT' && (
                            <button
                               onClick={() => setStep('SHIPPING')}
-                              className="w-full mt-4 text-warm-gray hover:text-pearl py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
+                              className="w-full mt-4 text-warm-gray hover:text-tangerine py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
                            >
                               Back
                            </button>

@@ -173,7 +173,7 @@ export const UserProfile: React.FC = () => {
                      <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
-                        className={cn("w-full text-left px-6 py-4 text-xs font-bold uppercase tracking-[0.2em] transition-all flex items-center gap-3 border-l-2", activeTab === tab.id ? "border-tangerine bg-charcoal/50 text-white" : "border-transparent text-warm-gray hover:text-pearl hover:bg-white/5")}
+                        className={cn("w-full text-left px-6 py-4 text-xs font-bold uppercase tracking-[0.2em] transition-all flex items-center gap-3 border-l-2", activeTab === tab.id ? "border-tangerine bg-charcoal/50 text-white" : "border-transparent text-warm-gray hover:text-tangerine hover:bg-white/5")}
                      >
                         <tab.icon size={14} /> {tab.label}
                      </button>
@@ -273,7 +273,7 @@ export const UserProfile: React.FC = () => {
                                     <div className="text-right flex flex-col justify-between">
                                        <p className="font-display text-2xl text-pearl">{formatCurrency(order.totalAmount)}</p>
                                        <p className="text-warm-gray text-[10px] uppercase tracking-widest mb-2">{new Date(order.createdAt).toLocaleDateString()}</p>
-                                       <Link to={`/invoice/${order.id}`} target="_blank" className="text-tangerine hover:text-white text-[10px] uppercase tracking-widest font-bold">
+                                       <Link to={`/invoice/${order.id}`} target="_blank" className="text-tangerine hover:text-tangerine text-[10px] uppercase tracking-widest font-bold">
                                           View Invoice →
                                        </Link>
                                     </div>
@@ -288,7 +288,7 @@ export const UserProfile: React.FC = () => {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                            <div className="flex justify-between items-center mb-8">
                               <h2 className="font-display text-3xl text-pearl">Address Book</h2>
-                              <button onClick={() => setShowAddressForm(!showAddressForm)} className="text-tangerine hover:text-white text-xs uppercase tracking-widest font-bold flex items-center gap-2">
+                              <button onClick={() => setShowAddressForm(!showAddressForm)} className="text-tangerine hover:text-tangerine text-xs uppercase tracking-widest font-bold flex items-center gap-2">
                                  <Plus size={14} /> Add New
                               </button>
                            </div>

@@ -49,7 +49,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
 
                 {/* Header */}
                 <div className="flex justify-end mb-8">
-                    <button onClick={onClose} className="text-stone-500 hover:text-white transition-colors p-2 rounded-full border border-stone-800 hover:border-white">
+                    <button onClick={onClose} className="text-stone-500 hover:text-tangerine transition-colors p-2 rounded-full border border-stone-800 hover:border-tangerine">
                         <X size={24} />
                     </button>
                 </div>

@@ -258,7 +258,7 @@ export const Gallery: React.FC = () => {
               {/* Filter Toggle */}
               <button
                 onClick={() => setFilterOpen(true)}
-                className={`relative flex items-center gap-2 uppercase tracking-widest text-xs border px-6 py-3 rounded-full transition-all ${hasActiveFilters ? 'text-amber-400 border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20' : 'text-stone-400 hover:text-white border-stone-800/50 hover:border-amber-500 hover:bg-amber-500/5'}`}
+                className={`relative flex items-center gap-2 uppercase tracking-widest text-xs border px-6 py-3 rounded-full transition-all ${hasActiveFilters ? 'text-amber-400 border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20' : 'text-stone-400 hover:text-tangerine border-stone-800/50 hover:border-amber-500 hover:bg-amber-500/5'}`}
               >
                 <Filter size={14} /> Filters
                 {hasActiveFilters && (
@@ -351,13 +351,13 @@ export const Gallery: React.FC = () => {
         ) : error ? (
           <div className="text-center py-20">
             <p className="text-red-500 mb-4 font-serif text-xl">{error}</p>
-            <button onClick={() => fetchArtworks()} className="text-stone-400 hover:text-white underline text-xs uppercase tracking-widest">Try Again</button>
+            <button onClick={() => fetchArtworks()} className="text-stone-400 hover:text-tangerine underline text-xs uppercase tracking-widest">Try Again</button>
           </div>
         ) : filteredArtworks.length === 0 ? (
           <div className="text-center py-32 border border-dashed border-stone-800">
             <p className="text-white font-serif text-2xl mb-2">No artworks found</p>
             <p className="text-stone-500 text-sm mb-6">Try adjusting your search or filters.</p>
-            <button onClick={clearFilters} className="text-amber-500 hover:text-amber-400 text-xs uppercase tracking-widest border-b border-amber-500/50 pb-1">Clear All Filters</button>
+            <button onClick={clearFilters} className="text-amber-500 hover:text-tangerine text-xs uppercase tracking-widest border-b border-amber-500/50 pb-1">Clear All Filters</button>
           </div>
         ) : (
           <>
@@ -479,7 +479,7 @@ export const Gallery: React.FC = () => {
           <div className="p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-8">
               <h2 className="font-serif text-3xl text-white tracking-wider">Filters</h2>
-              <button onClick={() => setFilterOpen(false)} className="text-stone-500 hover:text-white transition-colors w-10 h-10 rounded-full hover:bg-stone-800/50 flex items-center justify-center">
+              <button onClick={() => setFilterOpen(false)} className="text-stone-500 hover:text-tangerine transition-colors w-10 h-10 rounded-full hover:bg-stone-800/50 flex items-center justify-center">
                 <X size={24} />
               </button>
             </div>
@@ -494,7 +494,7 @@ export const Gallery: React.FC = () => {
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`flex items-center justify-between w-full text-left py-3 px-4 rounded-xl transition-all ${selectedCategory === cat ? 'bg-amber-500/10 border border-amber-500/30 text-white' : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/30'}`}
+                      className={`flex items-center justify-between w-full text-left py-3 px-4 rounded-xl transition-all ${selectedCategory === cat ? 'bg-amber-500/10 border border-amber-500/30 text-white' : 'text-stone-400 hover:text-tangerine hover:bg-stone-800/30'}`}
                     >
                       <span className="text-sm tracking-wide">{cat}</span>
                       {selectedCategory === cat && <Check size={14} className="text-amber-500" />}
@@ -511,7 +511,7 @@ export const Gallery: React.FC = () => {
                     <button
                       key={med}
                       onClick={() => setSelectedMedium(med)}
-                      className={`flex items-center justify-between w-full text-left py-3 px-4 rounded-xl transition-all ${selectedMedium === med ? 'bg-amber-500/10 border border-amber-500/30 text-white' : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/30'}`}
+                      className={`flex items-center justify-between w-full text-left py-3 px-4 rounded-xl transition-all ${selectedMedium === med ? 'bg-amber-500/10 border border-amber-500/30 text-white' : 'text-stone-400 hover:text-tangerine hover:bg-stone-800/30'}`}
                     >
                       <span className="text-sm truncate pr-4 tracking-wide">{med}</span>
                       {selectedMedium === med && <Check size={14} className="text-amber-500" />}
@@ -528,7 +528,7 @@ export const Gallery: React.FC = () => {
                     <button
                       key={option}
                       onClick={() => setSelectedStock(option)}
-                      className={`flex items-center justify-between w-full text-left py-3 px-4 rounded-xl transition-all ${selectedStock === option ? 'bg-amber-500/10 border border-amber-500/30 text-white' : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/30'}`}
+                      className={`flex items-center justify-between w-full text-left py-3 px-4 rounded-xl transition-all ${selectedStock === option ? 'bg-amber-500/10 border border-amber-500/30 text-white' : 'text-stone-400 hover:text-tangerine hover:bg-stone-800/30'}`}
                     >
                       <span className="text-sm tracking-wide">{option}</span>
                       {selectedStock === option && <Check size={14} className="text-amber-500" />}
@@ -541,7 +541,7 @@ export const Gallery: React.FC = () => {
             <div className="pt-8 border-t border-stone-800/50">
               <button
                 onClick={clearFilters}
-                className="w-full py-4 border border-stone-700/50 rounded-xl text-stone-300 uppercase tracking-[0.3em] text-xs hover:bg-stone-800/50 hover:text-white hover:border-amber-500/30 transition-all"
+                className="w-full py-4 border border-stone-700/50 rounded-xl text-stone-300 uppercase tracking-[0.3em] text-xs hover:bg-stone-800/50 hover:text-tangerine hover:border-amber-500/30 transition-all"
               >
                 Reset All Filters
               </button>

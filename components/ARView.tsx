@@ -197,14 +197,14 @@ export const ARView: React.FC<ARViewProps> = ({ artwork, onClose }) => {
         <div className="flex justify-between items-center max-w-md mx-auto">
            {arStep === 'PLACED' ? (
               <div className="flex gap-4 w-full justify-center">
-                 <button onClick={resetAR} className="flex flex-col items-center gap-1 text-stone-400 hover:text-white transition-colors">
+                 <button onClick={resetAR} className="flex flex-col items-center gap-1 text-stone-400 hover:text-tangerine transition-colors">
                     <div className="p-3 bg-stone-800 rounded-full"><RefreshCw size={20}/></div>
                     <span className="text-[10px] uppercase tracking-widest">Reset</span>
                  </button>
-                 <button className="flex flex-col items-center gap-1 text-amber-500 hover:text-amber-400 transition-colors">
+                 <button className="flex flex-col items-center gap-1 text-amber-500 hover:text-tangerine transition-colors">
                     <div className="p-4 bg-white rounded-full border-4 border-stone-800 outline outline-1 outline-amber-500"><Camera size={24} className="text-black"/></div>
                  </button>
-                 <button onClick={onClose} className="flex flex-col items-center gap-1 text-stone-400 hover:text-white transition-colors">
+                 <button onClick={onClose} className="flex flex-col items-center gap-1 text-stone-400 hover:text-tangerine transition-colors">
                     <div className="p-3 bg-stone-800 rounded-full"><Check size={20}/></div>
                     <span className="text-[10px] uppercase tracking-widest">Done</span>
                  </button>

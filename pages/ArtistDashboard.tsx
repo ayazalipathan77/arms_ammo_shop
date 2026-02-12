@@ -184,7 +184,7 @@ export const ArtistDashboard: React.FC = () => {
             </button>
             <Link
                to="/artist/profile"
-               className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors ml-6 px-4 py-2 border border-stone-800 hover:border-stone-600"
+               className="flex items-center gap-2 text-stone-400 hover:text-tangerine transition-colors ml-6 px-4 py-2 border border-stone-800 hover:border-tangerine"
             >
                <Edit2 size={16} /> Edit Profile
             </Link>
@@ -262,7 +262,7 @@ export const ArtistDashboard: React.FC = () => {
                               <td className="p-4 font-mono">{convertPrice(art.price)}</td>
                               <td className="p-4">
                                  <div className="flex gap-3">
-                                    <button onClick={() => handleOpenDetails(art)} title="View Details" className="text-stone-400 hover:text-white transition-colors"><Eye size={18} /></button>
+                                    <button onClick={() => handleOpenDetails(art)} title="View Details" className="text-stone-400 hover:text-tangerine transition-colors"><Eye size={18} /></button>
                                     <button onClick={() => handleOpenEdit(art)} title="Edit" className="text-stone-400 hover:text-amber-500 transition-colors"><Edit2 size={18} /></button>
                                     <button onClick={() => handleDelete(art.id)} title="Delete" className="text-stone-400 hover:text-red-500 transition-colors"><Trash2 size={18} /></button>
                                  </div>
@@ -283,7 +283,7 @@ export const ArtistDashboard: React.FC = () => {
                <div className="bg-stone-900 border border-stone-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg shadow-2xl animate-fade-in">
                   <div className="sticky top-0 bg-stone-900 border-b border-stone-800 p-6 flex justify-between items-center z-10">
                      <h2 className="font-serif text-2xl text-white">{selectedArtwork ? 'Edit Masterpiece' : 'Upload New Work'}</h2>
-                     <button onClick={() => setIsFormOpen(false)} className="text-stone-400 hover:text-white"><X size={24} /></button>
+                     <button onClick={() => setIsFormOpen(false)} className="text-stone-400 hover:text-tangerine"><X size={24} /></button>
                   </div>
 
                   <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -427,7 +427,7 @@ export const ArtistDashboard: React.FC = () => {
                               <button
                                  type="button"
                                  onClick={addPrintSize}
-                                 className="flex items-center gap-2 text-amber-500 hover:text-amber-400 text-xs uppercase tracking-widest transition-colors mt-2"
+                                 className="flex items-center gap-2 text-amber-500 hover:text-tangerine text-xs uppercase tracking-widest transition-colors mt-2"
                               >
                                  <Plus size={14} /> Add Print Size
                               </button>
@@ -436,7 +436,7 @@ export const ArtistDashboard: React.FC = () => {
                      </div>
 
                      <div className="pt-4 border-t border-stone-800 flex justify-end gap-3">
-                        <button type="button" onClick={() => setIsFormOpen(false)} className="px-6 py-3 text-sm text-stone-400 hover:text-white transition-colors">Cancel</button>
+                        <button type="button" onClick={() => setIsFormOpen(false)} className="px-6 py-3 text-sm text-stone-400 hover:text-tangerine transition-colors">Cancel</button>
                         <button type="submit" className="bg-amber-600 hover:bg-amber-500 text-white px-8 py-3 text-sm uppercase tracking-widest flex items-center gap-2">
                            <Save size={16} /> Save Artwork
                         </button>
@@ -466,7 +466,7 @@ export const ArtistDashboard: React.FC = () => {
                            <h2 className="font-serif text-3xl text-white mb-1">{selectedArtwork.title}</h2>
                            <p className="text-amber-500 text-sm uppercase tracking-widest">{selectedArtwork.artistName}</p>
                         </div>
-                        <button onClick={() => setIsDetailsOpen(false)} className="text-stone-400 hover:text-white"><X size={24} /></button>
+                        <button onClick={() => setIsDetailsOpen(false)} className="text-stone-400 hover:text-tangerine"><X size={24} /></button>
                      </div>
 
                      <div className="space-y-6 flex-1">

@@ -107,7 +107,7 @@ export const ArtworkDetail: React.FC = () => {
             <div className="fixed inset-0 z-[100] bg-void/90 backdrop-blur-md flex items-center justify-center" onClick={() => setShowZoom(false)}>
                <button
                   onClick={() => setShowZoom(false)}
-                  className="absolute top-6 right-6 text-pearl hover:text-white transition-colors z-10"
+                  className="absolute top-6 right-6 text-pearl hover:text-tangerine transition-colors z-10"
                >
                   <X size={28} />
                </button>
@@ -162,7 +162,7 @@ export const ArtworkDetail: React.FC = () => {
                {/* Header */}
                <div className="space-y-4">
                   <div className="flex justify-between items-start">
-                     <Link to={`/artists/${artwork.artistId}`} className="text-tangerine uppercase tracking-[0.2em] text-xs font-bold hover:text-white transition-colors block mb-2">
+                     <Link to={`/artists/${artwork.artistId}`} className="text-tangerine uppercase tracking-[0.2em] text-xs font-bold hover:text-tangerine transition-colors block mb-2">
                         {artwork.artistName}
                      </Link>
                      <div className="flex items-center gap-3">
@@ -197,13 +197,13 @@ export const ArtworkDetail: React.FC = () => {
                      <div className="flex items-center gap-1 bg-charcoal p-1 rounded-sm w-fit border border-pearl/10">
                         <button
                            onClick={() => { setPurchaseType('ORIGINAL'); setPrintQuantity(1); }}
-                           className={cn("px-6 py-2 text-xs uppercase tracking-widest transition-all font-bold", purchaseType === 'ORIGINAL' ? "bg-white text-void" : "text-warm-gray hover:text-pearl")}
+                           className={cn("px-6 py-2 text-xs uppercase tracking-widest transition-all font-bold", purchaseType === 'ORIGINAL' ? "bg-white text-void" : "text-warm-gray hover:text-tangerine")}
                         >
                            Original
                         </button>
                         <button
                            onClick={() => setPurchaseType('PRINT')}
-                           className={cn("px-6 py-2 text-xs uppercase tracking-widest transition-all font-bold", purchaseType === 'PRINT' ? "bg-white text-void" : "text-warm-gray hover:text-pearl")}
+                           className={cn("px-6 py-2 text-xs uppercase tracking-widest transition-all font-bold", purchaseType === 'PRINT' ? "bg-white text-void" : "text-warm-gray hover:text-tangerine")}
                         >
                            Print
                         </button>
@@ -295,7 +295,7 @@ export const ArtworkDetail: React.FC = () => {
                   <div className="flex items-center gap-3 text-warm-gray text-xs uppercase tracking-widest">
                      <ShieldCheck size={14} className="text-tangerine" /> Certificate of Authenticity Included
                   </div>
-                  <button onClick={() => setShowProvenance(true)} className="flex items-center gap-2 text-tangerine hover:text-white text-xs uppercase tracking-widest transition-colors font-bold">
+                  <button onClick={() => setShowProvenance(true)} className="flex items-center gap-2 text-tangerine hover:text-tangerine text-xs uppercase tracking-widest transition-colors font-bold">
                      <FileText size={14} /> View Provenance Record
                   </button>
                </div>

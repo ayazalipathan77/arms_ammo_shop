@@ -7,6 +7,8 @@ export const createExhibitionSchema = z.object({
     endDate: z.string().or(z.date()).optional().transform((val) => val ? new Date(val) : null),
     location: z.string().min(1, 'Location is required'),
     imageUrl: z.string().min(1, 'Image URL is required'),
+    galleryImages: z.array(z.string()).default([]),
+    videoUrl: z.string().optional().nullable(),
     isVirtual: z.boolean().default(false),
     status: z.enum(['UPCOMING', 'CURRENT', 'PAST']).default('UPCOMING'),
 });

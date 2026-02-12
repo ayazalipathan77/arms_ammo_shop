@@ -52,7 +52,7 @@ export const AICurator: React.FC = () => {
               <Bot className="text-amber-500" size={18} />
               <h3 className="font-serif text-lg text-stone-100">AI Curator</h3>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-stone-400 hover:text-white">
+            <button onClick={() => setIsOpen(false)} className="text-stone-400 hover:text-tangerine">
               <X size={18} />
             </button>
           </div>
