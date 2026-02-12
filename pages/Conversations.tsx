@@ -70,10 +70,12 @@ export const Conversations: React.FC = () => {
                 ))}
              </div>
              </div>
-          </motion.div>
+           </motion.div>
 
-          {/* Featured Story */}
-            <AnimatePresence mode="wait">
+           {/* Content Section */}
+           <div className="py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-br from-void via-charcoal/30 to-void border-t border-pearl/10 rounded-sm">
+           {/* Featured Story */}
+             <AnimatePresence mode="wait">
                {featured && (
                   <motion.div
                      key={featured.id}
@@ -212,10 +214,11 @@ export const Conversations: React.FC = () => {
                         )}
                      </div>
                   </motion.div>
-               )}
-             </AnimatePresence>
-          </div>
-       </div>
-    );
- };
+                )}
+               </AnimatePresence>
+           </div>
+           </div>
+        </div>
+     );
+  };
 

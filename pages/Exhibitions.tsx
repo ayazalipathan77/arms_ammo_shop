@@ -64,18 +64,19 @@ export const Exhibitions: React.FC = () => {
                </div>
             </motion.div>
 
-            {/* Exhibitions Grid */}
-            {filteredExhibitions.length === 0 ? (
-               <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-32 border border-dashed border-pearl/10 rounded-2xl"
-               >
-                  <AlertCircle className="text-warm-gray mx-auto mb-4" size={48} />
-                  <p className="text-pearl font-display text-2xl mb-2 high-contrast:text-black">No exhibitions {filter.toLowerCase()} yet.</p>
-               </motion.div>
-            ) : (
-               <div className="space-y-24">
+             {/* Exhibitions Grid */}
+             <div className="py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-br from-void via-charcoal/30 to-void border-t border-pearl/10 rounded-sm">
+             {filteredExhibitions.length === 0 ? (
+                <motion.div
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 1 }}
+                   className="text-center py-32 border border-dashed border-pearl/10 rounded-2xl"
+                >
+                   <AlertCircle className="text-warm-gray mx-auto mb-4" size={48} />
+                   <p className="text-pearl font-display text-2xl mb-2 high-contrast:text-black">No exhibitions {filter.toLowerCase()} yet.</p>
+                </motion.div>
+             ) : (
+                <div className="space-y-24">
                   <AnimatePresence mode="wait">
                      {filteredExhibitions.map((ex, idx) => (
                         <motion.div
@@ -162,11 +163,12 @@ export const Exhibitions: React.FC = () => {
                               </div>
                            </div>
                         </motion.div>
-                     ))}
-                  </AnimatePresence>
-               </div>
-            )}
-         </div>
-      </div>
-   );
-};
+                      ))}
+                   </AnimatePresence>
+                </div>
+             )}
+             </div>
+          </div>
+       </div>
+    );
+ };

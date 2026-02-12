@@ -398,7 +398,7 @@ export const Collections: React.FC = () => {
                     </div>
 
                     {/* Main Grid */}
-                    <div className="flex-1">
+                    <div className="flex-1 py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-br from-void via-charcoal/30 to-void border-t border-pearl/10 rounded-sm">
                         {/* Sorting and Results Count */}
                         <div className="flex justify-between items-center mb-6">
                             <p className="text-warm-gray font-mono text-xs">{filteredArtworks.length} RESULTS</p>

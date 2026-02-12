@@ -109,7 +109,7 @@ export const Artists: React.FC = () => {
         </div>
 
         {/* Grid */}
-        <div className="w-full">
+        <div className="w-full py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-br from-void via-charcoal/30 to-void border-t border-pearl/10 rounded-sm">
           {filteredArtists.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               <AnimatePresence>
