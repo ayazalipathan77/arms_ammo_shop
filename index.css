@@ -7,11 +7,14 @@
   --color-charcoal: #1A1A1A;
   --color-tangerine: #FF6B35;
   --color-amber: #F7931E;
+  --color-amber-500: #d4af37;
+  --color-amber-600: #b4941f;
   --color-pearl: #F5F5F5;
   --color-warm-gray: #9A9A9A;
 
   --font-display: 'Monument Extended', 'Syne', sans-serif;
   --font-body: 'Inter', 'Satoshi', sans-serif;
+  --font-serif: 'Playfair Display', serif;
   --font-accent: 'Mrs Saint Delafield', cursive;
 
   --animate-scramble: scramble 0.3s ease-out;

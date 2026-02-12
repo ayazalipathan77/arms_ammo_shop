@@ -797,7 +797,7 @@ export const AdminDashboard: React.FC = () => {
             "text-xs font-bold px-6 py-2 uppercase tracking-widest transition-all whitespace-nowrap border rounded-sm",
             active
                ? "bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black"
-               : "bg-transparent text-warm-gray border-pearl/10 hover:border-pearl/40 hover:text-tangerine high-contrast:text-black high-contrast:border-black/50"
+               : "bg-transparent text-warm-gray border-pearl/10 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine high-contrast:text-black high-contrast:border-black/50"
          )}
       >
          {tab}
@@ -916,7 +916,7 @@ export const AdminDashboard: React.FC = () => {
                                     <button onClick={() => handleEditArtwork(art)} className="text-warm-gray hover:text-tangerine transition-colors">
                                        <Edit size={16} />
                                     </button>
-                                    <button onClick={() => deleteArtwork(art.id)} className="text-warm-gray hover:text-red-500 transition-colors">
+                                    <button onClick={() => deleteArtwork(art.id)} className="text-warm-gray hover:text-tangerine transition-colors">
                                        <Trash2 size={16} />
                                     </button>
                                  </div>
@@ -969,7 +969,7 @@ export const AdminDashboard: React.FC = () => {
                            onClick={() => { setOrderStatusFilter(s === orderStatusFilter ? 'ALL' : s); setTimeout(() => loadAdminOrders(), 0); }}
                            className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${orderStatusFilter === s
                               ? 'border-tangerine text-tangerine bg-tangerine/10'
-                              : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:border-pearl/30'
+                              : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
                               }`}
                         >
                            {getOrderStatusLabel(s)} <span className="ml-1 opacity-60">({count})</span>
@@ -1008,21 +1008,21 @@ export const AdminDashboard: React.FC = () => {
                               <td className="p-4" onClick={e => e.stopPropagation()}>
                                  <div className="flex gap-2">
                                     {order.status === 'PAID' && (
-                                       <button onClick={() => handleRequestArtistConfirmation(order.id)} className="text-amber hover:text-tangerine" title="Request Artist Confirmation" disabled={orderActionLoading === order.id}><Mail size={16} /></button>
+                                       <button onClick={() => handleRequestArtistConfirmation(order.id)} className="text-amber hover:text-tangerine transition-colors" title="Request Artist Confirmation" disabled={orderActionLoading === order.id}><Mail size={16} /></button>
                                     )}
                                     {order.status === 'AWAITING_CONFIRMATION' && (
-                                       <button onClick={() => handleAdminConfirm(order.id)} className="text-green-400 hover:text-tangerine" title="Confirm Order" disabled={orderActionLoading === order.id}><Check size={16} /></button>
+                                       <button onClick={() => handleAdminConfirm(order.id)} className="text-green-400 hover:text-tangerine transition-colors" title="Confirm Order" disabled={orderActionLoading === order.id}><Check size={16} /></button>
                                     )}
                                     {order.status === 'CONFIRMED' && (
-                                       <button onClick={() => setShipModal({ orderId: order.id, trackingNumber: '', carrier: '', notes: '' })} className="text-purple-400 hover:text-tangerine" title="Ship Order"><Truck size={16} /></button>
+                                       <button onClick={() => setShipModal({ orderId: order.id, trackingNumber: '', carrier: '', notes: '' })} className="text-purple-400 hover:text-tangerine transition-colors" title="Ship Order"><Truck size={16} /></button>
                                     )}
                                     {order.status === 'SHIPPED' && (
-                                       <button onClick={() => handleDeliverOrder(order.id)} className="text-green-400 hover:text-tangerine" title="Mark Delivered" disabled={orderActionLoading === order.id}><Check size={16} /></button>
+                                       <button onClick={() => handleDeliverOrder(order.id)} className="text-green-400 hover:text-tangerine transition-colors" title="Mark Delivered" disabled={orderActionLoading === order.id}><Check size={16} /></button>
                                     )}
                                     {!['DELIVERED', 'CANCELLED'].includes(order.status) && (
-                                       <button onClick={() => setCancelModal({ orderId: order.id, reason: '' })} className="text-red-400 hover:text-red-300" title="Cancel Order"><X size={16} /></button>
+                                       <button onClick={() => setCancelModal({ orderId: order.id, reason: '' })} className="text-red-400 hover:text-tangerine transition-colors" title="Cancel Order"><X size={16} /></button>
                                     )}
-                                    <button onClick={() => setOrderNotesInput({ orderId: order.id, notes: order.adminNotes || '' })} className="text-warm-gray hover:text-tangerine" title="Admin Notes"><Edit size={16} /></button>
+                                    <button onClick={() => setOrderNotesInput({ orderId: order.id, notes: order.adminNotes || '' })} className="text-warm-gray hover:text-tangerine transition-colors" title="Admin Notes"><Edit size={16} /></button>
                                  </div>
                               </td>
                            </tr>
@@ -1058,7 +1058,7 @@ export const AdminDashboard: React.FC = () => {
                                        <button
                                           onClick={() => { handleRequestArtistConfirmation(selectedOrder.id); }}
                                           disabled={orderActionLoading === selectedOrder.id}
-                                          className="px-4 py-2 bg-amber/10 border border-amber/30 text-amber text-xs uppercase tracking-widest hover:bg-amber/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                          className="px-4 py-2 bg-amber/10 border border-amber/30 text-amber text-xs uppercase tracking-widest hover:bg-tangerine/20 hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-50 flex items-center gap-2"
                                        >
                                           <Mail size={14} /> Request Artist Confirmation
                                        </button>
@@ -1075,7 +1075,7 @@ export const AdminDashboard: React.FC = () => {
                                     {selectedOrder.status === 'CONFIRMED' && (
                                        <button
                                           onClick={() => { setSelectedOrder(null); setShipModal({ orderId: selectedOrder.id, trackingNumber: '', carrier: '', notes: '' }); }}
-                                          className="px-4 py-2 bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs uppercase tracking-widest hover:bg-purple-500/20 transition-colors flex items-center gap-2"
+                                          className="px-4 py-2 bg-purple-500/10 border border-purple-500/30 text-purple-400 text-xs uppercase tracking-widest hover:bg-tangerine/20 hover:text-tangerine hover:border-tangerine transition-colors flex items-center gap-2"
                                        >
                                           <Truck size={14} /> Ship Order
                                        </button>
@@ -1084,20 +1084,20 @@ export const AdminDashboard: React.FC = () => {
                                        <button
                                           onClick={() => { handleDeliverOrder(selectedOrder.id); }}
                                           disabled={orderActionLoading === selectedOrder.id}
-                                          className="px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-400 text-xs uppercase tracking-widest hover:bg-green-500/20 transition-colors disabled:opacity-50 flex items-center gap-2"
+                                          className="px-4 py-2 bg-green-500/10 border border-green-500/30 text-green-400 text-xs uppercase tracking-widest hover:bg-tangerine/20 hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-50 flex items-center gap-2"
                                        >
                                           <Check size={14} /> Mark Delivered
                                        </button>
                                     )}
                                     <button
                                        onClick={() => { setSelectedOrder(null); setCancelModal({ orderId: selectedOrder.id, reason: '' }); }}
-                                       className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs uppercase tracking-widest hover:bg-red-500/20 transition-colors flex items-center gap-2"
+                                       className="px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs uppercase tracking-widest hover:bg-tangerine/20 hover:text-tangerine hover:border-tangerine transition-colors flex items-center gap-2"
                                     >
                                        <X size={14} /> Cancel
                                     </button>
                                     <button
                                        onClick={() => { setSelectedOrder(null); setOrderNotesInput({ orderId: selectedOrder.id, notes: selectedOrder.adminNotes || '' }); }}
-                                       className="px-4 py-2 border border-pearl/20 text-warm-gray text-xs uppercase tracking-widest hover:bg-pearl/5 transition-colors flex items-center gap-2"
+                                       className="px-4 py-2 border border-pearl/20 text-warm-gray text-xs uppercase tracking-widest hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine transition-colors flex items-center gap-2"
                                     >
                                        <Edit size={14} /> Notes
                                     </button>
@@ -1251,11 +1251,11 @@ export const AdminDashboard: React.FC = () => {
                               />
                            </div>
                            <div className="flex gap-3 pt-2">
-                              <button onClick={() => setShipModal(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:bg-pearl/5 transition-colors">Cancel</button>
+                              <button onClick={() => setShipModal(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:text-tangerine hover:border-tangerine transition-colors">Cancel</button>
                               <button
                                  onClick={handleShipOrder}
                                  disabled={!shipModal.trackingNumber || orderActionLoading === shipModal.orderId}
-                                 className="flex-1 py-3 bg-purple-500 text-white text-xs uppercase tracking-widest hover:bg-purple-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                 className="flex-1 py-3 bg-tangerine text-void text-xs uppercase tracking-widest hover:bg-tangerine/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                               >
                                  <Truck size={14} /> Ship Order
                               </button>
@@ -1281,11 +1281,11 @@ export const AdminDashboard: React.FC = () => {
                               />
                            </div>
                            <div className="flex gap-3 pt-2">
-                              <button onClick={() => setCancelModal(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:bg-pearl/5 transition-colors">Back</button>
+                              <button onClick={() => setCancelModal(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:text-tangerine hover:border-tangerine transition-colors">Back</button>
                               <button
                                  onClick={handleCancelOrder}
                                  disabled={orderActionLoading === cancelModal.orderId}
-                                 className="flex-1 py-3 bg-red-500 text-white text-xs uppercase tracking-widest hover:bg-red-600 transition-colors disabled:opacity-50"
+                                 className="flex-1 py-3 bg-red-500 text-white text-xs uppercase tracking-widest hover:bg-tangerine hover:text-void transition-colors disabled:opacity-50"
                               >
                                  Confirm Cancel
                               </button>
@@ -1308,8 +1308,8 @@ export const AdminDashboard: React.FC = () => {
                               placeholder="Internal notes about this order..."
                            />
                            <div className="flex gap-3 pt-2">
-                              <button onClick={() => setOrderNotesInput(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:bg-pearl/5 transition-colors">Cancel</button>
-                              <button onClick={handleSaveOrderNotes} className="flex-1 py-3 bg-tangerine text-void text-xs uppercase tracking-widest hover:bg-amber-600 transition-colors flex items-center justify-center gap-2">
+                              <button onClick={() => setOrderNotesInput(null)} className="flex-1 py-3 border border-pearl/20 text-pearl text-xs uppercase tracking-widest hover:text-tangerine hover:border-tangerine transition-colors">Cancel</button>
+                              <button onClick={handleSaveOrderNotes} className="flex-1 py-3 bg-tangerine text-void text-xs uppercase tracking-widest hover:bg-tangerine/80 transition-colors flex items-center justify-center gap-2">
                                  <Save size={14} /> Save Notes
                               </button>
                            </div>
@@ -1345,8 +1345,8 @@ export const AdminDashboard: React.FC = () => {
                            <p className="text-warm-gray text-[10px] mb-0.5">{format(new Date(ex.startDate), 'MMM d, yyyy')}</p>
                            {ex.location && <p className="text-warm-gray/60 text-[10px] mb-2 truncate">{ex.location}</p>}
                            <div className="flex gap-1.5">
-                              <button onClick={() => handleEditExhibition(ex)} className="flex-1 py-1.5 text-[10px] border border-pearl/20 text-pearl hover:bg-pearl hover:text-void transition-colors uppercase tracking-widest">Edit</button>
-                              <button onClick={() => deleteExhibition(ex.id)} className="px-2 border border-pearl/20 text-warm-gray hover:border-red-500 hover:text-red-500"><Trash2 size={12} /></button>
+                              <button onClick={() => handleEditExhibition(ex)} className="flex-1 py-1.5 text-[10px] border border-pearl/20 text-pearl hover:text-tangerine hover:border-tangerine transition-colors uppercase tracking-widest">Edit</button>
+                              <button onClick={() => deleteExhibition(ex.id)} className="px-2 border border-pearl/20 text-warm-gray hover:border-tangerine hover:text-tangerine"><Trash2 size={12} /></button>
                            </div>
                         </div>
                      </div>
@@ -1463,7 +1463,7 @@ export const AdminDashboard: React.FC = () => {
                            <button
                               key={sub}
                               onClick={() => setUserSubTab(sub)}
-                              className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border flex items-center gap-1.5 ${userSubTab === sub ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-tangerine'}`}
+                              className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border flex items-center gap-1.5 transition-all ${userSubTab === sub ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'}`}
                            >
                               {sub}
                               <span className={`px-1.5 py-0.5 text-[9px] rounded-full ${userSubTab === sub ? 'bg-void/20 text-void' : 'bg-pearl/10 text-warm-gray'}`}>
@@ -1544,26 +1544,26 @@ export const AdminDashboard: React.FC = () => {
                               <td className="p-4">
                                  {(userSubTab === 'PENDING' || (u.role === 'ARTIST' && !u.isApproved)) ? (
                                     <div className="flex gap-2">
-                                       <button onClick={() => handleApproveArtist(u.id)} disabled={approvingId === u.id} className="p-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors disabled:opacity-50" title="Approve Artist">
+                                       <button onClick={() => handleApproveArtist(u.id)} disabled={approvingId === u.id} className="p-2 border border-green-500/30 text-green-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors disabled:opacity-50" title="Approve Artist">
                                           {approvingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
                                        </button>
-                                       <button onClick={() => handleRejectArtist(u.id)} disabled={rejectingId === u.id} className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50" title="Reject Artist">
+                                       <button onClick={() => handleRejectArtist(u.id)} disabled={rejectingId === u.id} className="p-2 border border-red-500/30 text-red-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors disabled:opacity-50" title="Reject Artist">
                                           {rejectingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
                                        </button>
                                     </div>
                                  ) : (
                                     <div className="flex gap-2">
                                        {u.role === 'USER' && (
-                                          <button onClick={() => handleUpdateUserRole(u.id, 'ARTIST')} className="p-2 border border-purple-500/30 text-purple-400 hover:bg-purple-500/10 rounded transition-colors" title="Promote to Artist">
+                                          <button onClick={() => handleUpdateUserRole(u.id, 'ARTIST')} className="p-2 border border-purple-500/30 text-purple-400 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Promote to Artist">
                                              <Palette size={16} />
                                           </button>
                                        )}
                                        {u.role === 'ARTIST' && u.isApproved && (
-                                          <button onClick={() => handleUpdateUserRole(u.id, 'USER')} className="p-2 border border-warm-gray/30 text-warm-gray hover:bg-warm-gray/10 rounded transition-colors" title="Demote to User">
+                                          <button onClick={() => handleUpdateUserRole(u.id, 'USER')} className="p-2 border border-warm-gray/30 text-warm-gray hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Demote to User">
                                              <UserX size={16} />
                                           </button>
                                        )}
-                                       <button onClick={() => handleDeleteUser(u.id, u.fullName || u.email)} className="p-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Delete User">
+                                       <button onClick={() => handleDeleteUser(u.id, u.fullName || u.email)} className="p-2 border border-red-500/30 text-red-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Delete User">
                                           <Trash2 size={16} />
                                        </button>
                                     </div>
@@ -1588,7 +1588,7 @@ export const AdminDashboard: React.FC = () => {
                            <button
                               disabled={usersPagination.page <= 1}
                               onClick={() => loadUsers(usersPagination.page - 1)}
-                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                            >
                               Previous
                            </button>
@@ -1598,7 +1598,7 @@ export const AdminDashboard: React.FC = () => {
                            <button
                               disabled={usersPagination.page >= usersPagination.totalPages}
                               onClick={() => loadUsers(usersPagination.page + 1)}
-                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine disabled:opacity-30 disabled:cursor-not-allowed"
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                            >
                               Next
                            </button>
@@ -1619,7 +1619,7 @@ export const AdminDashboard: React.FC = () => {
                         <button
                            key={status}
                            onClick={() => setReviewFilter(status)}
-                           className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${reviewFilter === status ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:text-tangerine'}`}
+                           className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border transition-all ${reviewFilter === status ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'}`}
                         >
                            {status}
                         </button>
@@ -1709,7 +1709,7 @@ export const AdminDashboard: React.FC = () => {
                                           }
                                        }}
                                        disabled={reviewActionLoading === review.id}
-                                       className="flex items-center gap-2 px-4 py-2 border border-green-500/30 text-green-500 hover:bg-green-500/10 rounded transition-colors disabled:opacity-50"
+                                       className="flex items-center gap-2 px-4 py-2 border border-green-500/30 text-green-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors disabled:opacity-50"
                                     >
                                        {reviewActionLoading === review.id ? (
                                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -1735,7 +1735,7 @@ export const AdminDashboard: React.FC = () => {
                                           }
                                        }}
                                        disabled={reviewActionLoading === review.id}
-                                       className="flex items-center gap-2 px-4 py-2 border border-red-500/30 text-red-500 hover:bg-red-500/10 rounded transition-colors disabled:opacity-50"
+                                       className="flex items-center gap-2 px-4 py-2 border border-red-500/30 text-red-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors disabled:opacity-50"
                                     >
                                        {reviewActionLoading === review.id ? (
                                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -1905,7 +1905,7 @@ export const AdminDashboard: React.FC = () => {
                   <h3 className="text-pearl font-display text-lg mb-4">Section Visibility</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                      {Object.keys(landingForm).map(key => (
-                        <label key={key} className={`flex items-center gap-3 p-3 border cursor-pointer transition-all ${landingForm[key].enabled ? 'border-tangerine bg-tangerine/10' : 'border-pearl/10 hover:border-pearl/30'}`}>
+                        <label key={key} className={`flex items-center gap-3 p-3 border cursor-pointer transition-all ${landingForm[key].enabled ? 'border-tangerine bg-tangerine/10' : 'border-pearl/10 hover:border-tangerine'}`}>
                            <input
                               type="checkbox"
                               checked={landingForm[key].enabled}
@@ -1997,7 +1997,7 @@ export const AdminDashboard: React.FC = () => {
                                  <button onClick={() => {
                                     const newIds = landingForm.topPaintings.artworkIds.filter(aid => aid !== id);
                                     setLandingForm({ ...landingForm, topPaintings: { ...landingForm.topPaintings, artworkIds: newIds } });
-                                 }} className="hover:text-red-500"><X size={12} /></button>
+                                 }} className="hover:text-tangerine"><X size={12} /></button>
                               </span>
                            )
                         })}
@@ -2077,7 +2077,7 @@ export const AdminDashboard: React.FC = () => {
                                           const newCols = [...landingForm.curatedCollections.collections];
                                           newCols[idx].artworkIds = newCols[idx].artworkIds.filter(aid => aid !== id);
                                           setLandingForm({ ...landingForm, curatedCollections: { ...landingForm.curatedCollections, collections: newCols } });
-                                       }} className="hover:text-red-500"><X size={12} /></button>
+                                       }} className="hover:text-tangerine"><X size={12} /></button>
                                     </span>
                                  )
                               })}
@@ -2440,7 +2440,7 @@ export const AdminDashboard: React.FC = () => {
                               "p-4 border text-left transition-all hover:scale-[1.02]",
                               currentTheme.name === theme.name
                                  ? "border-tangerine bg-tangerine/10 shadow-[0_0_20px_rgba(255,107,53,0.15)]"
-                                 : "border-pearl/10 hover:border-pearl/30 bg-void"
+                                 : "border-pearl/10 hover:border-tangerine bg-void"
                            )}
                         >
                            <div className="flex gap-2 mb-3">
