@@ -87,31 +87,29 @@ export const Artists: React.FC = () => {
                 The Creators
               </p>
             </div>
+
+            <div className="relative group w-full md:w-72">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-gray group-focus-within:text-tangerine transition-colors" size={16} />
+              <input
+                type="text"
+                placeholder="Search artists..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-charcoal/50 border border-pearl/10 rounded-full py-3 pl-11 pr-10 text-xs font-mono text-pearl focus:border-tangerine outline-none transition-colors placeholder:text-warm-gray/50"
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-warm-gray hover:text-tangerine transition-colors">
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
         </motion.div>
-
-        <div className="mb-16">
-          <div className="w-full md:w-auto relative group max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-gray group-focus-within:text-tangerine transition-colors" size={16} />
-            <input
-              type="text"
-              placeholder="SEARCH ARTISTS..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-80 bg-charcoal/50 border border-pearl/10 rounded-none py-4 pl-12 pr-4 text-xs font-mono text-pearl focus:border-tangerine outline-none transition-colors placeholder:text-warm-gray/50"
-            />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-warm-gray hover:text-red-500 transition-colors">
-                <X size={14} />
-              </button>
-            )}
-          </div>
-        </div>
 
         {/* Grid */}
         <div className="w-full">
           {filteredArtists.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-x-2 gap-y-4">
               <AnimatePresence>
                 {filteredArtists.map((artist, i) => (
                   <motion.div
@@ -119,10 +117,10 @@ export const Artists: React.FC = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: i * 0.1 }}
+                    transition={{ delay: i * 0.05 }}
                   >
-                    <Link to={`/artists/${artist.id}`} className="group block">
-                      <div className="relative aspect-square bg-charcoal mb-3 overflow-hidden rounded-full border border-pearl/10 group-hover:border-tangerine transition-all duration-500">
+                    <Link to={`/artists/${artist.id}`} className="group flex flex-col items-center">
+                      <div className="relative w-20 h-20 md:w-24 md:h-24 bg-charcoal mb-2 overflow-hidden rounded-full border border-pearl/10 group-hover:border-tangerine transition-all duration-500">
                         <img
                           src={artist.imageUrl}
                           alt={artist.name}
@@ -131,14 +129,14 @@ export const Artists: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-radial from-transparent via-void/20 to-void/60 opacity-60 group-hover:opacity-40 transition-opacity duration-500"></div>
 
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <span className="bg-tangerine text-void text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                          <span className="bg-tangerine text-void text-[9px] font-bold uppercase tracking-widest px-2 py-1 shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
                             View
                           </span>
                         </div>
                       </div>
 
                       <div className="text-center">
-                        <h2 className="font-display text-base text-pearl leading-tight mb-0.5 group-hover:text-tangerine transition-colors">{artist.name}</h2>
+                        <h2 className="font-display text-xs text-pearl leading-tight mb-0.5 group-hover:text-tangerine transition-colors truncate max-w-[90px] md:max-w-[100px]">{artist.name}</h2>
                         <p className="text-warm-gray text-[9px] font-mono uppercase tracking-wider">{artist.specialty}</p>
                       </div>
                     </Link>
