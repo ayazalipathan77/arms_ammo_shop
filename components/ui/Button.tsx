@@ -20,9 +20,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
         // Variant styles
         const variants = {
-            primary: 'bg-tangerine text-void hover:bg-amber border border-tangerine hover:border-amber',
-            secondary: 'bg-transparent border-2 border-tangerine/70 hover:border-amber text-pearl hover:bg-amber/10 hover:text-amber',
-            outline: 'bg-transparent border border-pearl/30 text-pearl hover:text-amber hover:border-amber hover:bg-amber/5',
+            primary: 'bg-tangerine text-void hover:bg-void hover:text-tangerine hover:border-tangerine border border-tangerine',
+            secondary: 'bg-transparent border-2 border-tangerine text-pearl hover:bg-tangerine/10 hover:text-tangerine',
+            outline: 'bg-transparent border border-pearl/30 text-pearl hover:text-tangerine hover:border-tangerine hover:bg-tangerine/5',
         };
 
         return (

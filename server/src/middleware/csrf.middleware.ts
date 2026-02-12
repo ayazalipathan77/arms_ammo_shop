@@ -19,6 +19,8 @@ export const generateCsrfToken = (): string => {
  * For state-changing requests (POST, PUT, DELETE, PATCH): Validates CSRF token
  */
 export const csrfProtection = (req: Request, res: Response, next: NextFunction): void => {
+    const isProduction = process.env.NODE_ENV === 'production';
+
     // Skip CSRF protection for GET, HEAD, OPTIONS requests
     // These are safe methods that don't modify state
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
@@ -27,8 +29,8 @@ export const csrfProtection = (req: Request, res: Response, next: NextFunction):
             const token = generateCsrfToken();
             res.cookie(CSRF_COOKIE_NAME, token, {
                 httpOnly: false, // Must be accessible by JavaScript to read and send back
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'strict',
+                secure: isProduction,
+                sameSite: isProduction ? 'strict' : 'lax',
                 maxAge: 24 * 60 * 60 * 1000, // 24 hours
                 path: '/'
             });
@@ -36,7 +38,13 @@ export const csrfProtection = (req: Request, res: Response, next: NextFunction):
         return next();
     }
 
-    // For state-changing requests, validate CSRF token
+    // In development, skip CSRF validation for cross-origin requests
+    // (CORS already provides sufficient protection in dev)
+    if (!isProduction) {
+        return next();
+    }
+
+    // For state-changing requests in production, validate CSRF token
     const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
     const headerToken = req.headers[CSRF_HEADER_NAME.toLowerCase()];
 

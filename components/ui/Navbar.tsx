@@ -63,8 +63,9 @@ const Navbar = () => {
                     {/* Desktop Links */}
                     <div className="hidden md:flex items-center gap-12">
                         {navItems.map((item) => (
-                            <Link key={item.name} to={item.path} className="text-sm font-medium text-pearl hover:text-tangerine transition-colors relative overflow-hidden">
-                                <ScrambleText text={item.name} />
+                            <Link key={item.name} to={item.path} className="group text-sm font-medium text-pearl hover:text-tangerine transition-all duration-300 relative font-display tracking-widest uppercase">
+                                <span className="group-hover:text-tangerine transition-colors duration-300">{item.name}</span>
+                                <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-tangerine transition-all duration-300 group-hover:w-full"></span>
                             </Link>
                         ))}
 
