@@ -16,10 +16,30 @@ export interface ThemeFonts {
     urdu: string;
 }
 
+export interface GradientOrb {
+    enabled: boolean;
+    color: string;
+    opacity: number;
+    size: number;
+    blur: number;
+    position: {
+        top?: string;
+        bottom?: string;
+        left?: string;
+        right?: string;
+    };
+}
+
+export interface GradientConfig {
+    enabled: boolean;
+    orbs: GradientOrb[];
+}
+
 export interface ThemeConfig {
     name: string;
     colors: ThemeColors;
     fonts: ThemeFonts;
+    gradient: GradientConfig;
 }
 
 export const PRESET_THEMES: Record<string, ThemeConfig> = {

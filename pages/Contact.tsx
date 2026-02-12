@@ -31,9 +31,9 @@ export const Contact: React.FC = () => {
 
   return (
     <div className="pt-24 pb-20 min-h-screen relative overflow-hidden px-6 md:px-12">
-      {/* Background Gradient Orbs - Static */}
-      <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-gradient-radial from-tangerine/30 via-tangerine/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-radial from-amber/20 via-amber/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+      {/* Background Gradient Orbs */}
+      <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-tangerine/25 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber/20 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-[1920px] mx-auto relative z-10">
 
@@ -56,10 +56,6 @@ export const Contact: React.FC = () => {
           </div>
         </motion.div>
 
-        <div className="py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-bl from-void via-charcoal to-void border-t border-pearl/10 rounded-sm">
-          {/* Gradient Orbs */}
-          <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-tangerine/25 rounded-full blur-[140px] pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber/20 rounded-full blur-[120px] pointer-events-none" />
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
 
           {/* Contact Information */}
@@ -246,7 +242,6 @@ export const Contact: React.FC = () => {
               )}
             </div>
           </motion.div>
-        </div>
         </div>
       </div>
     </div>
