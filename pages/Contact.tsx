@@ -30,7 +30,7 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="pt-32 pb-20 min-h-screen bg-void relative overflow-hidden px-6 md:px-12">
+    <div className="pt-24 pb-20 min-h-screen bg-void relative overflow-hidden px-6 md:px-12">
       {/* Animated Background Gradient Orbs */}
       <motion.div
         animate={{

@@ -210,7 +210,7 @@ export const Collections: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-void pt-32 pb-20 relative overflow-hidden">
+        <div className="min-h-screen bg-void pt-24 pb-20 relative overflow-hidden">
             {/* Ambient Background */}
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/5 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-charcoal/50 rounded-full blur-3xl pointer-events-none" />

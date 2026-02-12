@@ -23,7 +23,7 @@ export const Exhibitions: React.FC = () => {
    );
 
    return (
-      <div className="pt-32 pb-20 min-h-screen relative z-10 px-6 md:px-12">
+      <div className="pt-24 pb-20 min-h-screen relative z-10 px-6 md:px-12">
          <div className="max-w-[1920px] mx-auto">
             {/* Header */}
             <motion.div

@@ -62,7 +62,7 @@ export const Artists: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-void pt-32 pb-20 px-6 md:px-12">
+    <div className="min-h-screen bg-void pt-24 pb-20 px-6 md:px-12">
       <ParticleSystem />
 
       {/* Background Decor */}
