@@ -62,7 +62,7 @@ export const Artists: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-void pt-24 pb-20 px-6 md:px-12">
+    <div className="min-h-screen bg-void pt-32 pb-20 px-6 md:px-12">
       <ParticleSystem />
 
       {/* Background Decor */}
@@ -74,15 +74,26 @@ export const Artists: React.FC = () => {
       <div className="max-w-[1920px] mx-auto relative z-10">
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-20 border-b border-pearl/10 pb-10">
-          <div>
-            <h1 className="font-display text-5xl md:text-7xl text-pearl leading-none mb-2">The Creators</h1>
-            <p className="text-tangerine font-mono text-xs uppercase tracking-[0.3em] flex items-center gap-2">
-              <Award size={12} /> {filteredArtists.length} Visionaries
-            </p>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-16"
+        >
+          <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-pearl/10 pb-8 high-contrast:border-black/20">
+            <div>
+              <h1 className="text-4xl md:text-7xl font-display font-bold text-pearl high-contrast:text-black mb-2">
+                ARTISTS
+              </h1>
+              <p className="text-tangerine font-mono text-sm tracking-widest uppercase high-contrast:text-[#D35400]">
+                The Creators
+              </p>
+            </div>
           </div>
+        </motion.div>
 
-          <div className="w-full md:w-auto relative group">
+        <div className="mb-12">
+          <div className="w-full md:w-auto relative group max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-gray group-focus-within:text-tangerine transition-colors" size={16} />
             <input
               type="text"
@@ -145,7 +156,6 @@ export const Artists: React.FC = () => {
               <button onClick={() => setSearchTerm('')} className="text-tangerine text-xs uppercase tracking-widest hover:underline">Clear Filters</button>
             </div>
           )}
-
         </div>
       </div>
     </div>

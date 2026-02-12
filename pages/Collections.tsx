@@ -218,16 +218,23 @@ export const Collections: React.FC = () => {
             <div className="max-w-[1920px] mx-auto px-6 md:px-12 relative z-10">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-pearl/10 pb-8 gap-6">
-                    <div>
-                        <h1 className="font-display text-5xl md:text-7xl text-pearl tracking-tighter uppercase mb-4">
-                            Collection <span className="text-tangerine">Archive</span>
-                        </h1>
-                        <p className="text-warm-gray font-mono text-sm max-w-xl">
-                            Explore our curated selection of contemporary masterpieces. Use the filters to refine your search.
-                        </p>
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="mb-16"
+                >
+                    <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-pearl/10 pb-8 high-contrast:border-black/20">
+                        <div>
+                            <h1 className="text-4xl md:text-7xl font-display font-bold text-pearl high-contrast:text-black mb-2">
+                                COLLECTIONS
+                            </h1>
+                            <p className="text-tangerine font-mono text-sm tracking-widest uppercase high-contrast:text-[#D35400]">
+                                Curated Artworks
+                            </p>
+                        </div>
                     </div>
-                </div>
+                </motion.div>
 
                 <div className="flex flex-col lg:flex-row gap-12">
 

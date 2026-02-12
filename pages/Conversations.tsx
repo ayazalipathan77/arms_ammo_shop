@@ -28,19 +28,26 @@ export const Conversations: React.FC = () => {
 
    return (
       <div className="pt-32 pb-20 min-h-screen relative z-10 px-6 md:px-12">
-         {/* Header */}
-         <div className="max-w-[1920px] mx-auto mb-20 border-b border-pearl/10 pb-8 flex flex-col md:flex-row justify-between items-end gap-8 high-contrast:border-black/20">
-            <div>
-               <h1 className="text-4xl md:text-7xl font-display font-bold text-pearl high-contrast:text-black mb-2">
-                  STORIES
-               </h1>
-               <p className="text-tangerine font-mono text-sm tracking-widest uppercase high-contrast:text-[#D35400]">
-                  Voices & Visions from Our Gallery
-               </p>
-            </div>
+         <div className="max-w-[1920px] mx-auto">
+            {/* Header */}
+            <motion.div
+               initial={{ opacity: 0, y: 30 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.6 }}
+               className="mb-16"
+            >
+               <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-pearl/10 pb-8 high-contrast:border-black/20">
+                  <div>
+                     <h1 className="text-4xl md:text-7xl font-display font-bold text-pearl high-contrast:text-black mb-2">
+                        STORIES
+                     </h1>
+                     <p className="text-tangerine font-mono text-sm tracking-widest uppercase high-contrast:text-[#D35400]">
+                        Voices & Visions from Our Gallery
+                     </p>
+                  </div>
 
-            {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-2">
+                  {/* Filter Tabs */}
+                  <div className="flex flex-wrap gap-2">
                {[
                   { key: 'ALL', label: 'All Stories' },
                   { key: 'INTERVIEWS', label: 'Interviews' },
@@ -56,12 +63,12 @@ export const Conversations: React.FC = () => {
                   >
                      {tab.label}
                   </button>
-               ))}
-            </div>
-         </div>
+                ))}
+             </div>
+             </div>
+          </motion.div>
 
-         <div className="max-w-[1920px] mx-auto">
-            {/* Featured Story */}
+          {/* Featured Story */}
             <AnimatePresence mode="wait">
                {featured && (
                   <motion.div
@@ -202,8 +209,9 @@ export const Conversations: React.FC = () => {
                      </div>
                   </motion.div>
                )}
-            </AnimatePresence>
-         </div>
-      </div>
-   );
-};
+             </AnimatePresence>
+          </div>
+       </div>
+    );
+ };
+
