@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, ArrowLeft, Loader2, Globe, Award, ArrowRight, Palette, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
+import { MapPin, ArrowLeft, Loader2, Award, Palette, ChevronLeft, ChevronRight, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { artistApi, artworkApi, transformArtwork, PaginationInfo } from '../services/api';
 import { Artist, Artwork } from '../types';
-import { formatCurrency } from '../lib/utils';
 import { motion } from 'framer-motion';
 import ArtworkCard from '../components/ui/ArtworkCard';
 
@@ -151,168 +150,132 @@ export const ArtistDetail: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-void pt-24 pb-20 relative overflow-hidden">
-            {/* Ambient Background - Chromatic Brutalism */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-charcoal/50 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="max-w-[1920px] mx-auto px-6 md:px-12 relative z-10">
-                {/* Back Link */}
-                <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="mb-8"
-                >
-                    <Link to="/artists" className="inline-flex items-center gap-2 text-warm-gray hover:text-tangerine transition-colors text-xs uppercase tracking-widest">
-                        <ArrowLeft size={14} /> All Artists
+        <div className="min-h-screen bg-void">
+            {/* ─── ARTIST PROFILE HEADER ─── */}
+            <div className="pt-28 pb-12 px-6 md:px-12">
+                <div className="max-w-[1920px] mx-auto">
+                    <Link to="/artists" className="text-pearl/70 hover:text-tangerine flex items-center gap-2 group/back mb-10">
+                        <ArrowLeft size={18} className="group-hover/back:-translate-x-1 transition-transform" />
+                        <span className="uppercase tracking-widest text-xs font-mono">Back</span>
                     </Link>
-                </motion.div>
 
-                {/* Compact Artist Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="mb-8"
-                >
-                    <div className="flex flex-col md:flex-row gap-6 items-start md:items-center border-b border-white/5 pb-8">
-                        {/* Profile Image */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: 0.2 }}
-                            className="relative"
-                        >
-                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-br from-tangerine/50 to-amber-500/50">
-                                <div className="w-full h-full rounded-full overflow-hidden bg-charcoal">
-                                    <img src={artist.imageUrl} alt={artist.name} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
-                                </div>
-                            </div>
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
-                                className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-tangerine flex items-center justify-center shadow-lg border-4 border-void"
-                            >
-                                <Award size={16} className="text-void" />
-                            </motion.div>
-                        </motion.div>
-
-                        {/* Artist Info */}
-                        <div className="flex-1">
-                            <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.3 }}
-                                className="flex items-center gap-3 mb-2"
-                            >
-                                <h1 className="font-display text-4xl md:text-5xl text-pearl uppercase tracking-tighter">
-                                    {artist.name}
-                                </h1>
-                            </motion.div>
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: 0.4 }}
-                                className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-widest"
-                            >
-                                <span className="flex items-center gap-2 text-tangerine font-bold">
-                                    <Globe size={14} /> {artist.specialty}
-                                </span>
-                                <span className="flex items-center gap-2 text-warm-gray">
-                                    <MapPin size={14} /> Pakistan
-                                </span>
-                                <span className="flex items-center gap-2 text-warm-gray">
-                                    <Palette size={14} /> {totalArtworksCount} Works
-                                </span>
-                            </motion.div>
-                        </div>
-
-                        {/* Compact Stats */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="flex gap-6 md:border-l border-white/10 md:pl-8"
-                        >
-                            <div className="text-center">
-                                <p className="text-2xl font-display text-pearl">{totalArtworksCount}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-warm-gray">Works</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="text-2xl font-display text-pearl">{soldCount}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-warm-gray">Sold</p>
-                            </div>
-                        </motion.div>
-                    </div>
-                </motion.div>
-
-                {/* Content Grid - Compact */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Left: About - Compact */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="lg:col-span-4"
+                        transition={{ duration: 0.6 }}
+                        className="flex flex-col md:flex-row items-center md:items-start gap-8"
                     >
-                        <div className="bg-charcoal border border-white/5 p-6 rounded-sm sticky top-28">
-                            <h3 className="font-display text-xl text-pearl mb-3 tracking-wide uppercase">About</h3>
-                            <div className="text-warm-gray text-sm leading-relaxed space-y-4">
-                                {artist.bio ? (
-                                    artist.bio.split('\n').map((paragraph, i) => (
-                                        <p key={i}>{paragraph}</p>
-                                    ))
-                                ) : (
-                                    <p className="text-warm-gray/50 italic">No biography available.</p>
-                                )}
+                        {/* Round Artist Image */}
+                        <div className="shrink-0">
+                            <div className="w-40 h-40 md:w-52 md:h-52 rounded-full overflow-hidden border-4 border-tangerine/30 shadow-xl shadow-tangerine/10">
+                                <img
+                                    src={artist.imageUrl}
+                                    alt={artist.name}
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
+                        </div>
+
+                        {/* Artist Info */}
+                        <div className="text-center md:text-left min-w-0 flex-1">
+                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-pearl leading-tight mb-4 whitespace-nowrap">
+                                {artist.name}
+                            </h1>
+                            {artist.specialty && (
+                                <div className="flex items-center gap-2 justify-center md:justify-start mb-4">
+                                    <MapPin size={14} className="text-tangerine" />
+                                    <span className="text-warm-gray text-sm">{artist.specialty}</span>
+                                </div>
+                            )}
+                            {artist.bio && (
+                                <p className="text-pearl/70 text-base md:text-lg border-l-2 border-tangerine pl-6 whitespace-pre-line">
+                                    {artist.bio}
+                                </p>
+                            )}
                         </div>
                     </motion.div>
 
-                    {/* Right: Portfolio - Compact Grid */}
+                    {/* ─── INFO CARDS ─── */}
                     <motion.div
-                        id="portfolio-section"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.7 }}
-                        className="lg:col-span-8"
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12"
                     >
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="font-display text-2xl text-pearl tracking-wide uppercase">Portfolio</h3>
-                            <span className="text-tangerine text-xs uppercase tracking-widest font-bold">
-                                {totalArtworksCount - soldCount} Available
-                            </span>
+                        {/* Total Works Card */}
+                        <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
+                            <Palette size={20} className="text-tangerine mb-3" />
+                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Total Works</p>
+                            <p className="text-pearl font-mono text-sm">{totalArtworksCount}</p>
                         </div>
 
-                        {isLoadingArtworks ? (
-                            <div className="flex flex-col items-center justify-center py-16">
-                                <Loader2 className="w-8 h-8 text-tangerine animate-spin" />
-                                <p className="text-warm-gray text-xs uppercase tracking-widest mt-4">Loading artworks...</p>
-                            </div>
-                        ) : artworks.length === 0 ? (
-                            <div className="text-center py-16 border border-dashed border-white/10 rounded-sm bg-charcoal">
-                                <AlertCircle className="text-warm-gray mx-auto mb-4" size={40} />
-                                <p className="text-warm-gray font-mono text-lg">No artworks currently available.</p>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                    {artworks.map((art, idx) => (
-                                        <motion.div
-                                            key={art.id}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.05 * idx }}
-                                        >
-                                            <ArtworkCard artwork={art} />
-                                        </motion.div>
-                                    ))}
-                                </div>
+                        {/* Sold Works Card */}
+                        <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
+                            <Award size={20} className="text-tangerine mb-3" />
+                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Sold</p>
+                            <p className="text-pearl font-mono text-sm">{soldCount}</p>
+                        </div>
 
-                                {/* Pagination */}
-                                {pagination.totalPages > 1 && (
-                                    <div className="flex items-center justify-center gap-2 mt-10">
+                        {/* Available Works Card */}
+                        <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
+                            <ImageIcon size={20} className="text-tangerine mb-3" />
+                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Available</p>
+                            <p className="text-pearl font-mono text-sm">{totalArtworksCount - soldCount}</p>
+                        </div>
+
+                        {/* Location Card */}
+                        <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
+                            <MapPin size={20} className="text-tangerine mb-3" />
+                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Origin</p>
+                            <p className="text-pearl text-sm">{artist.specialty}</p>
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+
+            {/* ─── PORTFOLIO SECTION ─── */}
+            <div className="px-6 md:px-12 pb-16">
+                <div className="max-w-[1920px] mx-auto">
+                    {artworks.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                        >
+                            <div className="flex items-end justify-between mb-8 border-b border-pearl/10 pb-4">
+                                <div className="flex items-center gap-3">
+                                    <ImageIcon size={22} className="text-tangerine" />
+                                    <h2 className="text-2xl font-display text-pearl uppercase tracking-tight">Portfolio</h2>
+                                </div>
+                                <span className="text-tangerine font-mono text-xs uppercase tracking-widest">
+                                    {totalArtworksCount - soldCount} Available
+                                </span>
+                            </div>
+
+                            {/* Artwork Cards Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {artworks.map((art, idx) => (
+                                    <motion.div
+                                        key={art.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ delay: idx * 0.04 }}
+                                    >
+                                        <ArtworkCard artwork={art} />
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            {/* Pagination */}
+                            {pagination.totalPages > 1 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.8 }}
+                                    className="mt-10"
+                                >
+                                    <div className="flex items-center justify-center gap-2">
                                         {/* Previous Button */}
                                         <button
                                             onClick={() => goToPage(currentPage - 1)}
@@ -356,19 +319,35 @@ export const ArtistDetail: React.FC = () => {
                                             <ChevronRight size={14} />
                                         </button>
                                     </div>
-                                )}
 
-                                {/* Pagination Info */}
-                                {pagination.total > 0 && (
-                                    <div className="text-center text-warm-gray/60 text-xs uppercase tracking-widest mt-4">
-                                        Showing {((currentPage - 1) * ARTWORKS_PER_PAGE) + 1} - {Math.min(currentPage * ARTWORKS_PER_PAGE, pagination.total)} of {pagination.total}
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </motion.div>
+                                    {/* Pagination Info */}
+                                    {pagination.total > 0 && (
+                                        <div className="text-center text-warm-gray/60 text-xs uppercase tracking-widest mt-4">
+                                            Showing {((currentPage - 1) * ARTWORKS_PER_PAGE) + 1} - {Math.min(currentPage * ARTWORKS_PER_PAGE, pagination.total)} of {pagination.total}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    )}
+
+                    {/* ─── NO ARTWORKS MESSAGE ─── */}
+                    {artworks.length === 0 && !isLoadingArtworks && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-center py-16 border border-dashed border-white/10 rounded-sm bg-charcoal"
+                        >
+                            <AlertCircle className="text-warm-gray mx-auto mb-4" size={40} />
+                            <p className="text-warm-gray font-mono text-lg mb-4">No artworks currently available.</p>
+                            <Link to="/gallery" className="text-tangerine hover:text-tangerine transition-colors flex items-center gap-2 justify-center text-xs uppercase tracking-widest">
+                                <ArrowLeft size={14} /> Browse Gallery
+                            </Link>
+                        </motion.div>
+                    )}
                 </div>
             </div>
+
         </div>
     );
 };

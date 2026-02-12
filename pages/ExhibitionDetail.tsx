@@ -186,12 +186,8 @@ export const ExhibitionDetail = () => {
             </div>
 
             {/* ─── CONTENT AREA ─── */}
-            <div className="relative bg-gradient-to-b from-void via-charcoal/20 to-void overflow-hidden">
-                {/* Gradient orbs */}
-                <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.05, 0.15, 0.05] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/10 rounded-full blur-3xl pointer-events-none" />
-                <motion.div animate={{ scale: [1.3, 1, 1.3], opacity: [0.03, 0.1, 0.03] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber/5 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="max-w-[1920px] mx-auto px-6 md:px-12 py-16 relative z-10">
+            <div className="px-6 md:px-12 py-16">
+                <div className="max-w-[1920px] mx-auto">
 
                     {/* ─── INFO CARDS ─── */}
                     <motion.div

@@ -44,8 +44,8 @@ const Painting: React.FC<PaintingProps> = ({
         return { width: w, height: h };
     }, [texture, maxWidth, maxHeight]);
 
-    const frameDepth = 0.06;
-    const frameBorder = 0.08;
+    const frameDepth = 0.04; // Thinner modern frame
+    const frameBorder = 0.06; // Sleeker profile
     const frameW = dimensions.width + frameBorder * 2;
     const frameH = dimensions.height + frameBorder * 2;
 
@@ -72,7 +72,7 @@ const Painting: React.FC<PaintingProps> = ({
 
     return (
         <group position={position} rotation={rotation}>
-            {/* Frame - dark wood */}
+            {/* Frame - modern white aluminum */}
             <mesh
                 position={[0, 0, -frameDepth / 2]}
                 castShadow
@@ -82,9 +82,11 @@ const Painting: React.FC<PaintingProps> = ({
             >
                 <boxGeometry args={[frameW, frameH, frameDepth]} />
                 <meshStandardMaterial
-                    color={hovered ? '#d4822a' : '#1a1410'}
-                    roughness={0.4}
-                    metalness={0.2}
+                    color={hovered ? '#ffffff' : '#f0f0f0'}
+                    roughness={0.2}
+                    metalness={0.8}
+                    emissive={hovered ? '#ffffff' : '#e0e0e0'}
+                    emissiveIntensity={hovered ? 0.3 : 0.1}
                 />
             </mesh>
 
@@ -102,51 +104,59 @@ const Painting: React.FC<PaintingProps> = ({
             {/* Spotlight target (center of painting) */}
             <object3D ref={spotlightTarget} position={[0, 0, 0]} />
 
-            {/* Primary spotlight — ceiling track light aimed at painting */}
+            {/* Primary spotlight — modern white gallery lighting */}
             <spotLight
                 position={[0, 2.8, 2]}
                 target={spotlightTarget.current || undefined}
                 angle={0.45}
                 penumbra={0.6}
-                intensity={hovered ? 8 : 5}
+                intensity={hovered ? 10 : 7}
                 distance={8}
-                color="#fff5e6"
+                color="#ffffff"
                 castShadow
             />
 
-            {/* Fill light — softer, from slightly different angle */}
+            {/* Fill light — soft white ambient */}
             <pointLight
                 position={[0, 1.5, 1.2]}
-                intensity={hovered ? 1.5 : 0.8}
+                intensity={hovered ? 2 : 1}
                 distance={4}
-                color="#ffeedd"
+                color="#ffffff"
             />
 
-            {/* Track light fixture (small visible cylinder above painting) */}
+            {/* Track light fixture (modern white track system) */}
             <mesh position={[0, 2.2, 0.4]} rotation={[Math.PI / 6, 0, 0]}>
-                <cylinderGeometry args={[0.04, 0.06, 0.15, 8]} />
-                <meshStandardMaterial color="#222222" roughness={0.3} metalness={0.8} />
-            </mesh>
-            {/* Light head */}
-            <mesh position={[0, 2.15, 0.55]} rotation={[Math.PI / 4, 0, 0]}>
-                <cylinderGeometry args={[0.06, 0.03, 0.1, 8]} />
+                <cylinderGeometry args={[0.03, 0.03, 0.12, 8]} />
                 <meshStandardMaterial
-                    color="#333333"
-                    roughness={0.3}
-                    metalness={0.8}
-                    emissive="#fff5e6"
-                    emissiveIntensity={hovered ? 0.5 : 0.2}
+                    color="#ffffff"
+                    roughness={0.1}
+                    metalness={0.9}
+                    emissive="#ffffff"
+                    emissiveIntensity={0.1}
+                />
+            </mesh>
+            {/* Light head - modern white */}
+            <mesh position={[0, 2.15, 0.55]} rotation={[Math.PI / 4, 0, 0]}>
+                <cylinderGeometry args={[0.04, 0.02, 0.08, 8]} />
+                <meshStandardMaterial
+                    color="#ffffff"
+                    roughness={0.1}
+                    metalness={0.9}
+                    emissive="#ffffff"
+                    emissiveIntensity={hovered ? 0.8 : 0.3}
                 />
             </mesh>
 
-            {/* Label plaque */}
+            {/* Label plaque - modern white acrylic */}
             {title && (
                 <mesh position={[0, -(dimensions.height / 2 + frameBorder + 0.2), 0.01]}>
                     <planeGeometry args={[Math.min(dimensions.width, 1.2), 0.12]} />
                     <meshStandardMaterial
-                        color="#d4822a"
-                        roughness={0.3}
-                        metalness={0.5}
+                        color="#ffffff"
+                        roughness={0.1}
+                        metalness={0.2}
+                        emissive="#ffffff"
+                        emissiveIntensity={0.2}
                     />
                 </mesh>
             )}

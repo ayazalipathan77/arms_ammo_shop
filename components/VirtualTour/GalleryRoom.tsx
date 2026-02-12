@@ -8,9 +8,9 @@ interface GalleryRoomProps {
 }
 
 const GalleryRoom: React.FC<GalleryRoomProps> = ({ length, width = 10, height = 5 }) => {
-    const wallColor = '#1c1c1c';
-    const ceilingColor = '#141414';
-    const floorColor = '#2a1f1a';
+    const wallColor = '#ffffff'; // Marble white
+    const ceilingColor = '#f8f8f8'; // Light ceiling
+    const floorColor = '#e8e8e8'; // Light polished floor
     const accentColor = '#d4822a'; // tangerine
 
     // Generate ceiling light panel positions
@@ -72,7 +72,7 @@ const GalleryRoom: React.FC<GalleryRoomProps> = ({ length, width = 10, height = 
                 const z = -(i * panelSpacing + panelSpacing / 2);
                 return (
                     <group key={`panel-${i}`} position={[0, height - 0.01, z]}>
-                        {/* Main light panel - recessed rectangular */}
+                        {/* Main light panel - recessed rectangular with modern frame */}
                         <mesh rotation={[Math.PI / 2, 0, 0]}>
                             <planeGeometry args={[3.5, 0.6]} />
                             <meshStandardMaterial
@@ -83,63 +83,114 @@ const GalleryRoom: React.FC<GalleryRoomProps> = ({ length, width = 10, height = 
                             />
                         </mesh>
 
-                        {/* Panel border / bezel */}
+                        {/* Modern brushed aluminum frame */}
                         <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.001, 0]}>
                             <planeGeometry args={[3.7, 0.8]} />
-                            <meshStandardMaterial color="#222222" roughness={0.2} metalness={0.8} />
+                            <meshStandardMaterial
+                                color="#333333"
+                                roughness={0.1}
+                                metalness={0.9}
+                                emissive="#444444"
+                                emissiveIntensity={0.1}
+                            />
                         </mesh>
 
-                        {/* Actual light source */}
+                        {/* Actual light source with soft diffusion */}
                         <rectAreaLight
                             width={3.5}
                             height={0.6}
-                            intensity={4}
-                            color="#fff5e6"
+                            intensity={6}
+                            color="#ffffff"
                             rotation={[Math.PI / 2, 0, 0]}
                             position={[0, -0.02, 0]}
                         />
 
-                        {/* Secondary accent strip lights on sides */}
+                        {/* Secondary accent strip lights on sides - modern LED strips */}
                         <mesh rotation={[Math.PI / 2, 0, 0]} position={[-width / 2 + 0.5, -0.001, 0]}>
                             <planeGeometry args={[0.15, 0.4]} />
                             <meshStandardMaterial
-                                color={accentColor}
-                                emissive={accentColor}
-                                emissiveIntensity={0.8}
+                                color="#ffffff"
+                                emissive="#ffffff"
+                                emissiveIntensity={0.5}
                             />
                         </mesh>
                         <mesh rotation={[Math.PI / 2, 0, 0]} position={[width / 2 - 0.5, -0.001, 0]}>
                             <planeGeometry args={[0.15, 0.4]} />
                             <meshStandardMaterial
-                                color={accentColor}
-                                emissive={accentColor}
-                                emissiveIntensity={0.8}
+                                color="#ffffff"
+                                emissive="#ffffff"
+                                emissiveIntensity={0.5}
                             />
                         </mesh>
+
+                        {/* Wall washing lights - subtle uplighting on walls */}
+                        <spotLight
+                            position={[-width / 2 + 0.1, height - 0.5, 0]}
+                            angle={Math.PI / 3}
+                            penumbra={0.8}
+                            intensity={2}
+                            color="#ffffff"
+                            distance={10}
+                            castShadow={false}
+                        />
+                        <spotLight
+                            position={[width / 2 - 0.1, height - 0.5, 0]}
+                            angle={Math.PI / 3}
+                            penumbra={0.8}
+                            intensity={2}
+                            color="#ffffff"
+                            distance={10}
+                            castShadow={false}
+                        />
                     </group>
                 );
             })}
 
-            {/* Ceiling track rail - left (for painting spotlights) */}
+            {/* Additional ambient lighting for modern gallery feel */}
+            <ambientLight intensity={0.5} color="#ffffff" />
+
+            {/* Soft edge lighting along ceiling perimeter */}
+            {Array.from({ length: Math.ceil(width / 2) }).map((_, i) => (
+                <group key={`edge-light-${i}`}>
+                    <rectAreaLight
+                        width={1.5}
+                        height={0.1}
+                        intensity={2}
+                        color="#ffffff"
+                        rotation={[Math.PI / 2, 0, 0]}
+                        position={[-width / 2 + 1 + i * 2, height - 0.1, -length / 2]}
+                    />
+                    <rectAreaLight
+                        width={1.5}
+                        height={0.1}
+                        intensity={2}
+                        color="#ffffff"
+                        rotation={[Math.PI / 2, 0, 0]}
+                        position={[width / 2 - 1 - i * 2, height - 0.1, -length / 2]}
+                    />
+                </group>
+            ))}
+
+            {/* Ceiling track rail - left (for painting spotlights) - modern white */}
             <mesh position={[-width / 2 + 1.2, height - 0.08, -length / 2]} rotation={[0, Math.PI / 2, 0]}>
                 <boxGeometry args={[length, 0.03, 0.08]} />
-                <meshStandardMaterial color="#1a1a1a" roughness={0.2} metalness={0.9} />
+                <meshStandardMaterial color="#ffffff" roughness={0.1} metalness={0.9} />
             </mesh>
 
-            {/* Ceiling track rail - right */}
+            {/* Ceiling track rail - right - modern white */}
             <mesh position={[width / 2 - 1.2, height - 0.08, -length / 2]} rotation={[0, Math.PI / 2, 0]}>
                 <boxGeometry args={[length, 0.03, 0.08]} />
-                <meshStandardMaterial color="#1a1a1a" roughness={0.2} metalness={0.9} />
+                <meshStandardMaterial color="#ffffff" roughness={0.1} metalness={0.9} />
             </mesh>
 
-            {/* Ambient fill light - warmer and brighter */}
-            <ambientLight intensity={0.35} color="#ffeedd" />
+            {/* Modern white ambient lighting */}
+            <ambientLight intensity={0.6} color="#ffffff" />
 
-            {/* Hemisphere light for natural feel */}
+            {/* Soft white hemisphere light for natural feel */}
             <hemisphereLight
-                color="#fff5e6"
-                groundColor="#1a1410"
-                intensity={0.3}
+                color="#ffffff"
+                groundColor="#f0f0f0"
+                intensity={0.4}
             />
         </group>
     );
