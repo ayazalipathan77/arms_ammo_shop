@@ -1,16 +1,19 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Calendar, MapPin, Play, Image as ImageIcon, Monitor, ChevronLeft, ChevronRight, X, Expand, Eye } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Play, Image as ImageIcon, Monitor, ChevronLeft, ChevronRight, X, Expand, Eye, Box } from 'lucide-react';
 import { exhibitionApi } from '../services/api';
 import { Exhibition } from '../types';
 import { ScrambleText } from '../components/ui/ScrambleText';
+
+const VirtualTourModal = lazy(() => import('../components/VirtualTour/VirtualTourModal'));
 
 export const ExhibitionDetail = () => {
     const { id } = useParams<{ id: string }>();
     const [exhibition, setExhibition] = useState<Exhibition | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedImageIdx, setSelectedImageIdx] = useState<number | null>(null);
+    const [showVirtualTour, setShowVirtualTour] = useState(false);
 
     useEffect(() => {
         const fetchExhibition = async () => {
@@ -226,28 +229,62 @@ export const ExhibitionDetail = () => {
                         </div>
 
                         {/* Virtual / Video Card */}
-                        <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
-                            {exhibition.isVirtual ? (
-                                <>
-                                    <Monitor size={20} className="text-tangerine mb-3" />
-                                    <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Virtual Tour</p>
-                                    <p className="text-pearl text-sm">3D walkthrough available</p>
-                                </>
-                            ) : videoId ? (
-                                <>
-                                    <Play size={20} className="text-tangerine mb-3" />
-                                    <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Exhibition Film</p>
-                                    <p className="text-pearl text-sm">Video available</p>
-                                </>
-                            ) : (
-                                <>
-                                    <Eye size={20} className="text-tangerine mb-3" />
-                                    <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Status</p>
-                                    <p className="text-pearl text-sm">{getStatusLabel(exhibition.status)}</p>
-                                </>
-                            )}
-                        </div>
+                        {exhibition.isVirtual ? (
+                            <button
+                                onClick={() => setShowVirtualTour(true)}
+                                className="bg-charcoal/40 backdrop-blur-sm border border-tangerine/30 p-6 hover:border-tangerine hover:bg-tangerine/10 transition-all text-left group cursor-pointer"
+                            >
+                                <Box size={20} className="text-tangerine mb-3 group-hover:scale-110 transition-transform" />
+                                <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Virtual Tour</p>
+                                <p className="text-tangerine text-sm font-bold">Enter 3D Gallery →</p>
+                            </button>
+                        ) : (
+                            <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
+                                {videoId ? (
+                                    <>
+                                        <Play size={20} className="text-tangerine mb-3" />
+                                        <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Exhibition Film</p>
+                                        <p className="text-pearl text-sm">Video available</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Eye size={20} className="text-tangerine mb-3" />
+                                        <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Status</p>
+                                        <p className="text-pearl text-sm">{getStatusLabel(exhibition.status)}</p>
+                                    </>
+                                )}
+                            </div>
+                        )}
                     </motion.div>
+
+                    {/* ─── VIRTUAL TOUR CTA ─── */}
+                    {exhibition.isVirtual && allImages.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.5 }}
+                            className="mb-20"
+                        >
+                            <button
+                                onClick={() => setShowVirtualTour(true)}
+                                className="w-full group relative overflow-hidden border border-pearl/10 hover:border-tangerine transition-all duration-500"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-tangerine/10 via-transparent to-tangerine/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <div className="relative flex items-center justify-between px-8 py-6">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-14 h-14 border-2 border-tangerine flex items-center justify-center group-hover:bg-tangerine transition-colors duration-300">
+                                            <Box size={24} className="text-tangerine group-hover:text-void transition-colors duration-300" />
+                                        </div>
+                                        <div className="text-left">
+                                            <h3 className="text-pearl text-lg font-display uppercase tracking-wider group-hover:text-tangerine transition-colors">Enter Virtual Gallery</h3>
+                                            <p className="text-warm-gray/60 text-xs font-mono">Walk through a 3D gallery space · {allImages.length} artworks displayed · WASD + mouse controls</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-pearl/30 group-hover:text-tangerine transition-colors text-2xl font-display">→</div>
+                                </div>
+                            </button>
+                        </motion.div>
+                    )}
 
                     {/* ─── VIDEO SECTION ─── */}
                     {videoId && (
@@ -406,6 +443,25 @@ export const ExhibitionDetail = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* ─── VIRTUAL TOUR MODAL ─── */}
+            {showVirtualTour && (
+                <Suspense fallback={
+                    <div className="fixed inset-0 z-[100] bg-void flex items-center justify-center">
+                        <div className="text-center">
+                            <div className="w-6 h-6 bg-tangerine animate-ping mx-auto mb-4" />
+                            <p className="text-warm-gray font-mono text-xs uppercase tracking-widest">Loading 3D Gallery...</p>
+                        </div>
+                    </div>
+                }>
+                    <VirtualTourModal
+                        isOpen={showVirtualTour}
+                        onClose={() => setShowVirtualTour(false)}
+                        images={allImages}
+                        title={exhibition.title}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 };
