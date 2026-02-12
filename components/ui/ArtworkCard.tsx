@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowUpRight, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Artwork } from '../../types';
 import { favoriteApi } from '../../services/api';
@@ -147,12 +147,13 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
                     <p className="text-[clamp(0.6rem,2.8cqi,0.8rem)] font-mono font-bold text-void/90 mt-1 leading-tight">{convertPrice(artwork.price)}</p>
                 </motion.div>
 
-                {/* Favorite Button - positioned below sold badge area to avoid overlap */}
+                {/* Favorite Button - top right, revealed on hover */}
                 <motion.button
                     onClick={handleFavoriteClick}
                     disabled={isLoading}
                     className={cn(
-                        "absolute top-14 left-4 z-30 p-2 bg-stone-900/80 backdrop-blur-sm hover:bg-stone-900 transition-all duration-300",
+                        "absolute top-4 right-4 z-30 p-3 bg-tangerine transition-all duration-300",
+                        isFavorited ? "opacity-100" : "opacity-0 group-hover:opacity-100",
                         isLoading && "opacity-50 cursor-not-allowed"
                     )}
                     whileHover={{ scale: 1.1 }}
@@ -160,20 +161,11 @@ const ArtworkCard: React.FC<ArtworkCardProps> = ({ artwork, className }) => {
                 >
                     <Heart
                         className={cn(
-                            "w-5 h-5 transition-all duration-300",
-                            isFavorited ? "fill-amber-500 text-amber-500" : "text-white/80 hover:text-amber-500"
+                            "w-6 h-6 transition-all duration-300",
+                            isFavorited ? "fill-void text-void" : "text-void"
                         )}
                     />
                 </motion.button>
-
-                {/* Hover Reveal Action */}
-                <motion.div
-                    className="absolute top-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                >
-                    <div className="bg-tangerine p-3 rounded-none">
-                        <ArrowUpRight className="text-void w-6 h-6" />
-                    </div>
-                </motion.div>
             </motion.div>
         </Link>
     );
