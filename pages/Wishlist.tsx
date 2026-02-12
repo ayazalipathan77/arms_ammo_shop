@@ -98,10 +98,22 @@ export const Wishlist: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-stone-950 pt-20">
+        <div className="min-h-screen bg-gradient-to-b from-void via-charcoal/30 to-void pt-24 pb-20 px-6 md:px-12 relative overflow-hidden">
+            {/* Animated Background Gradient Orbs */}
+            <motion.div
+                animate={{ scale: [1, 1.3, 1], opacity: [0.05, 0.15, 0.05] }}
+                transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/10 rounded-full blur-3xl pointer-events-none"
+            />
+            <motion.div
+                animate={{ scale: [1.3, 1, 1.3], opacity: [0.03, 0.1, 0.03] }}
+                transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber/5 rounded-full blur-3xl pointer-events-none"
+            />
+
             {/* Header */}
-            <div className="border-b border-white/5">
-                <div className="max-w-7xl mx-auto px-6 py-12">
+            <div className="border-b border-pearl/10 relative z-10">
+                <div className="max-w-[1920px] mx-auto pb-8 mb-16">
                     <div className="flex items-center gap-3 mb-2">
                         <Heart className="w-8 h-8 text-amber-500 fill-amber-500" />
                         <h1 className="text-4xl md:text-5xl font-serif text-white">My Wishlist</h1>
@@ -113,7 +125,7 @@ export const Wishlist: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="max-w-7xl mx-auto px-6 py-12">
+            <div className="max-w-[1920px] mx-auto relative z-10">
                 {favorites.length === 0 ? (
                     <div className="text-center py-20">
                         <Heart className="w-20 h-20 text-stone-800 mx-auto mb-6" />

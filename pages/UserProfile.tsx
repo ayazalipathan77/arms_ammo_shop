@@ -137,8 +137,11 @@ export const UserProfile: React.FC = () => {
    if (isLoading) return <div className="min-h-screen bg-void flex items-center justify-center text-tangerine font-mono text-xs uppercase tracking-widest">Loading...</div>;
 
    return (
-      <div className="min-h-screen pt-32 pb-20 bg-void text-pearl px-6 md:px-12 relative overflow-hidden">
+      <div className="min-h-screen pt-24 pb-20 bg-gradient-to-b from-void via-charcoal/30 to-void text-pearl px-6 md:px-12 relative overflow-hidden">
          <ParticleSystem />
+         {/* Animated Background Gradient Orbs */}
+         <motion.div animate={{ scale: [1, 1.3, 1], opacity: [0.05, 0.15, 0.05] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/10 rounded-full blur-3xl pointer-events-none" />
+         <motion.div animate={{ scale: [1.3, 1, 1.3], opacity: [0.03, 0.1, 0.03] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }} className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber/5 rounded-full blur-3xl pointer-events-none" />
 
          <div className="max-w-[1920px] mx-auto relative z-10">
             {/* Header */}

@@ -30,24 +30,10 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <div className="pt-24 pb-20 min-h-screen bg-void relative overflow-hidden px-6 md:px-12">
-      {/* Animated Background Gradient Orbs */}
-      <motion.div
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.05, 0.15, 0.05]
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/10 rounded-full blur-3xl pointer-events-none"
-      />
-      <motion.div
-        animate={{
-          scale: [1.3, 1, 1.3],
-          opacity: [0.03, 0.1, 0.03]
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber/5 rounded-full blur-3xl pointer-events-none"
-      />
+    <div className="pt-24 pb-20 min-h-screen relative overflow-hidden px-6 md:px-12">
+      {/* Background Gradient Orbs - Static */}
+      <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-gradient-radial from-tangerine/30 via-tangerine/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-radial from-amber/20 via-amber/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-[1920px] mx-auto relative z-10">
 

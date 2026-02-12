@@ -211,9 +211,9 @@ export const Collections: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-void pt-24 pb-20 relative overflow-hidden">
-            {/* Ambient Background */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-charcoal/50 rounded-full blur-3xl pointer-events-none" />
+            {/* Background Gradient Orbs - Static */}
+            <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-gradient-radial from-tangerine/30 via-tangerine/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-radial from-amber/20 via-amber/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
             <div className="max-w-[1920px] mx-auto px-6 md:px-12 relative z-10">
 

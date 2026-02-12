@@ -185,35 +185,35 @@ export const Gallery: React.FC = () => {
   };
 
   return (
-    <div className="pt-32 min-h-screen bg-stone-950 relative overflow-hidden">
+    <div className="pt-24 pb-20 min-h-screen bg-gradient-to-b from-void via-charcoal/30 to-void relative overflow-hidden px-6 md:px-12">
       {/* Animated Background Gradient Orbs */}
       <motion.div
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.1, 0.2, 0.1]
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-20 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"
-      />
-      <motion.div
-        animate={{
-          scale: [1.2, 1, 1.2],
+          scale: [1, 1.3, 1],
           opacity: [0.05, 0.15, 0.05]
         }}
         transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-0 left-0 w-96 h-96 bg-amber-600/5 rounded-full blur-3xl pointer-events-none"
+        className="absolute top-0 right-0 w-[600px] h-[600px] bg-tangerine/10 rounded-full blur-3xl pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1.3, 1, 1.3],
+          opacity: [0.03, 0.1, 0.03]
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber/5 rounded-full blur-3xl pointer-events-none"
       />
 
-      <div className="max-w-screen-2xl mx-auto px-6 md:px-12 relative z-10">
+      <div className="max-w-[1920px] mx-auto relative z-10">
 
         {/* Elegant Header & Controls */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-10"
+          className="mb-16"
         >
-          <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-stone-800/50 pb-8">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-pearl/10 pb-8">
             <div>
               <motion.div
                 initial={{ opacity: 0, x: -20 }}

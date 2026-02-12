@@ -23,8 +23,12 @@ export const Exhibitions: React.FC = () => {
    );
 
    return (
-      <div className="pt-24 pb-20 min-h-screen relative z-10 px-6 md:px-12">
-         <div className="max-w-[1920px] mx-auto">
+       <div className="pt-24 pb-20 min-h-screen relative z-10 px-6 md:px-12 overflow-hidden">
+          {/* Background Gradient Orbs - Static */}
+          <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-gradient-radial from-tangerine/30 via-tangerine/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-radial from-amber/20 via-amber/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+         <div className="max-w-[1920px] mx-auto relative z-10">
             {/* Header */}
             <motion.div
                initial={{ opacity: 0, y: 30 }}

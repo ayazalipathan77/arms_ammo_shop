@@ -62,14 +62,12 @@ export const Artists: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-void pt-24 pb-20 px-6 md:px-12">
+    <div className="min-h-screen pt-24 pb-20 px-6 md:px-12 relative overflow-hidden">
       <ParticleSystem />
 
-      {/* Background Decor */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-tangerine/5 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[80px]"></div>
-      </div>
+      {/* Background Gradient Orbs - Static */}
+      <div className="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-gradient-radial from-tangerine/30 via-tangerine/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-gradient-radial from-amber/20 via-amber/5 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-[1920px] mx-auto relative z-10">
 
@@ -92,7 +90,7 @@ export const Artists: React.FC = () => {
           </div>
         </motion.div>
 
-        <div className="mb-12">
+        <div className="mb-16">
           <div className="w-full md:w-auto relative group max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-warm-gray group-focus-within:text-tangerine transition-colors" size={16} />
             <input
