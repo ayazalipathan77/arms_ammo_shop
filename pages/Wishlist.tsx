@@ -54,14 +54,14 @@ export const Wishlist: React.FC = () => {
 
     if (!user) {
         return (
-            <div className="min-h-screen pt-20 flex items-center justify-center px-4">
+            <div className="min-h-screen bg-gradient-to-b from-void via-charcoal/30 to-void pt-24 pb-20 px-6 md:px-12 flex items-center justify-center relative overflow-hidden">
                 <div className="text-center">
-                    <Heart className="w-16 h-16 text-stone-600 mx-auto mb-4" />
-                    <h2 className="text-2xl font-serif text-white mb-2">Sign in to view your wishlist</h2>
-                    <p className="text-stone-400 mb-6">Save your favorite artworks and never lose track of them.</p>
+                    <Heart className="w-16 h-16 text-warm-gray mx-auto mb-4" />
+                    <h2 className="text-2xl font-serif text-pearl mb-2">Sign in to view your wishlist</h2>
+                    <p className="text-warm-gray mb-6">Save your favorite artworks and never lose track of them.</p>
                     <Link
                         to="/auth"
-                        className="inline-block border border-amber-500 text-amber-500 px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-amber-500 hover:text-stone-950 transition-all"
+                        className="inline-block border border-tangerine text-tangerine px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-tangerine hover:text-void transition-all"
                     >
                         Sign In
                     </Link>
@@ -72,10 +72,10 @@ export const Wishlist: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen pt-20 flex items-center justify-center px-4">
+            <div className="min-h-screen bg-gradient-to-b from-void via-charcoal/30 to-void pt-24 pb-20 px-6 md:px-12 flex items-center justify-center relative overflow-hidden">
                 <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-amber-500 animate-spin mx-auto mb-4" />
-                    <p className="text-stone-400 text-sm uppercase tracking-widest">Loading your wishlist...</p>
+                    <Loader2 className="w-12 h-12 text-tangerine animate-spin mx-auto mb-4" />
+                    <p className="text-warm-gray text-sm uppercase tracking-widest">Loading your wishlist...</p>
                 </div>
             </div>
         );
@@ -83,12 +83,12 @@ export const Wishlist: React.FC = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen pt-20 flex items-center justify-center px-4">
+            <div className="min-h-screen bg-gradient-to-b from-void via-charcoal/30 to-void pt-24 pb-20 px-6 md:px-12 flex items-center justify-center relative overflow-hidden">
                 <div className="text-center">
                     <p className="text-red-500 mb-4">{error}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="border border-amber-500 text-amber-500 px-6 py-2 text-sm font-bold uppercase tracking-widest hover:bg-amber-500 hover:text-stone-950 transition-all"
+                        className="border border-tangerine text-tangerine px-6 py-2 text-sm font-bold uppercase tracking-widest hover:bg-tangerine hover:text-void transition-all"
                     >
                         Retry
                     </button>
@@ -115,10 +115,10 @@ export const Wishlist: React.FC = () => {
             <div className="border-b border-pearl/10 relative z-10">
                 <div className="max-w-[1920px] mx-auto pb-8 mb-16">
                     <div className="flex items-center gap-3 mb-2">
-                        <Heart className="w-8 h-8 text-amber-500 fill-amber-500" />
-                        <h1 className="text-4xl md:text-5xl font-serif text-white">My Wishlist</h1>
+                        <Heart className="w-8 h-8 text-tangerine fill-tangerine" />
+                        <h1 className="text-4xl md:text-5xl font-serif text-pearl">My Wishlist</h1>
                     </div>
-                    <p className="text-stone-400 font-mono text-sm uppercase tracking-widest">
+                    <p className="text-warm-gray font-mono text-sm uppercase tracking-widest">
                         {favorites.length} {favorites.length === 1 ? 'artwork' : 'artworks'} saved
                     </p>
                 </div>
@@ -128,14 +128,14 @@ export const Wishlist: React.FC = () => {
             <div className="max-w-[1920px] mx-auto relative z-10">
                 {favorites.length === 0 ? (
                     <div className="text-center py-20">
-                        <Heart className="w-20 h-20 text-stone-800 mx-auto mb-6" />
-                        <h2 className="text-2xl font-serif text-white mb-3">Your wishlist is empty</h2>
-                        <p className="text-stone-400 mb-8 max-w-md mx-auto">
+                        <Heart className="w-20 h-20 text-charcoal mx-auto mb-6" />
+                        <h2 className="text-2xl font-serif text-pearl mb-3">Your wishlist is empty</h2>
+                        <p className="text-warm-gray mb-8 max-w-md mx-auto">
                             Start exploring our collection and save your favorite artworks to this list.
                         </p>
                         <Link
                             to="/collections"
-                            className="inline-block border border-amber-500 text-amber-500 px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-amber-500 hover:text-stone-950 transition-all"
+                            className="inline-block border border-tangerine text-tangerine px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-tangerine hover:text-void transition-all"
                         >
                             Explore Collection
                         </Link>
@@ -176,7 +176,7 @@ export const Wishlist: React.FC = () => {
                                     </div>
 
                                     {/* Saved date (subtle) */}
-                                    <div className="mt-2 text-stone-600 text-xs font-mono">
+                                    <div className="mt-2 text-warm-gray/50 text-xs font-mono">
                                         Saved {new Date(favorite.createdAt).toLocaleDateString()}
                                     </div>
                                 </motion.div>
@@ -188,14 +188,14 @@ export const Wishlist: React.FC = () => {
 
             {/* Stats/Actions Footer */}
             {favorites.length > 0 && (
-                <div className="border-t border-white/5 bg-stone-900/30 backdrop-blur-sm py-8">
-                    <div className="max-w-7xl mx-auto px-6">
+                <div className="border-t border-pearl/10 bg-charcoal/30 backdrop-blur-sm py-8 mt-16 relative z-10">
+                    <div className="max-w-[1920px] mx-auto">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                             <div className="text-center md:text-left">
-                                <p className="text-stone-400 text-sm font-mono">
+                                <p className="text-warm-gray text-sm font-mono">
                                     Total value: PKR {favorites.reduce((sum, fav) => sum + parseFloat(fav.artwork.price), 0).toLocaleString()}
                                 </p>
-                                <p className="text-stone-600 text-xs mt-1">
+                                <p className="text-warm-gray/50 text-xs mt-1">
                                     Based on {favorites.length} {favorites.length === 1 ? 'item' : 'items'}
                                 </p>
                             </div>
@@ -203,7 +203,7 @@ export const Wishlist: React.FC = () => {
                             <div className="flex gap-4">
                                 <Link
                                     to="/collections"
-                                    className="border border-stone-700 text-stone-300 px-6 py-2 text-sm font-bold uppercase tracking-widest hover:bg-stone-800 transition-all"
+                                    className="border border-pearl/20 text-pearl px-6 py-2 text-sm font-bold uppercase tracking-widest hover:border-tangerine hover:text-tangerine transition-all"
                                 >
                                     Continue Shopping
                                 </Link>
