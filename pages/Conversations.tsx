@@ -73,7 +73,10 @@ export const Conversations: React.FC = () => {
            </motion.div>
 
            {/* Content Section */}
-           <div className="py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-br from-void via-charcoal/30 to-void border-t border-pearl/10 rounded-sm">
+           <div className="py-16 px-6 md:px-12 relative overflow-hidden bg-gradient-to-bl from-void via-charcoal to-void border-t border-pearl/10 rounded-sm">
+             {/* Gradient Orbs */}
+             <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-tangerine/25 rounded-full blur-[140px] pointer-events-none" />
+             <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber/20 rounded-full blur-[120px] pointer-events-none" />
            {/* Featured Story */}
              <AnimatePresence mode="wait">
                {featured && (
