@@ -2341,11 +2341,11 @@ export const AdminDashboard: React.FC = () => {
                               value={newArtwork.artistId}
                               onChange={e => {
                                  const selectedArtist = artists.find(a => a.id === e.target.value);
-                                 setNewArtwork({ ...newArtwork, artistId: e.target.value, artistName: selectedArtist?.name || '' });
+                                 setNewArtwork({ ...newArtwork, artistId: e.target.value, artistName: selectedArtist?.user?.fullName || selectedArtist?.name || '' });
                               }}
                            >
                               <option value="">Select Artist</option>
-                              {artists.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                              {artists.map(a => <option key={a.id} value={a.id}>{a.user?.fullName || a.name}</option>)}
                            </select>
                         </div>
                      </div>
