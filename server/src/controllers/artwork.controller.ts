@@ -57,31 +57,33 @@ export const getArtworks = async (req: Request, res: Response): Promise<void> =>
         // Calculate pagination
         const skip = (query.page - 1) * query.limit;
 
-        // Get total count for pagination
-        const total = await prisma.artwork.count({ where });
-
-        // Get artworks
-        const artworks = await prisma.artwork.findMany({
-            where,
-            include: {
-                artist: {
-                    include: {
-                        user: {
-                            select: {
-                                id: true,
-                                fullName: true,
-                                email: true,
+        const [artworks, total, totalAll, inStockCount, soldOutCount] = await Promise.all([
+            prisma.artwork.findMany({
+                where,
+                include: {
+                    artist: {
+                        include: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    email: true,
+                                },
                             },
                         },
                     },
                 },
-            },
-            orderBy: {
-                [query.sortBy]: query.sortOrder,
-            },
-            skip,
-            take: query.limit,
-        });
+                orderBy: {
+                    [query.sortBy]: query.sortOrder,
+                },
+                skip,
+                take: query.limit,
+            }),
+            prisma.artwork.count({ where }),
+            prisma.artwork.count(),
+            prisma.artwork.count({ where: { inStock: true } }),
+            prisma.artwork.count({ where: { inStock: false } }),
+        ]);
 
         res.status(StatusCodes.OK).json({
             artworks,
@@ -90,6 +92,11 @@ export const getArtworks = async (req: Request, res: Response): Promise<void> =>
                 page: query.page,
                 limit: query.limit,
                 totalPages: Math.ceil(total / query.limit),
+            },
+            counts: {
+                ALL: totalAll,
+                IN_STOCK: inStockCount,
+                SOLD_OUT: soldOutCount,
             },
         });
     } catch (error: any) {

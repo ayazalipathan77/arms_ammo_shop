@@ -180,7 +180,17 @@ export const getAllOrders = async (req: Request, res: Response): Promise<void> =
             ];
         }
 
-        const [orders, total] = await Promise.all([
+        const sortBy = typeof req.query.sortBy === 'string' ? req.query.sortBy : 'createdAt';
+        const sortOrder = typeof req.query.sortOrder === 'string' ? req.query.sortOrder : 'desc';
+
+        const orderByClause: any = {};
+        if (['createdAt', 'totalAmount', 'status'].includes(sortBy)) {
+            orderByClause[sortBy] = sortOrder === 'asc' ? 'asc' : 'desc';
+        } else {
+            orderByClause.createdAt = 'desc';
+        }
+
+        const [orders, total, ...statusCounts] = await Promise.all([
             prisma.order.findMany({
                 where,
                 include: {
@@ -212,11 +222,19 @@ export const getAllOrders = async (req: Request, res: Response): Promise<void> =
                         }
                     }
                 },
-                orderBy: { createdAt: 'desc' },
+                orderBy: orderByClause,
                 skip,
                 take: parseInt(limit),
             }),
-            prisma.order.count({ where })
+            prisma.order.count({ where }),
+            prisma.order.count(),
+            prisma.order.count({ where: { status: 'PENDING' } }),
+            prisma.order.count({ where: { status: 'PAID' } }),
+            prisma.order.count({ where: { status: 'AWAITING_CONFIRMATION' } }),
+            prisma.order.count({ where: { status: 'CONFIRMED' } }),
+            prisma.order.count({ where: { status: 'SHIPPED' } }),
+            prisma.order.count({ where: { status: 'DELIVERED' } }),
+            prisma.order.count({ where: { status: 'CANCELLED' } }),
         ]);
 
         res.status(StatusCodes.OK).json({
@@ -226,6 +244,16 @@ export const getAllOrders = async (req: Request, res: Response): Promise<void> =
                 limit: parseInt(limit),
                 total,
                 totalPages: Math.ceil(total / parseInt(limit))
+            },
+            counts: {
+                ALL: statusCounts[0],
+                PENDING: statusCounts[1],
+                PAID: statusCounts[2],
+                AWAITING_CONFIRMATION: statusCounts[3],
+                CONFIRMED: statusCounts[4],
+                SHIPPED: statusCounts[5],
+                DELIVERED: statusCounts[6],
+                CANCELLED: statusCounts[7],
             }
         });
     } catch (error) {

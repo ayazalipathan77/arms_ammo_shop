@@ -73,6 +73,7 @@ export const AdminDashboard: React.FC = () => {
    const [reviewFilter, setReviewFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
    const [reviewActionLoading, setReviewActionLoading] = useState<string | null>(null);
+   const [reviewCounts, setReviewCounts] = useState<Record<string, number>>({});
 
    // Inventory State
    const [inventorySearch, setInventorySearch] = useState('');
@@ -84,10 +85,12 @@ export const AdminDashboard: React.FC = () => {
    const [inventorySortDir, setInventorySortDir] = useState<'asc' | 'desc'>('desc');
    const [isLoadingInventory, setIsLoadingInventory] = useState(false);
    const [debouncedInventorySearch, setDebouncedInventorySearch] = useState('');
+   const [inventoryCounts, setInventoryCounts] = useState<Record<string, number>>({});
 
-   // Order Sorting
+   // Order Sorting & Counts
    const [orderSortField, setOrderSortField] = useState<'createdAt' | 'totalAmount' | 'status'>('createdAt');
    const [orderSortDir, setOrderSortDir] = useState<'asc' | 'desc'>('desc');
+   const [orderCounts, setOrderCounts] = useState<Record<string, number>>({});
 
    // Image Preview
    const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -189,6 +192,7 @@ export const AdminDashboard: React.FC = () => {
          const data = await adminApi.getAllOrders(filters);
          setAdminOrders(data.orders || []);
          setOrdersPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
+         if ((data as any).counts) setOrderCounts((data as any).counts);
       } catch (err) {
          console.error('Failed to load orders', err);
       }
@@ -206,6 +210,7 @@ export const AdminDashboard: React.FC = () => {
          const data = await artworkApi.getAll(filters);
          setInventoryArtworks(data.artworks.map(transformArtwork));
          setInventoryPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
+         if ((data as any).counts) setInventoryCounts((data as any).counts);
       } catch (err) {
          console.error('Failed to load inventory', err);
       } finally {
@@ -499,8 +504,9 @@ export const AdminDashboard: React.FC = () => {
          if (activeTab === 'REVIEWS') {
             setIsLoadingReviews(true);
             try {
-               const { reviews: fetchedReviews } = await reviewApi.getAllForModeration(reviewFilter);
-               setReviews(fetchedReviews);
+               const data = await reviewApi.getAllForModeration(reviewFilter);
+               setReviews(data.reviews);
+               if ((data as any).counts) setReviewCounts((data as any).counts);
             } catch (error) {
                console.error('Failed to fetch reviews:', error);
             } finally {
@@ -618,25 +624,29 @@ export const AdminDashboard: React.FC = () => {
          alert('Please fill in Title and Price');
          return;
       }
-      if (!newArtwork.artistId) {
+      if (!editingArtworkId && !newArtwork.artistId) {
          alert('Please select an artist');
          return;
       }
       try {
-         const artData = {
-            ...newArtwork,
-            imageUrl: newArtwork.imageUrl || `https://picsum.photos/800/800?random=${Date.now()}`,
-            year: newArtwork.year || new Date().getFullYear(),
-            dimensions: newArtwork.dimensions || '24x24',
+         const artData: any = {
+            title: newArtwork.title,
             description: newArtwork.description || '',
+            price: Number(newArtwork.price),
             category: newArtwork.category || 'Abstract',
             medium: newArtwork.medium || 'Mixed Media',
-            inStock: newArtwork.inStock ?? true
+            dimensions: newArtwork.dimensions || '24x24',
+            imageUrl: newArtwork.imageUrl || `https://picsum.photos/800/800?random=${Date.now()}`,
+            year: newArtwork.year || new Date().getFullYear(),
+            inStock: newArtwork.inStock ?? true,
+            printOptions: newArtwork.printOptions || null,
          };
 
          if (editingArtworkId) {
             await updateArtwork(editingArtworkId, artData);
          } else {
+            artData.artistId = newArtwork.artistId;
+            artData.artistName = newArtwork.artistName;
             await addArtwork(artData);
          }
 
@@ -647,6 +657,8 @@ export const AdminDashboard: React.FC = () => {
             year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: '',
             printOptions: { enabled: false, sizes: [] }
          });
+         // Reload inventory grid
+         if (activeTab === 'INVENTORY') loadInventory(inventoryPagination.page);
       } catch (err) {
          alert(`Failed to ${editingArtworkId ? 'update' : 'add'} artwork`);
          console.error('Save artwork error:', err);
@@ -990,6 +1002,7 @@ export const AdminDashboard: React.FC = () => {
                         }`}
                      >
                         {st === 'ALL' ? 'All Stock' : st === 'IN_STOCK' ? 'In Stock' : 'Sold Out'}
+                        {inventoryCounts[st] !== undefined && <span className="ml-1 opacity-60">({inventoryCounts[st]})</span>}
                      </button>
                   ))}
                </div>
@@ -1126,6 +1139,7 @@ export const AdminDashboard: React.FC = () => {
                         }`}
                      >
                         {s === 'ALL' ? 'All' : getOrderStatusLabel(s)}
+                        {orderCounts[s] !== undefined && <span className="ml-1 opacity-60">({orderCounts[s]})</span>}
                      </button>
                   ))}
                </div>
@@ -1851,6 +1865,7 @@ export const AdminDashboard: React.FC = () => {
                         }`}
                      >
                         {status}
+                        {reviewCounts[status] !== undefined && <span className="ml-1 opacity-60">({reviewCounts[status]})</span>}
                      </button>
                   ))}
                </div>

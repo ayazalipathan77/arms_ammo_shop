@@ -323,31 +323,39 @@ export const getAllReviewsForModeration = async (req: Request, res: Response): P
             where.isRejected = true;
         }
 
-        const reviews = await prisma.review.findMany({
-            where,
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        fullName: true,
-                        email: true,
-                        avatarUrl: true,
+        const [reviews, pendingCount, approvedCount, rejectedCount] = await Promise.all([
+            prisma.review.findMany({
+                where,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            fullName: true,
+                            email: true,
+                            avatarUrl: true,
+                        },
+                    },
+                    artwork: {
+                        select: {
+                            id: true,
+                            title: true,
+                            imageUrl: true,
+                        },
                     },
                 },
-                artwork: {
-                    select: {
-                        id: true,
-                        title: true,
-                        imageUrl: true,
-                    },
+                orderBy: {
+                    createdAt: 'desc',
                 },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
+            }),
+            prisma.review.count({ where: { isApproved: false, isRejected: false } }),
+            prisma.review.count({ where: { isApproved: true } }),
+            prisma.review.count({ where: { isRejected: true } }),
+        ]);
 
-        res.status(StatusCodes.OK).json({ reviews });
+        res.status(StatusCodes.OK).json({
+            reviews,
+            counts: { pending: pendingCount, approved: approvedCount, rejected: rejectedCount },
+        });
     } catch (error) {
         console.error('Get reviews for moderation error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
