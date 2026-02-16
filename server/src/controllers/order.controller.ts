@@ -567,17 +567,17 @@ export const adminConfirmOrder = async (req: Request, res: Response): Promise<vo
 // Mark order as paid (Admin)
 export const markOrderPaid = async (req: Request, res: Response): Promise<void> => {
     try {
-        const orderId = req.params.id;
+        const orderId = req.params.id as string;
 
         const order = await prisma.order.findUnique({
             where: { id: orderId },
             include: {
-                user: { select: { id: true, fullName: true, email: true } },
+                user: true,
                 items: {
                     include: {
                         artwork: {
                             include: {
-                                artist: { include: { user: { select: { fullName: true } } } }
+                                artist: { include: { user: true } }
                             }
                         }
                     }
