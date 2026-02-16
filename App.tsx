@@ -7,16 +7,16 @@ import { ExhibitionDetail } from './pages/ExhibitionDetail';
 import { Conversations } from './pages/Conversations';
 import { Contact } from './pages/Contact';
 import { Auth } from './pages/Auth';
-import { ArtworkDetail } from './pages/ArtworkDetail';
+import { ProductDetail } from './pages/ProductDetail';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ArtistDashboard } from './pages/ArtistDashboard';
 import { ArtistProfile } from './pages/ArtistProfile';
 import { Cart } from './pages/Cart';
 import { UserProfile } from './pages/UserProfile';
-import { Artists } from './pages/Artists';
+import { Brands } from './pages/Brands';
 import { ArtistDetail } from './pages/ArtistDetail';
 import { Collections } from './pages/Collections';
-import { Gallery } from './pages/Gallery';
+import { Shop } from './pages/Shop';
 import { InvoiceView } from './pages/InvoiceView';
 import { SocialAuthCallback } from './pages/SocialAuthCallback';
 import { ForgotPassword } from './pages/ForgotPassword';
@@ -28,7 +28,7 @@ import { TermsOfService } from './pages/TermsOfService';
 import { Wishlist } from './pages/Wishlist';
 import { GiftCards } from './pages/GiftCards';
 import { ThemeProvider } from './context/ThemeContext';
-import { GalleryProvider } from './context/GalleryContext';
+import { ShopProvider } from './context/ShopContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 
@@ -65,23 +65,22 @@ function App() {
     <Router>
       <AuthProvider>
         <CartProvider>
-          <GalleryProvider>
+          <ShopProvider>
             <ThemeProvider>
               <Routes>
                 <Route element={<Layout />}>
                   {/* Public routes */}
                   <Route path="/" element={<Home />} />
-                  <Route path="/exhibitions" element={<Exhibitions />} />
-                  <Route path="/exhibitions/:id" element={<ExhibitionDetail />} />
-                  <Route path="/stories" element={<Conversations />} />
+                  <Route path="/collections" element={<Collections />} />
+                  <Route path="/collections/:id" element={<ExhibitionDetail />} />
+                  <Route path="/journal" element={<Conversations />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/auth/social-callback" element={<SocialAuthCallback />} />
-                  <Route path="/artwork/:id" element={<ArtworkDetail />} />
-                  <Route path="/artists" element={<Artists />} />
-                  <Route path="/artists/:id" element={<ArtistDetail />} />
-                  <Route path="/collections" element={<Collections />} />
-                  <Route path="/gallery" element={<Gallery />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/brands" element={<Brands />} />
+                  <Route path="/brands/:id" element={<ArtistDetail />} />
+                  <Route path="/shop" element={<Shop />} />
                   <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
@@ -101,7 +100,7 @@ function App() {
                 </Route>
               </Routes>
             </ThemeProvider>
-          </GalleryProvider>
+          </ShopProvider>
         </CartProvider>
       </AuthProvider>
     </Router>

@@ -1,21 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;700&family=Rakkas&family=Anton&family=Cinzel:wght@400;700&family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@400;700&family=Inter:wght@300;400;600&family=Lora:ital,wght@0,400;1,400&family=Mrs+Saint+Delafield&family=Outfit:wght@400;700&family=Playfair+Display:wght@400;700&family=Quicksand:wght@400;700&family=Roboto:wght@400;700&family=Space+Grotesk:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700;900&family=Roboto+Slab:wght@100;300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --color-void: #0A0A0A;
-  --color-charcoal: #1A1A1A;
-  --color-tangerine: #FF6B35;
-  --color-amber: #F7931E;
-  --color-amber-500: #d4af37;
-  --color-amber-600: #b4941f;
-  --color-pearl: #F5F5F5;
-  --color-warm-gray: #9A9A9A;
+  --color-void: #1B1F23; /* Dark Gunmetal */
+  --color-charcoal: #2D3339; /* Lighter Gunmetal */
+  --color-olive: #4B5320; /* Army Green */
+  --color-coyote: #816C5B; /* Coyote Brown */
+  --color-tangerine: #FF4500; /* Safety Orange */
+  --color-amber: #B5A642; /* Brass */
+  
+  --color-pearl: #E5E5E5; /* Light Gray */
+  --color-warm-gray: #A0A0A0;
 
-  --font-display: 'Monument Extended', 'Syne', sans-serif;
-  --font-body: 'Inter', 'Satoshi', sans-serif;
-  --font-serif: 'Playfair Display', serif;
-  --font-accent: 'Mrs Saint Delafield', cursive;
+  --font-display: 'Rubik', sans-serif;
+  --font-body: 'Roboto Slab', serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --animate-scramble: scramble 0.3s ease-out;
   --animate-pulse-slow: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -42,43 +42,22 @@
   /* High Contrast Mode Override */
   html.high-contrast body {
     background-color: #F5F5DC !important;
-    /* Cream */
     color: #000000 !important;
-  }
-
-  html.high-contrast h1,
-  html.high-contrast h2,
-  html.high-contrast h3,
-  html.high-contrast h4,
-  html.high-contrast h5,
-  html.high-contrast h6 {
-    color: #000000 !important;
-  }
-
-  html.high-contrast .text-stroke {
-    -webkit-text-stroke: 1px #000 !important;
   }
 
   body {
     @apply antialiased overflow-x-hidden;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Roboto Slab', serif;
   }
 
-  /* Autofill Styles - Fix white background on autofilled inputs */
+  /* Autofill Styles */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
-  input:-webkit-autofill:active,
-  textarea:-webkit-autofill,
-  textarea:-webkit-autofill:hover,
-  textarea:-webkit-autofill:focus,
-  select:-webkit-autofill,
-  select:-webkit-autofill:hover,
-  select:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px #1A1A1A inset !important;
-    -webkit-text-fill-color: #F5F5F5 !important;
-    box-shadow: 0 0 0 1000px #1A1A1A inset !important;
-    caret-color: #F5F5F5;
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #2D3339 inset !important;
+    -webkit-text-fill-color: #E5E5E5 !important;
+    caret-color: #FF4500;
   }
 
   /* Typography Overrides */
@@ -88,8 +67,8 @@
   h4,
   h5,
   h6 {
-    font-family: 'Monument Extended', 'Syne', sans-serif;
-    @apply uppercase tracking-tighter;
+    font-family: 'Rubik', sans-serif;
+    @apply uppercase tracking-tight font-bold;
   }
 
   /* Custom Selection */

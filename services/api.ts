@@ -39,11 +39,11 @@ const authFetch = async (url: string, options: RequestInit = {}): Promise<Respon
     }
 
     const response = await fetch(url, { ...options, headers });
-    
+
     // Check for 401 Unauthorized or token expiration
     if (response.status === 401) {
         const errorData = await response.json().catch(() => ({ message: 'Unauthorized' }));
-        if (errorData.message?.toLowerCase().includes('token') || 
+        if (errorData.message?.toLowerCase().includes('token') ||
             errorData.message?.toLowerCase().includes('unauthorized') ||
             errorData.message?.toLowerCase().includes('expired')) {
             handleTokenExpiration();
@@ -54,7 +54,7 @@ const authFetch = async (url: string, options: RequestInit = {}): Promise<Respon
         // For other 401 errors, throw the error
         throw new Error(errorData.message || 'Unauthorized');
     }
-    
+
     return response;
 };
 
@@ -85,6 +85,12 @@ export interface ApiArtwork {
         }>;
     } | null;
     viewCount: number;
+    // Gun Specifics
+    caliber?: string;
+    action?: string;
+    capacity?: string;
+    barrelLength?: string;
+    weight?: string;
     createdAt: string;
     updatedAt: string;
     artistName?: string;
@@ -380,22 +386,27 @@ export const artistApi = {
     },
 };
 
-// Transform API artwork to frontend Artwork type
-export const transformArtwork = (apiArtwork: ApiArtwork): import('../types').Artwork => {
+// Transform API artwork to frontend Product type
+export const transformArtwork = (apiArtwork: ApiArtwork): import('../types').Product => {
     return {
         id: apiArtwork.id,
         title: apiArtwork.title,
-        artistName: apiArtwork.artist ? apiArtwork.artist.user.fullName : (apiArtwork.artistName || 'Unknown'),
-        artistId: apiArtwork.artistId || undefined,
+        manufacturerName: apiArtwork.artist ? apiArtwork.artist.user.fullName : (apiArtwork.artistName || 'Unknown'),
+        manufacturerId: apiArtwork.artistId || undefined,
         price: parseFloat(apiArtwork.price),
         imageUrl: apiArtwork.imageUrl,
-        medium: apiArtwork.medium,
-        dimensions: apiArtwork.dimensions || '',
-        year: apiArtwork.year,
+
+        // Gun Specifics
+        category: apiArtwork.category,
+        type: (apiArtwork.category === 'Pistol' || apiArtwork.category === 'Rifle' || apiArtwork.category === 'Shotgun') ? 'FIREARM' : 'ACCESSORY',
+        caliber: apiArtwork.caliber,
+        action: apiArtwork.action,
+        capacity: apiArtwork.capacity,
+        barrelLength: apiArtwork.barrelLength,
+        weight: apiArtwork.weight,
+
         description: apiArtwork.description || '',
-        category: apiArtwork.category as any,
         inStock: apiArtwork.inStock,
-        provenanceId: apiArtwork.provenanceHash || undefined,
         reviews: (apiArtwork.reviews || []).map(r => ({
             id: r.id,
             userName: r.user.fullName,
@@ -404,22 +415,21 @@ export const transformArtwork = (apiArtwork: ApiArtwork): import('../types').Art
             date: new Date(r.createdAt).toLocaleDateString(),
             userId: r.userId,
         })),
-        isAuction: apiArtwork.isAuction,
-        printOptions: apiArtwork.printOptions ? {
-            enabled: apiArtwork.printOptions.enabled,
-            sizes: apiArtwork.printOptions.sizes || [],
-        } : undefined,
+
+        // Legacy/Compatibility
+        year: apiArtwork.year,
+        additionalImages: apiArtwork.additionalImages,
     };
 };
 
-// Transform API artist to frontend Artist type
-export const transformArtist = (apiArtist: ApiArtist): import('../types').Artist => {
+// Transform API artist to frontend Manufacturer type
+export const transformArtist = (apiArtist: ApiArtist): import('../types').Manufacturer => {
     return {
         id: apiArtist.id,
         name: apiArtist.user.fullName,
-        bio: apiArtist.bio || '',
+        description: apiArtist.bio || '',
         imageUrl: apiArtist.imageUrl || `https://picsum.photos/200/200?random=${apiArtist.id.slice(0, 8)}`,
-        specialty: apiArtist.originCity || 'Contemporary Art',
+        countryOfOrigin: apiArtist.originCity || 'USA',
     };
 };
 
@@ -676,27 +686,19 @@ export const orderApi = {
 };
 
 // Transform API cart item to frontend CartItem type
+// Transform API cart item to frontend CartItem type
 export const transformCartItem = (apiCartItem: ApiCartItem): import('../types').CartItem => {
-    const artwork = transformArtwork(apiCartItem.artwork);
+    const product = transformArtwork(apiCartItem.artwork);
     let unitPrice = Number(apiCartItem.artwork.price);
 
-    // For prints, look up the price from artwork's printOptions
-    if (apiCartItem.type === 'PRINT' && apiCartItem.printSize && apiCartItem.artwork.printOptions) {
-        const sizeOption = apiCartItem.artwork.printOptions.sizes.find(
-            (s: { name: string; price: number }) => s.name === apiCartItem.printSize
-        );
-        if (sizeOption) {
-            unitPrice = sizeOption.price;
-        }
-    }
+    // Adapting legacy fields if they exist or defaulting
+    // TODO: Handle print/options logic better for guns (e.g. accessories)
 
     return {
-        ...artwork,
-        selectedPrintSize: apiCartItem.type === 'ORIGINAL'
-            ? 'ORIGINAL'
-            : apiCartItem.printSize || undefined,
+        ...product,
         quantity: apiCartItem.quantity,
         finalPrice: unitPrice * apiCartItem.quantity,
+        selectedOption: apiCartItem.printSize || undefined, // Mapping printSize to selectedOption
     };
 };
 
@@ -709,24 +711,22 @@ export const transformOrder = (apiOrder: ApiOrder): import('../types').Order => 
         items: apiOrder.items.map(item => ({
             id: item.artwork.id,
             title: item.artwork.title,
-            artistName: item.artwork.artistName || item.artwork.artist?.user.fullName || 'Unknown',
-            artistId: '',
+            manufacturerName: item.artwork.artistName || item.artwork.artist?.user.fullName || 'Unknown',
             price: parseFloat(item.priceAtPurchase),
             imageUrl: item.artwork.imageUrl,
-            medium: item.artwork.medium || '',
-            dimensions: item.artwork.dimensions || '',
-            year: 0,
+            category: 'Firearm', // Default or fetch
+            type: 'FIREARM', // Default or fetch
             description: '',
-            category: 'Abstract' as const,
-            inStock: true,
+            inStock: true, // Order history implies it was bought
             reviews: [],
-            selectedPrintSize: item.type === 'ORIGINAL' ? 'ORIGINAL' : item.printSize || undefined,
             quantity: item.quantity,
             finalPrice: parseFloat(item.priceAtPurchase) * item.quantity,
+            selectedOption: item.printSize || undefined,
+            year: 0, // Default for order items if not available
         })),
         totalAmount: parseFloat(apiOrder.totalAmount),
         currency: 'PKR' as any,
-        status: apiOrder.status,
+        status: apiOrder.status as any, // Simple cast for now
         date: new Date(apiOrder.createdAt),
         shippingAddress: apiOrder.shippingAddress,
         shippingCountry: apiOrder.shippingAddress.split(', ').pop() || '',

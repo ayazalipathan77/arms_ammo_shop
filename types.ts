@@ -3,7 +3,7 @@ export enum UserRole {
   GUEST = 'GUEST',
   USER = 'USER',
   ADMIN = 'ADMIN',
-  ARTIST = 'ARTIST'
+  MANUFACTURER = 'MANUFACTURER' // Was ARTIST
 }
 
 export enum Currency {
@@ -52,41 +52,50 @@ export interface Review {
   userId?: string;
 }
 
-export interface PrintSizeOption {
-  name: string;        // e.g., "A3", "24x36"
-  dimensions: string;  // e.g., "11.7 x 16.5 inches"
-  price: number;       // Price in PKR
+// Keeping print options for now as generic "Options" or maybe "Accessory bundles" later?
+export interface ProductOption {
+  name: string;        
+  description: string;
+  price: number; 
 }
 
-export interface PrintOptions {
+export interface ProductOptions {
   enabled: boolean;
-  sizes: PrintSizeOption[];
+  options: ProductOption[];
 }
 
-export interface Artwork {
+export type ProductType = 'FIREARM' | 'AMMO' | 'OPTIC' | 'ACCESSORY';
+
+export interface Product { // Was Artwork
   id: string;
   title: string;
-  artistName: string;
-  artistId?: string;
+  manufacturerName: string; // Was artistName
+  manufacturerId?: string;  // Was artistId
   price: number; // Base price in PKR
   imageUrl: string;
-  medium: string;
-  dimensions: string; // e.g., "24x36"
-  year: number;
+  
+  // Gun Specifics
+  category: string; // e.g., 'Pistol', 'Rifle'
+  type: ProductType;
+  caliber?: string;
+  action?: string;
+  capacity?: string;
+  barrelLength?: string;
+  weight?: string;
+
   description: string;
-  category: 'Calligraphy' | 'Landscape' | 'Abstract' | 'Miniature' | 'Portrait';
   inStock: boolean;
-  provenanceId?: string;
   reviews: Review[];
-  isAuction?: boolean;
-  auctionEndTime?: Date;
-  printOptions?: PrintOptions;
+  
+  // Legacy fields mapped or kept for compatibility if needed
+  year: number; 
+  additionalImages?: string[];
 }
 
-export interface CartItem extends Artwork {
-  selectedPrintSize?: string;
+export interface CartItem extends Product {
   quantity: number;
-  finalPrice: number; // Price after print selection and currency conversion
+  finalPrice: number; 
+  selectedOption?: string; // For things like "Extra Mag" (was printSize)
 }
 
 export interface Order {
@@ -112,6 +121,7 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+// Exhibition -> Featured Collection / Sale
 export interface Exhibition {
   id: string;
   title: string;
@@ -126,12 +136,12 @@ export interface Exhibition {
   status: 'UPCOMING' | 'CURRENT' | 'PAST';
 }
 
-export interface Artist {
+export interface Manufacturer { // Was Artist
   id: string;
   name: string;
-  bio: string;
+  description: string; // Was bio
   imageUrl: string;
-  specialty: string;
+  countryOfOrigin: string; // Was specialty
 }
 
 export interface Conversation {
@@ -178,7 +188,7 @@ export interface LandingPageFeaturedExhibition {
   exhibitionId: string | null;
   manualOverride?: {
     title: string;
-    artistName: string;
+    artistName: string; // Keep as string key but label as Brand in UI
     description: string;
     date: string;
     imageUrl: string;
@@ -189,7 +199,7 @@ export interface LandingPageCollection {
   id: string;
   title: string;
   description?: string;
-  artworkIds: string[];
+  artworkIds: string[]; // Maps to productIds
   imageUrl?: string;
   layout: 'large' | 'tall' | 'normal';
 }
@@ -199,7 +209,7 @@ export interface LandingPageCuratedCollections {
   collections: LandingPageCollection[];
 }
 
-export interface LandingPageTopPaintings {
+export interface LandingPageTopPaintings { // Rename logically in UI, keep key for now
   enabled: boolean;
   artworkIds: string[];
 }

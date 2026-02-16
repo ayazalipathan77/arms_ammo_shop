@@ -1,219 +1,153 @@
 
-import { Artwork, Artist, Exhibition, Conversation, SiteContent } from './types';
+import { Product, Manufacturer, Exhibition, Conversation, SiteContent } from './types';
 
 export const RATES = {
-  PKR: 1,
-  USD: 0.0036, // 1 PKR = 0.0036 USD (Approx)
-  GBP: 0.0028
+    PKR: 1,
+    USD: 0.0036, // 1 PKR = 0.0036 USD (Approx)
+    GBP: 0.0028
 };
 
-export const MOCK_ARTISTS: Artist[] = [
-  { id: 'a1', name: 'Sadequain (Tribute)', specialty: 'Abstract Calligraphy', bio: 'Exploring the mystic soul of the walled city.', imageUrl: 'https://picsum.photos/200/200?random=10' },
-  { id: 'a2', name: 'Ahmed Khan', specialty: 'Islamic Calligraphy', bio: 'Master of silver leaf and oil overlays.', imageUrl: 'https://picsum.photos/200/200?random=11' },
-  { id: 'a3', name: 'Alia Syed', specialty: 'Contemporary Miniature', bio: 'Reviving ancient techniques for modern narratives.', imageUrl: 'https://picsum.photos/200/200?random=12' }
+export const MOCK_MANUFACTURERS: Manufacturer[] = [
+    { id: 'm1', name: 'Glock', countryOfOrigin: 'Austria', description: 'Perfection. The leading polymer pistol manufacturer.', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Glock_Logo.svg/1200px-Glock_Logo.svg.png' },
+    { id: 'm2', name: 'Sig Sauer', countryOfOrigin: 'Germany/USA', description: 'Born in Europe, Perfected in America.', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Sig_Sauer_logo.svg/2560px-Sig_Sauer_logo.svg.png' },
+    { id: 'm3', name: 'Beretta', countryOfOrigin: 'Italy', description: '500 Years of One Passion.', imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Beretta_logo.svg/1200px-Beretta_logo.svg.png' }
 ];
 
 export const MOCK_EXHIBITIONS: Exhibition[] = [
-  { id: 'e1', title: 'Voices of the Indus', date: 'Oct 15 - Nov 30, 2024', location: 'Lahore Gallery', isVirtual: true, imageUrl: 'https://picsum.photos/800/400?random=20', description: 'A journey through the river\'s history.' },
-  { id: 'e2', title: 'Urban Chaos', date: 'Dec 01 - Dec 20, 2024', location: 'Karachi Arts Council', isVirtual: false, imageUrl: 'https://picsum.photos/800/400?random=21', description: 'The raw energy of Karachi captured in oil.' }
+    { id: 'e1', title: 'Tactical Edge 2024', date: 'Oct 15 - Nov 30, 2024', location: 'Islamabad Expo', isVirtual: true, imageUrl: 'https://images.unsplash.com/photo-1595590424283-b8f17842773f', description: 'Latest innovations in tactical gear.' },
+    { id: 'e2', title: 'Precision Shooting', date: 'Dec 01 - Dec 20, 2024', location: 'Karachi Shooting Club', isVirtual: false, imageUrl: 'https://images.unsplash.com/photo-1594851225544-793310036662', description: 'Long range precision rifles showcase.' }
 ];
 
 export const MOCK_CONVERSATIONS: Conversation[] = [
-  {
-    id: 'c1',
-    title: 'Christian Marclay',
-    subtitle: 'The art of sound and visual collage',
-    category: 'WATCH',
-    description: 'An in-depth look at Marclay\'s pioneering work in sound art and his recent exhibition at the White Cube.',
-    date: 'Oct 12, 2024',
-    location: 'London',
-    duration: '14:20',
-    thumbnailUrl: 'https://picsum.photos/800/500?random=100',
-    videoId: 'dQw4w9WgXcQ'
-  },
-  {
-    id: 'c2',
-    title: 'Sophie Calle & Jeffrey Fraenkel',
-    subtitle: 'Lightning Round: Seven questions for the artist',
-    category: 'WATCH',
-    description: 'A candid conversation about her recent work, loss, and the nature of memory.',
-    date: 'Sep 28, 2024',
-    location: 'Paris',
-    duration: '08:45',
-    thumbnailUrl: 'https://picsum.photos/800/500?random=101',
-    videoId: 'dQw4w9WgXcQ'
-  },
-  {
-    id: 'c3',
-    title: 'Peter Hujar',
-    subtitle: 'Interviewed by David Wojnarowicz',
-    category: 'LISTEN',
-    description: 'Archival audio of two legends discussing art, photography, and the value of existence in 1980s New York.',
-    date: 'Aug 15, 2024',
-    location: 'New York (Archive)',
-    duration: '45:00',
-    thumbnailUrl: 'https://picsum.photos/800/500?random=102',
-    videoId: 'dQw4w9WgXcQ'
-  },
-  {
-    id: 'c4',
-    title: 'Richard Misrach',
-    subtitle: 'In Conversation with Jeffrey Fraenkel',
-    category: 'WATCH',
-    description: 'Discussing the "Border Cantos" series and the intersection of politics and landscape photography.',
-    date: 'Jul 10, 2024',
-    location: 'San Francisco',
-    duration: '22:15',
-    thumbnailUrl: 'https://picsum.photos/800/500?random=103',
-    videoId: 'dQw4w9WgXcQ'
-  },
-  {
-    id: 'c5',
-    title: 'Diane Arbus',
-    subtitle: 'Talk Art Podcast',
-    category: 'LISTEN',
-    description: 'Curators explore the myth and reality of Arbus’s most iconic photographs.',
-    date: 'Jun 05, 2024',
-    location: 'Podcast',
-    duration: '55:30',
-    thumbnailUrl: 'https://picsum.photos/800/500?random=104',
-    videoId: 'dQw4w9WgXcQ'
-  },
-  {
-    id: 'c6',
-    title: 'Liz Deschenes',
-    subtitle: 'In conversation with curator Phil Taylor',
-    category: 'WATCH',
-    description: 'Exploring camera-less photography and the materiality of the medium.',
-    date: 'May 20, 2024',
-    location: 'Boston',
-    duration: '18:00',
-    thumbnailUrl: 'https://picsum.photos/800/500?random=105',
-    videoId: 'dQw4w9WgXcQ'
-  },
-   {
-    id: 'c7',
-    title: 'Katy Grannan',
-    subtitle: 'Art in the Twenty-First Century',
-    category: 'LEARN',
-    description: 'A deep dive into portraiture and the relationship between photographer and subject on the streets of California.',
-    date: 'Apr 12, 2024',
-    location: 'Los Angeles',
-    duration: '12:45',
-    thumbnailUrl: 'https://picsum.photos/800/500?random=106',
-    videoId: 'dQw4w9WgXcQ'
-  }
+    {
+        id: 'c1',
+        title: 'Glock 19 Gen 5 Review',
+        subtitle: 'The Gold Standard',
+        category: 'WATCH',
+        description: 'In-depth review of the most popular carry pistol in the world.',
+        date: 'Oct 12, 2024',
+        location: 'Range Day',
+        duration: '14:20',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1585562133068-d621cc999912',
+        videoId: 'dQw4w9WgXcQ'
+    },
+    {
+        id: 'c2',
+        title: 'Long range shooting basics',
+        subtitle: 'Hitting steel at 1000 yards',
+        category: 'LEARN',
+        description: 'Master the art of reading wind and elevation.',
+        date: 'Sep 28, 2024',
+        location: 'Quetta',
+        duration: '22:15',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1599318181673-9da54f3be799',
+        videoId: 'dQw4w9WgXcQ'
+    }
 ];
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
-  heroTitle: 'The Soul of Pakistani Art',
-  heroSubtitle: 'Curated. Authentic. Timeless.',
-  socialLinks: {
-    instagram: 'https://instagram.com',
-    facebook: 'https://facebook.com',
-    twitter: 'https://twitter.com',
-    pinterest: 'https://pinterest.com'
-  },
-  socialApiKeys: {
-    facebookAppId: '',
-    instagramClientId: ''
-  }
+    heroTitle: 'Defend & Protect',
+    heroSubtitle: 'Premium Firearms. Trusted Brands. Unmatched Quality.',
+    socialLinks: {
+        instagram: 'https://instagram.com',
+        facebook: 'https://facebook.com',
+        twitter: 'https://twitter.com',
+        pinterest: 'https://pinterest.com'
+    },
+    socialApiKeys: {
+        facebookAppId: '',
+        instagramClientId: ''
+    }
 };
 
-export const MOCK_ARTWORKS: Artwork[] = [
-  {
-    id: '1',
-    title: 'Echoes of Lahore Fort',
-    artistName: 'Sadequain (Tribute)',
-    artistId: 'a1',
-    price: 450000,
-    imageUrl: 'https://picsum.photos/800/1200?random=1',
-    medium: 'Oil on Canvas',
-    dimensions: '48x60',
-    year: 2023,
-    description: 'A vivid abstraction capturing the mystic soul of the walled city.',
-    category: 'Abstract',
-    inStock: true,
-    provenanceId: 'BLK-001-2023',
-    reviews: [{ id: 'r1', userName: 'Ali K.', rating: 5, comment: 'Breathtaking texture.', date: '2023-11-12' }],
-    isAuction: true,
-    auctionEndTime: new Date(Date.now() + 86400000 * 2) // 2 days from now
-  },
-  {
-    id: '2',
-    title: 'Hunza Valley Autumn',
-    artistName: 'Ghulam Rasul Style',
-    artistId: 'unknown',
-    price: 120000,
-    imageUrl: 'https://picsum.photos/1200/800?random=2',
-    medium: 'Acrylic on Canvas',
-    dimensions: '36x24',
-    year: 2024,
-    description: 'The golden hues of Northern Pakistan captured in flat, vibrant planes.',
-    category: 'Landscape',
-    inStock: true,
-    provenanceId: 'BLK-002-2024',
-    reviews: []
-  },
-  {
-    id: '3',
-    title: 'Surah Rahman',
-    artistName: 'Ahmed Khan',
-    artistId: 'a2',
-    price: 850000,
-    imageUrl: 'https://picsum.photos/800/800?random=3',
-    medium: 'Silver Leaf and Oil',
-    dimensions: '40x40',
-    year: 2022,
-    description: 'Intricate Islamic calligraphy layered over oxidized silver leaf.',
-    category: 'Calligraphy',
-    inStock: true,
-    provenanceId: 'BLK-003-2022',
-    reviews: [{ id: 'r2', userName: 'Sarah M.', rating: 5, comment: 'Divine work.', date: '2024-01-05' }]
-  },
-  {
-    id: '4',
-    title: 'Modern Miniature',
-    artistName: 'Alia Syed',
-    artistId: 'a3',
-    price: 950000, // Converted roughly to PKR base for consistency
-    imageUrl: 'https://picsum.photos/600/900?random=4',
-    medium: 'Gouache on Wasli',
-    dimensions: '12x18',
-    year: 2023,
-    description: 'Traditional Mughal techniques applied to contemporary themes.',
-    category: 'Miniature',
-    inStock: true,
-    provenanceId: 'BLK-004-2023',
-    reviews: []
-  },
-  {
-    id: '5',
-    title: 'Karachi Street Life',
-    artistName: 'Unknown Street Artist',
-    artistId: 'unknown',
-    price: 75000,
-    imageUrl: 'https://picsum.photos/900/600?random=5',
-    medium: 'Mixed Media',
-    dimensions: '30x30',
-    year: 2024,
-    description: 'Raw energy of the metropolis.',
-    category: 'Abstract',
-    inStock: true,
-    provenanceId: 'BLK-005-2024',
-    reviews: []
-  }
+export const MOCK_PRODUCTS: Product[] = [
+    {
+        id: '1',
+        title: 'Glock 19 Gen 5',
+        manufacturerName: 'Glock',
+        manufacturerId: 'm1',
+        price: 450000,
+        imageUrl: 'https://us.glock.com/-/media/Global/Cameras/GLOCK-19-Gen5-FS-MOS.png', // Placeholder URL
+        category: 'Pistol',
+        type: 'FIREARM',
+        caliber: '9mm',
+        action: 'Safe Action',
+        capacity: '15+1',
+        barrelLength: '4.02 inch',
+        weight: '23.99 oz',
+        year: 2023,
+        description: 'The GLOCK 19 Gen5 FS MOS features the latest FS technology and MOS configuration.',
+        inStock: true,
+        reviews: [{ id: 'r1', userName: 'Ali K.', rating: 5, comment: 'Best carry gun.', date: '2023-11-12' }]
+    },
+    {
+        id: '2',
+        title: 'Sig Sauer P320',
+        manufacturerName: 'Sig Sauer',
+        manufacturerId: 'm2',
+        price: 520000,
+        imageUrl: 'https://www.sigsauer.com/media/catalog/product/cache/4113e33dfed959c5d1203b5736142347/3/2/320f-9-b-r2_02_web.jpg',
+        category: 'Pistol',
+        type: 'FIREARM',
+        caliber: '9mm',
+        action: 'Striker',
+        capacity: '17+1',
+        barrelLength: '4.7 inch',
+        weight: '29.5 oz',
+        year: 2024,
+        description: 'Modular chassis system allowing for caliber and size conversions.',
+        inStock: true,
+        reviews: []
+    },
+    {
+        id: '3',
+        title: 'Beretta 1301 Tactical',
+        manufacturerName: 'Beretta',
+        manufacturerId: 'm3',
+        price: 850000,
+        imageUrl: 'https://www.beretta.com/assets/0/15/DimGalleryLarge/1301_Tactical_Marine_zoom002.jpg',
+        category: 'Shotgun',
+        type: 'FIREARM',
+        caliber: '12 Gauge',
+        action: 'Semi-Auto',
+        capacity: '7+1',
+        barrelLength: '18.5 inch',
+        weight: '6.4 lbs',
+        year: 2022,
+        description: 'The ultimate tactical shotgun for home defense and law enforcement.',
+        inStock: true,
+        reviews: [{ id: 'r2', userName: 'Sarah M.', rating: 5, comment: 'Fast cycling.', date: '2024-01-05' }]
+    },
+    {
+        id: '4',
+        title: 'AK-103 Style Rifle',
+        manufacturerName: 'Local Craft',
+        manufacturerId: 'm_local',
+        price: 250000,
+        imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/AK-103.jpg/1200px-AK-103.jpg',
+        category: 'Rifle',
+        type: 'FIREARM',
+        caliber: '7.62x39mm',
+        action: 'Gas Operated',
+        capacity: '30+1',
+        barrelLength: '16.3 inch',
+        weight: '3.6 kg',
+        year: 2024,
+        description: 'Robust and reliable, locally manufactured with precision.',
+        inStock: true,
+        reviews: []
+    }
 ];
 
 export const UI_TEXT = {
-  EN: {
-    nav: { gallery: 'Gallery', artists: 'Artists', exhibitions: 'Exhibitions', conversations: 'Conversations', about: 'About', login: 'Login' },
-    hero: { title: 'The Soul of Pakistani Art', subtitle: 'Curated. Authentic. Timeless.' },
-    cart: { title: 'Your Collection' }
-  },
-  UR: {
-    nav: { gallery: 'گیلری', artists: 'فنکار', exhibitions: 'نمائش', conversations: 'گفتگو', about: 'ہمارے بارے میں', login: 'لاگ ان' },
-    hero: { title: 'پاکستانی فن کی روح', subtitle: 'منتخب۔ مستند۔ لازوال۔' },
-    cart: { title: 'آپ کا مجموعہ' }
-  }
+    EN: {
+        nav: { gallery: 'Shop', artists: 'Brands', exhibitions: 'Collections', conversations: 'Journal', about: 'About', login: 'Login' },
+        hero: { title: 'Defend & Protect', subtitle: 'Premium Firearms. Trusted Brands.' },
+        cart: { title: 'Your Arsenal' }
+    },
+    UR: {
+        nav: { gallery: 'دکان', artists: 'برانڈز', exhibitions: 'مجموعہ', conversations: 'جریدہ', about: 'ہمارے بارے میں', login: 'لاگ ان' },
+        hero: { title: 'دفاع اور تحفظ', subtitle: 'اعلیٰ معیار کا اسلحہ۔ قابل اعتماد برانڈز۔' },
+        cart: { title: 'آپ کا اسلحہ خانہ' }
+    }
 };

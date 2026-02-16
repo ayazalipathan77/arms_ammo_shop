@@ -9,15 +9,15 @@ datasource db {
 
 enum Role {
   USER
-  ARTIST
+  MANUFACTURER // Was ARTIST
   ADMIN
 }
 
 enum OrderStatus {
   PENDING
   PAID
-  AWAITING_CONFIRMATION  // Waiting for artist confirmation
-  CONFIRMED              // Artist confirmed, ready to ship
+  AWAITING_CONFIRMATION  // Waiting for manufacturer confirmation
+  CONFIRMED              // Manufacturer confirmed, ready to ship
   SHIPPED
   DELIVERED
   CANCELLED
@@ -25,7 +25,14 @@ enum OrderStatus {
 
 enum PurchaseType {
   ORIGINAL
-  PRINT
+  PRINT // Keeping for now, maybe remove or repurpose?
+}
+
+enum ProductType {
+  FIREARM
+  AMMO
+  OPTIC
+  ACCESSORY
 }
 
 enum AuthProvider {
@@ -52,7 +59,7 @@ model User {
   verificationToken String?
   verificationTokenExpiry DateTime?
 
-  // Artist approval (only applies to ARTIST role)
+  // Manufacturer approval (only applies to MANUFACTURER role)
   isApproved        Boolean   @default(false)
   approvedAt        DateTime?
   approvedBy        String?   // Admin user ID who approved
@@ -61,7 +68,7 @@ model User {
   referralCode      String?   @unique
   referredBy        String?   // User ID who referred this user
 
-  artistProfile  Artist?
+  manufacturerProfile  Manufacturer?
   orders         Order[]
   reviews        Review[]
   cartItems      CartItem[]
@@ -94,40 +101,44 @@ model Address {
   createdAt DateTime @default(now())
 }
 
-model Artist {
+model Manufacturer { // Was Artist
   id           String   @id @default(uuid())
   userId       String   @unique
   user         User     @relation(fields: [userId], references: [id])
-  bio          String?
+  description  String?  // Was bio
   portfolioUrl String?
-  originCity   String?
+  countryOfOrigin   String?  // Was originCity
   imageUrl     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  artworks Artwork[]
+  products Product[] // Was artworks
 }
 
-model Artwork {
+model Product { // Was Artwork
   id               String   @id @default(uuid())
-  artistId         String?
-  artist           Artist?   @relation(fields: [artistId], references: [id])
-  artistName       String?
+  manufacturerId   String?  // Was artistId
+  manufacturer     Manufacturer?   @relation(fields: [manufacturerId], references: [id])
+  manufacturerName String?  // Was artistName
   title            String
   description      String?
   price            Decimal  @db.Decimal(12, 2)
   currency         String   @default("PKR")
-  category         String
-  medium           String
-  dimensions       String?
+  category         String   // Riffle, Pistol, etc.
+  type             ProductType @default(FIREARM)
+  
+  // New Fields
+  caliber          String?
+  action           String?
+  capacity         String?
+  barrelLength     String?
+  weight           String?
+  
   imageUrl         String
   thumbnailUrl     String?
   additionalImages String[] @default([])
-  provenanceHash   String?
   year             Int
-  isAuction        Boolean  @default(false)
   inStock          Boolean  @default(true)
-  printOptions     Json?
   viewCount        Int      @default(0)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -137,9 +148,8 @@ model Artwork {
   cartItems  CartItem[]
   favorites  Favorite[]
 
-  @@index([artistId])
+  @@index([manufacturerId])
   @@index([category])
-  @@index([medium])
   @@index([inStock])
 }
 
@@ -158,11 +168,9 @@ model Order {
 
   // Order workflow tracking
   paidAt                    DateTime?
-  artistNotifiedAt          DateTime?
-  artistConfirmationToken   String?   @unique
-  artistConfirmationExpiry  DateTime?
-  artistConfirmedAt         DateTime?
-  artistConfirmedBy         String?   // Artist user ID
+  manufacturerNotifiedAt    DateTime?
+  manufacturerConfirmedAt   DateTime?
+  manufacturerConfirmedBy   String?   // Manufacturer user ID
   adminConfirmedAt          DateTime?
   adminConfirmedBy          String?   // Admin user ID
   shippedAt                 DateTime?
@@ -179,24 +187,23 @@ model OrderItem {
   id              String       @id @default(uuid())
   orderId         String
   order           Order        @relation(fields: [orderId], references: [id])
-  artworkId       String
-  artwork         Artwork      @relation(fields: [artworkId], references: [id])
+  productId       String       // Was artworkId
+  product         Product      @relation(fields: [productId], references: [id])
   quantity        Int          @default(1)
   priceAtPurchase Decimal      @db.Decimal(12, 2)
   type            PurchaseType @default(ORIGINAL)
-  printSize       String? // E.g., 'A4', 'A3'
 }
 
 model Review {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  artworkId String
-  artwork   Artwork  @relation(fields: [artworkId], references: [id])
+  productId String   // Was artworkId
+  product   Product  @relation(fields: [productId], references: [id])
   rating    Int
   comment   String?
-  photos    String[] @default([]) // Photo URLs uploaded by reviewer
-  isVerifiedPurchase Boolean @default(false) // True if user purchased this artwork
+  photos    String[] @default([])
+  isVerifiedPurchase Boolean @default(false)
 
   // Moderation fields
   isApproved Boolean  @default(false)
@@ -206,14 +213,13 @@ model Review {
   rejectedAt DateTime?
   rejectionReason String?
 
-  // Helpfulness voting
   helpfulCount   Int @default(0)
   unhelpfulCount Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([artworkId])
+  @@index([productId])
   @@index([userId])
   @@index([isApproved])
 }
@@ -222,15 +228,14 @@ model CartItem {
   id        String       @id @default(uuid())
   userId    String
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  artworkId String
-  artwork   Artwork      @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  productId String       // Was artworkId
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   quantity  Int          @default(1)
   type      PurchaseType @default(ORIGINAL)
-  printSize String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  @@unique([userId, artworkId, type, printSize])
+  @@unique([userId, productId, type])
   @@index([userId])
 }
 
@@ -239,7 +244,7 @@ model Conversation {
   title        String
   subtitle     String?
   description  String?
-  category     String   @default("WATCH") // WATCH, LISTEN, LEARN
+  category     String   @default("WATCH")
   videoId      String   @unique
   thumbnailUrl String?
   duration     String?
@@ -256,8 +261,7 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
-
-model Exhibition {
+model Exhibition { // Maybe repurpose as "Feature Sale" or "Collection"? Keeping for now.
   id          String   @id @default(uuid())
   title       String
   description String?
@@ -268,7 +272,7 @@ model Exhibition {
   galleryImages String[] @default([])
   videoUrl    String?
   isVirtual   Boolean  @default(false)
-  status      String   @default("UPCOMING") // UPCOMING, CURRENT, PAST
+  status      String   @default("UPCOMING") 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -277,13 +281,13 @@ model Favorite {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  artworkId String
-  artwork   Artwork  @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  productId String   // Was artworkId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
-  @@unique([userId, artworkId])
+  @@unique([userId, productId])
   @@index([userId])
-  @@index([artworkId])
+  @@index([productId])
 }
 
 model GiftCard {
@@ -291,13 +295,13 @@ model GiftCard {
   code          String   @unique
   amount        Decimal  @db.Decimal(12, 2)
   currency      String   @default("PKR")
-  balance       Decimal  @db.Decimal(12, 2) // Remaining balance
-  purchasedBy   String?  // User ID who purchased (optional, can be anonymous)
+  balance       Decimal  @db.Decimal(12, 2)
+  purchasedBy   String?
   recipientEmail String?
   recipientName String?
   message       String?
   isRedeemed    Boolean  @default(false)
-  redeemedBy    String?  // User ID who redeemed
+  redeemedBy    String?
   redeemedAt    DateTime?
   expiresAt     DateTime?
   createdAt     DateTime @default(now())

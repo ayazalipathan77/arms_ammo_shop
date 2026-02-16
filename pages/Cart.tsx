@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCartContext } from '../context/CartContext';
-import { useGallery } from '../context/GalleryContext';
+import { useShop } from '../context/ShopContext';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Trash2, CheckCircle, FileText, AlertCircle, Lock, Loader2, ArrowRight } from 'lucide-react';
@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 
 export const Cart: React.FC = () => {
    const { cart, removeFromCart, clearCart, isLoading: cartLoading, error: cartError } = useCartContext();
-   const { addOrder } = useGallery();
+   const { addOrder } = useShop();
    const { token, user } = useAuth();
    const navigate = useNavigate();
    const [searchParams] = useSearchParams();
