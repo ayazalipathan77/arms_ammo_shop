@@ -89,6 +89,9 @@ export const AdminDashboard: React.FC = () => {
    const [orderSortField, setOrderSortField] = useState<'createdAt' | 'totalAmount' | 'status'>('createdAt');
    const [orderSortDir, setOrderSortDir] = useState<'asc' | 'desc'>('desc');
 
+   // Image Preview
+   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
    // Local State for Artworks
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
    const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
@@ -865,12 +868,10 @@ export const AdminDashboard: React.FC = () => {
    const TabButton = ({ tab, active, onClick }: { tab: string; active: boolean; onClick: () => void }) => (
       <button
          onClick={onClick}
-         className={cn(
-            "text-xs font-bold px-6 py-2 uppercase tracking-widest transition-all whitespace-nowrap border rounded-sm",
-            active
-               ? "bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black"
-               : "bg-transparent text-warm-gray border-pearl/10 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine high-contrast:text-black high-contrast:border-black/50"
-         )}
+         className={`px-4 py-2 border text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${active
+            ? 'border-tangerine text-tangerine bg-tangerine/10'
+            : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
+         }`}
       >
          {tab}
       </button>
@@ -1023,7 +1024,7 @@ export const AdminDashboard: React.FC = () => {
                            <tr key={art.id} className="hover:bg-pearl/5 transition-colors">
                               <td className="p-4">
                                  <div className="flex items-center gap-3">
-                                    <img src={art.imageUrl} className="w-10 h-10 object-cover border border-pearl/20" alt="" />
+                                    <img src={art.imageUrl} className="w-10 h-10 object-cover border border-pearl/20 cursor-pointer hover:border-tangerine transition-colors" alt="" onClick={e => { e.stopPropagation(); setPreviewImage(art.imageUrl); }} />
                                     <div>
                                        <span className="text-pearl font-medium">{art.title}</span>
                                        <div className="text-xs text-warm-gray">{art.category}</div>
@@ -1134,6 +1135,7 @@ export const AdminDashboard: React.FC = () => {
                      <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
                         <tr>
                            <th className="p-4">ID</th>
+                           <th className="p-4">Artwork</th>
                            <th className="p-4">Customer</th>
                            <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleOrderSort('totalAmount')}>
                               <span className="flex items-center gap-1">Total {orderSortField === 'totalAmount' && (orderSortDir === 'asc' ? '↑' : '↓')}</span>
@@ -1151,6 +1153,25 @@ export const AdminDashboard: React.FC = () => {
                         {adminOrders.map(order => (
                            <tr key={order.id} className="hover:bg-pearl/5 transition-colors group cursor-pointer" onClick={() => setSelectedOrder(order)}>
                               <td className="p-4 font-mono text-tangerine">#{order.id.slice(-6).toUpperCase()}</td>
+                              <td className="p-4" onClick={e => e.stopPropagation()}>
+                                 {order.items?.[0]?.artwork?.imageUrl ? (
+                                    <div className="flex items-center gap-1">
+                                       <img
+                                          src={order.items[0].artwork.imageUrl}
+                                          className="w-10 h-10 object-cover border border-pearl/20 cursor-pointer hover:border-tangerine transition-colors"
+                                          alt={order.items[0].artwork.title || ''}
+                                          onClick={() => setPreviewImage(order.items[0].artwork.imageUrl)}
+                                       />
+                                       {order.items.length > 1 && (
+                                          <span className="text-[10px] text-warm-gray">+{order.items.length - 1}</span>
+                                       )}
+                                    </div>
+                                 ) : (
+                                    <div className="w-10 h-10 border border-pearl/10 bg-charcoal/30 flex items-center justify-center">
+                                       <ImageIcon size={14} className="text-warm-gray/30" />
+                                    </div>
+                                 )}
+                              </td>
                               <td className="p-4 text-pearl">
                                  <div>{order.user?.fullName || 'Guest'}</div>
                                  <div className="text-xs text-warm-gray">{order.user?.email}</div>
@@ -1188,7 +1209,7 @@ export const AdminDashboard: React.FC = () => {
                            </tr>
                         ))}
                         {adminOrders.length === 0 && (
-                           <tr><td colSpan={6} className="p-8 text-center text-warm-gray">No orders found</td></tr>
+                           <tr><td colSpan={7} className="p-8 text-center text-warm-gray">No orders found</td></tr>
                         )}
                      </tbody>
                   </table>
@@ -2957,6 +2978,15 @@ export const AdminDashboard: React.FC = () => {
             </div>
          )}
 
+         {/* Image Preview Modal */}
+         {previewImage && (
+            <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-8" onClick={() => setPreviewImage(null)}>
+               <button className="absolute top-6 right-6 text-pearl hover:text-tangerine transition-colors" onClick={() => setPreviewImage(null)}>
+                  <X size={28} />
+               </button>
+               <img src={previewImage} className="max-w-full max-h-full object-contain" alt="" onClick={e => e.stopPropagation()} />
+            </div>
+         )}
       </div>
    );
 };
