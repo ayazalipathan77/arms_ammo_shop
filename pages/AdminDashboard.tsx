@@ -8,7 +8,7 @@ import {
 import { useGallery } from '../context/GalleryContext';
 import { useTheme, PRESET_THEMES, ThemeConfig } from '../context/ThemeContext';
 import { OrderStatus, Artwork, Conversation, PrintSizeOption } from '../types';
-import { uploadApi, adminApi, artistApi, reviewApi, settingsApi } from '../services/api';
+import { uploadApi, adminApi, artistApi, reviewApi, settingsApi, artworkApi, transformArtwork } from '../services/api';
 import Button from '../components/ui/Button';
 import StarRating from '../components/ui/StarRating';
 import { cn } from '../lib/utils';
@@ -27,7 +27,7 @@ export const AdminDashboard: React.FC = () => {
       artworks, orders, shippingConfig, stripeConnected, conversations, siteContent, exhibitions,
       addArtwork, updateArtwork, deleteArtwork, updateOrderStatus, updateShippingConfig, connectStripe,
       addConversation, deleteConversation, updateSiteContent, addExhibition, updateExhibition, deleteExhibition,
-      landingPageContent, updateLandingPageContent, fetchArtworks
+      landingPageContent, updateLandingPageContent, fetchArtworks, availableCategories
    } = useGallery();
 
    const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
@@ -36,7 +36,7 @@ export const AdminDashboard: React.FC = () => {
    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
    const API_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
 
-   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'CONTENT' | 'EXHIBITIONS' | 'USERS' | 'REVIEWS' | 'REFERRALS' | 'LANDING PAGE' | 'THEME'>('OVERVIEW');
+   const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'INVENTORY' | 'ORDERS' | 'SHIPPING' | 'FINANCE' | 'EXHIBITIONS' | 'USERS' | 'REVIEWS' | 'REFERRALS' | 'LANDING PAGE' | 'THEME'>('OVERVIEW');
 
    // Dashboard Stats
    const [stats, setStats] = useState<any>(null);
@@ -73,6 +73,21 @@ export const AdminDashboard: React.FC = () => {
    const [reviewFilter, setReviewFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
    const [reviewActionLoading, setReviewActionLoading] = useState<string | null>(null);
+
+   // Inventory State
+   const [inventorySearch, setInventorySearch] = useState('');
+   const [inventoryCategory, setInventoryCategory] = useState('ALL');
+   const [inventoryStock, setInventoryStock] = useState<'ALL' | 'IN_STOCK' | 'SOLD_OUT'>('ALL');
+   const [inventoryArtworks, setInventoryArtworks] = useState<any[]>([]);
+   const [inventoryPagination, setInventoryPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
+   const [inventorySortField, setInventorySortField] = useState<'title' | 'price' | 'createdAt'>('createdAt');
+   const [inventorySortDir, setInventorySortDir] = useState<'asc' | 'desc'>('desc');
+   const [isLoadingInventory, setIsLoadingInventory] = useState(false);
+   const [debouncedInventorySearch, setDebouncedInventorySearch] = useState('');
+
+   // Order Sorting
+   const [orderSortField, setOrderSortField] = useState<'createdAt' | 'totalAmount' | 'status'>('createdAt');
+   const [orderSortDir, setOrderSortDir] = useState<'asc' | 'desc'>('desc');
 
    // Local State for Artworks
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -139,7 +154,18 @@ export const AdminDashboard: React.FC = () => {
    useEffect(() => {
       loadStats();
       if (activeTab === 'ORDERS') loadAdminOrders();
-   }, [activeTab, orderStatusFilter]);
+   }, [activeTab, orderStatusFilter, orderSortField, orderSortDir]);
+
+   // Inventory debounced search
+   useEffect(() => {
+      const timer = setTimeout(() => setDebouncedInventorySearch(inventorySearch), 300);
+      return () => clearTimeout(timer);
+   }, [inventorySearch]);
+
+   // Load inventory when tab is active or filters change
+   useEffect(() => {
+      if (activeTab === 'INVENTORY') loadInventory();
+   }, [activeTab, debouncedInventorySearch, inventoryCategory, inventoryStock, inventorySortField, inventorySortDir]);
 
    const loadStats = async () => {
       try {
@@ -154,7 +180,7 @@ export const AdminDashboard: React.FC = () => {
    // Order Management Functions
    const loadAdminOrders = async (page = 1) => {
       try {
-         const filters: any = { page, limit: 20 };
+         const filters: any = { page, limit: 20, sortBy: orderSortField, sortOrder: orderSortDir };
          if (orderStatusFilter !== 'ALL') filters.status = orderStatusFilter;
          if (orderSearch) filters.search = orderSearch;
          const data = await adminApi.getAllOrders(filters);
@@ -162,6 +188,25 @@ export const AdminDashboard: React.FC = () => {
          setOrdersPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
       } catch (err) {
          console.error('Failed to load orders', err);
+      }
+   };
+
+   // Inventory Functions
+   const loadInventory = async (page = 1) => {
+      setIsLoadingInventory(true);
+      try {
+         const filters: any = { page, limit: 20, sortBy: inventorySortField, sortOrder: inventorySortDir };
+         if (debouncedInventorySearch) filters.search = debouncedInventorySearch;
+         if (inventoryCategory !== 'ALL') filters.category = inventoryCategory;
+         if (inventoryStock === 'IN_STOCK') filters.inStock = true;
+         if (inventoryStock === 'SOLD_OUT') filters.inStock = false;
+         const data = await artworkApi.getAll(filters);
+         setInventoryArtworks(data.artworks.map(transformArtwork));
+         setInventoryPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
+      } catch (err) {
+         console.error('Failed to load inventory', err);
+      } finally {
+         setIsLoadingInventory(false);
       }
    };
 
@@ -436,9 +481,7 @@ export const AdminDashboard: React.FC = () => {
    }, [activeTab]);
 
    useEffect(() => {
-      if (activeTab === 'INVENTORY') {
-         loadArtists();
-      }
+      if (activeTab === 'INVENTORY') loadArtists();
    }, [activeTab]);
 
    useEffect(() => {
@@ -513,6 +556,24 @@ export const AdminDashboard: React.FC = () => {
       } else {
          setUserSortField(field);
          setUserSortDir('asc');
+      }
+   };
+
+   const toggleInventorySort = (field: 'title' | 'price' | 'createdAt') => {
+      if (inventorySortField === field) {
+         setInventorySortDir(d => d === 'asc' ? 'desc' : 'asc');
+      } else {
+         setInventorySortField(field);
+         setInventorySortDir('asc');
+      }
+   };
+
+   const toggleOrderSort = (field: 'createdAt' | 'totalAmount' | 'status') => {
+      if (orderSortField === field) {
+         setOrderSortDir(d => d === 'asc' ? 'desc' : 'asc');
+      } else {
+         setOrderSortField(field);
+         setOrderSortDir('asc');
       }
    };
 
@@ -840,7 +901,7 @@ export const AdminDashboard: React.FC = () => {
 
          {/* Tabs */}
          <div className="flex flex-wrap gap-2 mb-12 border-b border-pearl/10 pb-8 overflow-x-auto">
-            {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'REVIEWS', 'FINANCE', 'CONTENT', 'EXHIBITIONS', 'REFERRALS', 'LANDING PAGE', 'THEME'].map(tab => (
+            {['OVERVIEW', 'INVENTORY', 'ORDERS', 'SHIPPING', 'USERS', 'REVIEWS', 'FINANCE', 'EXHIBITIONS', 'REFERRALS', 'LANDING PAGE', 'THEME'].map(tab => (
                <TabButton key={tab} tab={tab} active={activeTab === tab} onClick={() => setActiveTab(tab as any)} />
             ))}
          </div>
@@ -891,102 +952,181 @@ export const AdminDashboard: React.FC = () => {
                   </Button>
                </div>
 
+               {/* Search */}
+               <div className="relative">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-gray" />
+                  <input
+                     type="text"
+                     placeholder="Search artworks..."
+                     value={inventorySearch}
+                     onChange={e => setInventorySearch(e.target.value)}
+                     className="w-full pl-10 pr-4 py-2.5 bg-charcoal/50 border border-pearl/10 text-pearl text-sm placeholder:text-warm-gray/50 focus:border-tangerine/50 focus:outline-none"
+                  />
+               </div>
+
+               {/* Filter Chips */}
+               <div className="flex flex-wrap gap-2">
+                  {['ALL', ...availableCategories].map(cat => (
+                     <button
+                        key={cat}
+                        onClick={() => setInventoryCategory(cat)}
+                        className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${inventoryCategory === cat
+                           ? 'border-tangerine text-tangerine bg-tangerine/10'
+                           : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
+                        }`}
+                     >
+                        {cat}
+                     </button>
+                  ))}
+                  <span className="w-px bg-pearl/10 mx-1" />
+                  {(['ALL', 'IN_STOCK', 'SOLD_OUT'] as const).map(st => (
+                     <button
+                        key={st}
+                        onClick={() => setInventoryStock(st)}
+                        className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${inventoryStock === st
+                           ? 'border-tangerine text-tangerine bg-tangerine/10'
+                           : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
+                        }`}
+                     >
+                        {st === 'ALL' ? 'All Stock' : st === 'IN_STOCK' ? 'In Stock' : 'Sold Out'}
+                     </button>
+                  ))}
+               </div>
+
                {/* Artworks Table */}
                <div className="border border-pearl/10 rounded overflow-hidden">
+                  {isLoadingInventory ? (
+                     <div className="flex items-center justify-center py-16">
+                        <Loader2 size={24} className="animate-spin text-tangerine" />
+                        <span className="ml-3 text-warm-gray text-sm">Loading artworks...</span>
+                     </div>
+                  ) : (
                   <table className="w-full text-left text-sm">
                      <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
                         <tr>
-                           <th className="p-4 font-bold">Artwork</th>
-                           <th className="p-4 font-bold">Artist</th>
-                           <th className="p-4 font-bold">Price</th>
-                           <th className="p-4 font-bold">Status</th>
-                           <th className="p-4 font-bold">Actions</th>
+                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('title')}>
+                              <span className="flex items-center gap-1">Artwork {inventorySortField === 'title' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
+                           </th>
+                           <th className="p-4">Artist</th>
+                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('price')}>
+                              <span className="flex items-center gap-1">Price {inventorySortField === 'price' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
+                           </th>
+                           <th className="p-4">Status</th>
+                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('createdAt')}>
+                              <span className="flex items-center gap-1">Added {inventorySortField === 'createdAt' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
+                           </th>
+                           <th className="p-4">Actions</th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-pearl/5">
-                        {artworks.map(art => (
+                        {inventoryArtworks.map((art: any) => (
                            <tr key={art.id} className="hover:bg-pearl/5 transition-colors">
                               <td className="p-4">
                                  <div className="flex items-center gap-3">
                                     <img src={art.imageUrl} className="w-10 h-10 object-cover border border-pearl/20" alt="" />
-                                    <span className="text-pearl font-medium">{art.title}</span>
+                                    <div>
+                                       <span className="text-pearl font-medium">{art.title}</span>
+                                       <div className="text-xs text-warm-gray">{art.category}</div>
+                                    </div>
                                  </div>
                               </td>
                               <td className="p-4 text-warm-gray">{art.artistName}</td>
                               <td className="p-4 text-tangerine font-mono">{convertPrice(art.price)}</td>
                               <td className="p-4">
                                  <button
-                                    onClick={() => updateArtwork(art.id, { inStock: !art.inStock })}
+                                    onClick={() => { updateArtwork(art.id, { inStock: !art.inStock }); setTimeout(() => loadInventory(inventoryPagination.page), 500); }}
                                     className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${art.inStock ? 'border-green-500/30 text-green-400 bg-green-500/10' : 'border-red-500/30 text-red-400 bg-red-500/10'}`}
                                  >
                                     {art.inStock ? 'In Stock' : 'Sold Out'}
                                  </button>
+                              </td>
+                              <td className="p-4 text-warm-gray text-xs font-mono">
+                                 {art.createdAt ? format(new Date(art.createdAt), 'MMM d, yyyy') : '-'}
                               </td>
                               <td className="p-4">
                                  <div className="flex gap-2">
                                     <button onClick={() => handleEditArtwork(art)} className="text-warm-gray hover:text-tangerine transition-colors">
                                        <Edit size={16} />
                                     </button>
-                                    <button onClick={() => deleteArtwork(art.id)} className="text-warm-gray hover:text-tangerine transition-colors">
+                                    <button onClick={() => { deleteArtwork(art.id); setTimeout(() => loadInventory(inventoryPagination.page), 500); }} className="text-warm-gray hover:text-tangerine transition-colors">
                                        <Trash2 size={16} />
                                     </button>
                                  </div>
                               </td>
                            </tr>
                         ))}
+                        {inventoryArtworks.length === 0 && (
+                           <tr><td colSpan={6} className="p-8 text-center text-warm-gray">No artworks found</td></tr>
+                        )}
                      </tbody>
                   </table>
+                  )}
+
+                  {/* Pagination */}
+                  {inventoryPagination.totalPages > 1 && !isLoadingInventory && (
+                     <div className="flex items-center justify-between px-4 py-3 border-t border-pearl/10">
+                        <span className="text-xs text-warm-gray font-mono">
+                           Showing {((inventoryPagination.page - 1) * 20) + 1}–{Math.min(inventoryPagination.page * 20, inventoryPagination.total)} of {inventoryPagination.total}
+                        </span>
+                        <div className="flex gap-2">
+                           <button
+                              disabled={inventoryPagination.page <= 1}
+                              onClick={() => loadInventory(inventoryPagination.page - 1)}
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                           >
+                              Previous
+                           </button>
+                           <span className="px-3 py-1 text-xs text-warm-gray font-mono">
+                              {inventoryPagination.page} / {inventoryPagination.totalPages}
+                           </span>
+                           <button
+                              disabled={inventoryPagination.page >= inventoryPagination.totalPages}
+                              onClick={() => loadInventory(inventoryPagination.page + 1)}
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                           >
+                              Next
+                           </button>
+                        </div>
+                     </div>
+                  )}
                </div>
             </div>
          )}
 
          {/* ORDERS TAB */}
          {activeTab === 'ORDERS' && (
-            <div className="space-y-8 animate-fade-in">
-               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="space-y-6 animate-fade-in">
+               <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-display text-pearl">Order Management</h3>
-                  <div className="flex flex-wrap items-center gap-4">
-                     <div className="relative">
-                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-gray" />
-                        <input
-                           type="text"
-                           placeholder="Search orders..."
-                           value={orderSearch}
-                           onChange={e => setOrderSearch(e.target.value)}
-                           onKeyDown={e => e.key === 'Enter' && loadAdminOrders()}
-                           className="pl-9 pr-3 py-2 bg-void border border-pearl/20 text-pearl text-sm w-64 focus:border-tangerine focus:outline-none placeholder:text-warm-gray/50"
-                        />
-                     </div>
-                     <select
-                        value={orderStatusFilter}
-                        onChange={e => setOrderStatusFilter(e.target.value)}
-                        className="bg-void border border-pearl/20 text-pearl text-sm p-2 focus:border-tangerine focus:outline-none"
-                     >
-                        <option value="ALL">All Statuses</option>
-                        {ORDER_STATUSES.map(s => (
-                           <option key={s} value={s}>{getOrderStatusLabel(s)}</option>
-                        ))}
-                     </select>
-                  </div>
+               </div>
+
+               {/* Search */}
+               <div className="relative">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-warm-gray" />
+                  <input
+                     type="text"
+                     placeholder="Search by customer name or email..."
+                     value={orderSearch}
+                     onChange={e => setOrderSearch(e.target.value)}
+                     onKeyDown={e => e.key === 'Enter' && loadAdminOrders()}
+                     className="w-full pl-10 pr-4 py-2.5 bg-charcoal/50 border border-pearl/10 text-pearl text-sm placeholder:text-warm-gray/50 focus:border-tangerine/50 focus:outline-none"
+                  />
                </div>
 
                {/* Order Status Chips */}
                <div className="flex flex-wrap gap-2">
-                  {['PENDING', 'PAID', 'AWAITING_CONFIRMATION', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'].map(s => {
-                     const count = adminOrders.filter(o => o.status === s).length;
-                     return (
-                        <button
-                           key={s}
-                           onClick={() => setOrderStatusFilter(s === orderStatusFilter ? 'ALL' : s)}
-                           className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${orderStatusFilter === s
-                              ? 'border-tangerine text-tangerine bg-tangerine/10'
-                              : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
-                              }`}
-                        >
-                           {getOrderStatusLabel(s)} <span className="ml-1 opacity-60">({count})</span>
-                        </button>
-                     );
-                  })}
+                  {['ALL', ...ORDER_STATUSES].map(s => (
+                     <button
+                        key={s}
+                        onClick={() => setOrderStatusFilter(s)}
+                        className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${orderStatusFilter === s
+                           ? 'border-tangerine text-tangerine bg-tangerine/10'
+                           : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
+                        }`}
+                     >
+                        {s === 'ALL' ? 'All' : getOrderStatusLabel(s)}
+                     </button>
+                  ))}
                </div>
 
                <div className="border border-pearl/10 rounded overflow-x-auto">
@@ -995,9 +1135,15 @@ export const AdminDashboard: React.FC = () => {
                         <tr>
                            <th className="p-4">ID</th>
                            <th className="p-4">Customer</th>
-                           <th className="p-4">Total</th>
-                           <th className="p-4">Status</th>
-                           <th className="p-4">Date</th>
+                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleOrderSort('totalAmount')}>
+                              <span className="flex items-center gap-1">Total {orderSortField === 'totalAmount' && (orderSortDir === 'asc' ? '↑' : '↓')}</span>
+                           </th>
+                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleOrderSort('status')}>
+                              <span className="flex items-center gap-1">Status {orderSortField === 'status' && (orderSortDir === 'asc' ? '↑' : '↓')}</span>
+                           </th>
+                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleOrderSort('createdAt')}>
+                              <span className="flex items-center gap-1">Date {orderSortField === 'createdAt' && (orderSortDir === 'asc' ? '↑' : '↓')}</span>
+                           </th>
                            <th className="p-4">Actions</th>
                         </tr>
                      </thead>
@@ -1041,8 +1187,39 @@ export const AdminDashboard: React.FC = () => {
                               </td>
                            </tr>
                         ))}
+                        {adminOrders.length === 0 && (
+                           <tr><td colSpan={6} className="p-8 text-center text-warm-gray">No orders found</td></tr>
+                        )}
                      </tbody>
                   </table>
+
+                  {/* Pagination */}
+                  {ordersPagination.totalPages > 1 && (
+                     <div className="flex items-center justify-between px-4 py-3 border-t border-pearl/10">
+                        <span className="text-xs text-warm-gray font-mono">
+                           Showing {((ordersPagination.page - 1) * 20) + 1}–{Math.min(ordersPagination.page * 20, ordersPagination.total)} of {ordersPagination.total}
+                        </span>
+                        <div className="flex gap-2">
+                           <button
+                              disabled={ordersPagination.page <= 1}
+                              onClick={() => loadAdminOrders(ordersPagination.page - 1)}
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                           >
+                              Previous
+                           </button>
+                           <span className="px-3 py-1 text-xs text-warm-gray font-mono">
+                              {ordersPagination.page} / {ordersPagination.totalPages}
+                           </span>
+                           <button
+                              disabled={ordersPagination.page >= ordersPagination.totalPages}
+                              onClick={() => loadAdminOrders(ordersPagination.page + 1)}
+                              className="px-3 py-1 text-xs border border-pearl/20 text-warm-gray hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                           >
+                              Next
+                           </button>
+                        </div>
+                     </div>
+                  )}
                </div>
 
                {/* Order Detail Modal */}
@@ -1479,23 +1656,25 @@ export const AdminDashboard: React.FC = () => {
             <div className="space-y-4 animate-fade-in">
                <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-display text-pearl">User Directory</h3>
-                  <div className="flex gap-2">
-                     {(['ALL', 'COLLECTORS', 'ARTISTS', 'PENDING'] as const).map(sub => {
-                        const countMap = { ALL: userCounts.all, COLLECTORS: userCounts.collectors, ARTISTS: userCounts.artists, PENDING: userCounts.pending };
-                        return (
-                           <button
-                              key={sub}
-                              onClick={() => setUserSubTab(sub)}
-                              className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border flex items-center gap-1.5 transition-all ${userSubTab === sub ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'}`}
-                           >
-                              {sub}
-                              <span className={`px-1.5 py-0.5 text-[9px] rounded-full ${userSubTab === sub ? 'bg-void/20 text-void' : 'bg-pearl/10 text-warm-gray'}`}>
-                                 {countMap[sub]}
-                              </span>
-                           </button>
-                        );
-                     })}
-                  </div>
+               </div>
+
+               {/* Filter Chips */}
+               <div className="flex flex-wrap gap-2">
+                  {(['ALL', 'COLLECTORS', 'ARTISTS', 'PENDING'] as const).map(sub => {
+                     const countMap = { ALL: userCounts.all, COLLECTORS: userCounts.collectors, ARTISTS: userCounts.artists, PENDING: userCounts.pending };
+                     return (
+                        <button
+                           key={sub}
+                           onClick={() => setUserSubTab(sub)}
+                           className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${userSubTab === sub
+                              ? 'border-tangerine text-tangerine bg-tangerine/10'
+                              : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
+                           }`}
+                        >
+                           {sub} <span className="ml-1 opacity-60">({countMap[sub]})</span>
+                        </button>
+                     );
+                  })}
                </div>
 
                {/* Search Bar */}
@@ -1637,17 +1816,22 @@ export const AdminDashboard: React.FC = () => {
             <div className="space-y-6 animate-fade-in">
                <div className="flex justify-between items-center">
                   <h3 className="text-2xl font-display text-pearl">Review Moderation</h3>
-                  <div className="flex gap-2">
-                     {(['pending', 'approved', 'rejected'] as const).map(status => (
-                        <button
-                           key={status}
-                           onClick={() => setReviewFilter(status)}
-                           className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border transition-all ${reviewFilter === status ? 'bg-pearl text-void border-pearl' : 'border-pearl/20 text-warm-gray hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'}`}
-                        >
-                           {status}
-                        </button>
-                     ))}
-                  </div>
+               </div>
+
+               {/* Filter Chips */}
+               <div className="flex flex-wrap gap-2">
+                  {(['pending', 'approved', 'rejected'] as const).map(status => (
+                     <button
+                        key={status}
+                        onClick={() => setReviewFilter(status)}
+                        className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${reviewFilter === status
+                           ? 'border-tangerine text-tangerine bg-tangerine/10'
+                           : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
+                        }`}
+                     >
+                        {status}
+                     </button>
+                  ))}
                </div>
 
                {isLoadingReviews ? (
@@ -1788,29 +1972,6 @@ export const AdminDashboard: React.FC = () => {
             </div>
          )}
 
-         {/* CONTENT TAB (Simple) */}
-         {activeTab === 'CONTENT' && (
-            <div className="space-y-6 animate-fade-in max-w-4xl">
-               <div className="flex justify-between items-center">
-                  <h3 className="text-2xl font-display text-pearl">Global Content</h3>
-                  <Button variant="primary" onClick={handleSaveContent}>Save Changes</Button>
-               </div>
-
-               <div className="border border-pearl/10 bg-charcoal/30 p-6">
-                  <h4 className="text-pearl font-bold mb-4 flex items-center gap-2"><Globe size={18} /> Social Links</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div>
-                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Facebook URL</label>
-                        <input className="w-full bg-void border border-pearl/20 p-3 text-pearl" value={heroForm.socialLinks.facebook} onChange={e => setHeroForm({ ...heroForm, socialLinks: { ...heroForm.socialLinks, facebook: e.target.value } })} />
-                     </div>
-                     <div>
-                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Instagram URL</label>
-                        <input className="w-full bg-void border border-pearl/20 p-3 text-pearl" value={heroForm.socialLinks.instagram} onChange={e => setHeroForm({ ...heroForm, socialLinks: { ...heroForm.socialLinks, instagram: e.target.value } })} />
-                     </div>
-                  </div>
-               </div>
-            </div>
-         )}
 
          {/* REFERRALS TAB */}
          {activeTab === 'REFERRALS' && (
@@ -2133,6 +2294,26 @@ export const AdminDashboard: React.FC = () => {
                            }
                         })}>+ Add New Collection Section</Button>
                      )}
+                  </div>
+               </div>
+
+               {/* Global Content (Social Links) */}
+               <div className="bg-charcoal/30 p-6 border border-pearl/10">
+                  <h3 className="text-pearl font-display text-lg mb-4 flex items-center gap-2"><Globe size={18} /> Social Links</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Facebook URL</label>
+                        <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" value={heroForm.socialLinks?.facebook || ''} onChange={e => setHeroForm({ ...heroForm, socialLinks: { ...heroForm.socialLinks, facebook: e.target.value } })} />
+                     </div>
+                     <div>
+                        <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Instagram URL</label>
+                        <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" value={heroForm.socialLinks?.instagram || ''} onChange={e => setHeroForm({ ...heroForm, socialLinks: { ...heroForm.socialLinks, instagram: e.target.value } })} />
+                     </div>
+                  </div>
+                  <div className="flex justify-end mt-4">
+                     <Button variant="outline" onClick={handleSaveContent}>
+                        <Save size={14} className="mr-2" /> Save Social Links
+                     </Button>
                   </div>
                </div>
             </div>
