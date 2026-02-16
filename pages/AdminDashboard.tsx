@@ -139,7 +139,7 @@ export const AdminDashboard: React.FC = () => {
    useEffect(() => {
       loadStats();
       if (activeTab === 'ORDERS') loadAdminOrders();
-   }, [activeTab]); // Reload stats when tab changes to refresh data
+   }, [activeTab, orderStatusFilter]);
 
    const loadStats = async () => {
       try {
@@ -959,7 +959,7 @@ export const AdminDashboard: React.FC = () => {
                      </div>
                      <select
                         value={orderStatusFilter}
-                        onChange={e => { setOrderStatusFilter(e.target.value); setTimeout(() => loadAdminOrders(), 0); }}
+                        onChange={e => setOrderStatusFilter(e.target.value)}
                         className="bg-void border border-pearl/20 text-pearl text-sm p-2 focus:border-tangerine focus:outline-none"
                      >
                         <option value="ALL">All Statuses</option>
@@ -977,7 +977,7 @@ export const AdminDashboard: React.FC = () => {
                      return (
                         <button
                            key={s}
-                           onClick={() => { setOrderStatusFilter(s === orderStatusFilter ? 'ALL' : s); setTimeout(() => loadAdminOrders(), 0); }}
+                           onClick={() => setOrderStatusFilter(s === orderStatusFilter ? 'ALL' : s)}
                            className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${orderStatusFilter === s
                               ? 'border-tangerine text-tangerine bg-tangerine/10'
                               : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
