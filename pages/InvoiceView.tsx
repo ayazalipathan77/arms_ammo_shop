@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useGallery } from '../context/GalleryContext';
 import { Printer, ArrowLeft, Mail } from 'lucide-react';
 import { orderApi } from '../services/api';
@@ -12,10 +12,12 @@ const formatPrice = (price: number | undefined | null) => {
 
 export const InvoiceView: React.FC = () => {
    const { id } = useParams<{ id: string }>();
+   const [searchParams] = useSearchParams();
    const { orders } = useGallery();
    const [order, setOrder] = useState<Order | null>(null);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
+   const hasPrinted = useRef(false);
 
    useEffect(() => {
       const fetchOrder = async () => {
@@ -77,6 +79,16 @@ export const InvoiceView: React.FC = () => {
 
       fetchOrder();
    }, [id, orders]);
+
+   // Auto-open print dialog when ?print=true is in URL
+   useEffect(() => {
+      if (order && !loading && searchParams.get('print') === 'true' && !hasPrinted.current) {
+         hasPrinted.current = true;
+         // Small delay to ensure the invoice is fully rendered
+         const timer = setTimeout(() => window.print(), 500);
+         return () => clearTimeout(timer);
+      }
+   }, [order, loading, searchParams]);
 
    if (loading) {
       return (

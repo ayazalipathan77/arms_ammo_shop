@@ -276,7 +276,7 @@ export const UserProfile: React.FC = () => {
                                     <div className="text-right flex flex-col justify-between">
                                        <p className="font-display text-2xl text-pearl">{formatCurrency(order.totalAmount)}</p>
                                        <p className="text-warm-gray text-[10px] uppercase tracking-widest mb-2">{new Date(order.createdAt).toLocaleDateString()}</p>
-                                       <Link to={`/invoice/${order.id}`} target="_blank" className="text-tangerine hover:text-tangerine text-[10px] uppercase tracking-widest font-bold">
+                                       <Link to={`/invoice/${order.id}?print=true`} target="_blank" className="text-tangerine hover:text-tangerine text-[10px] uppercase tracking-widest font-bold">
                                           View Invoice →
                                        </Link>
                                     </div>
