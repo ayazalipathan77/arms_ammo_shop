@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 import prisma from '../config/database';
 import { env } from '../config/env';
 import {
-    sendEmail,
+    sendEmailAsync,
     getOrderConfirmationTemplate,
     getAdminOrderCopyTemplate,
 } from '../utils/email';
@@ -250,32 +250,20 @@ export const handleStripeWebhook = async (req: Request, res: Response): Promise<
 
                     console.log(`Order ${orderId} marked as PAID`);
 
-                    // Send confirmation email to collector
-                    const collectorEmailSent = await sendEmail(
+                    // Send confirmation email to collector (fire-and-forget)
+                    sendEmailAsync(
                         order.user.email,
                         'Order Confirmation - Muraqqa Art Gallery',
                         getOrderConfirmationTemplate(order as any)
                     );
 
-                    if (collectorEmailSent) {
-                        console.log(`✅ Order confirmation email sent to ${order.user.email}`);
-                    } else {
-                        console.error(`❌ Failed to send confirmation email to ${order.user.email}`);
-                    }
-
-                    // Send order copy to admin
+                    // Send order copy to admin (fire-and-forget)
                     const requestArtistUrl = `${env.CLIENT_URL}/admin?tab=orders&orderId=${order.id}`;
-                    const adminEmailSent = await sendEmail(
-                        'admin@muraqqa.art', // Admin email
+                    sendEmailAsync(
+                        'admin@muraqqa.art',
                         `New Order Received - #${order.id.slice(-8).toUpperCase()}`,
                         getAdminOrderCopyTemplate(order as any, requestArtistUrl)
                     );
-
-                    if (adminEmailSent) {
-                        console.log(`✅ Admin notification email sent`);
-                    } else {
-                        console.error(`❌ Failed to send admin notification email`);
-                    }
                 }
                 break;
             }
@@ -376,28 +364,20 @@ export const confirmBankTransfer = async (req: Request, res: Response): Promise<
             },
         }) as any;
 
-        // Send confirmation email to collector
-        const collectorEmailSent = await sendEmail(
+        // Send confirmation email to collector (fire-and-forget)
+        sendEmailAsync(
             updatedOrder.user.email,
             'Payment Confirmed - Muraqqa Art Gallery',
             getOrderConfirmationTemplate(updatedOrder as any)
         );
 
-        if (collectorEmailSent) {
-            console.log(`✅ Order confirmation email sent to ${updatedOrder.user.email}`);
-        }
-
-        // Send order copy to admin
+        // Send order copy to admin (fire-and-forget)
         const requestArtistUrl = `${env.CLIENT_URL}/admin?tab=orders&orderId=${updatedOrder.id}`;
-        const adminEmailSent = await sendEmail(
+        sendEmailAsync(
             'admin@muraqqa.art',
             `Payment Confirmed - Order #${updatedOrder.id.slice(-8).toUpperCase()}`,
             getAdminOrderCopyTemplate(updatedOrder as any, requestArtistUrl)
         );
-
-        if (adminEmailSent) {
-            console.log(`✅ Admin notification email sent`);
-        }
 
         res.status(StatusCodes.OK).json({
             message: 'Bank transfer confirmed, order marked as PAID. Confirmation emails sent.',

@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import prisma from '../config/database';
 import { generateToken } from '../utils/jwt';
 import { registerSchema, loginSchema } from '../validators/auth.validator';
-import { sendEmail, getPasswordResetTemplate, getVerificationTemplate } from '../utils/email';
+import { sendEmailAsync, getPasswordResetTemplate, getVerificationTemplate } from '../utils/email';
 import { env } from '../config/env';
 
 // Generate a secure random token
@@ -97,7 +97,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         // Send verification email
         const verifyUrl = `${env.CLIENT_URL}/verify-email?token=${verificationToken}&id=${user.id}`;
         const emailContent = getVerificationTemplate(verifyUrl);
-        await sendEmail(user.email, 'Verify Your Email - Muraqqa Art Gallery', emailContent);
+        sendEmailAsync(user.email, 'Verify Your Email - Muraqqa Art Gallery', emailContent);
 
         res.status(StatusCodes.CREATED).json({
             message: validatedData.role === 'ARTIST'
@@ -335,7 +335,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
         // Send email
         const resetUrl = `${env.CLIENT_URL}/reset-password?token=${resetToken}&id=${user.id}`;
         const emailContent = getPasswordResetTemplate(resetUrl);
-        await sendEmail(user.email, 'Password Reset Request', emailContent);
+        sendEmailAsync(user.email, 'Password Reset Request', emailContent);
 
         res.status(StatusCodes.OK).json({ message: 'If the email exists, a reset link has been sent.' });
     } catch (error) {
@@ -499,7 +499,7 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
         // Send verification email
         const verifyUrl = `${env.CLIENT_URL}/verify-email?token=${verificationToken}&id=${user.id}`;
         const emailContent = getVerificationTemplate(verifyUrl);
-        await sendEmail(user.email, 'Verify Your Email - Muraqqa Art Gallery', emailContent);
+        sendEmailAsync(user.email, 'Verify Your Email - Muraqqa Art Gallery', emailContent);
 
         res.status(StatusCodes.OK).json({ message: 'Verification email sent successfully' });
     } catch (error) {

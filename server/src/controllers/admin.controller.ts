@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import prisma from '../config/database';
-import { sendEmail } from '../utils/email';
+import { sendEmailAsync } from '../utils/email';
 import { env } from '../config/env';
 
 // Email template for artist approval
@@ -330,7 +330,7 @@ export const approveArtist = async (req: Request, res: Response): Promise<void> 
 
         // Send approval email
         const emailContent = getArtistApprovalTemplate(user.fullName);
-        await sendEmail(user.email, 'Your Artist Account Has Been Approved - Muraqqa', emailContent);
+        sendEmailAsync(user.email, 'Your Artist Account Has Been Approved - Muraqqa', emailContent);
 
         res.status(StatusCodes.OK).json({
             message: 'Artist approved successfully',
@@ -376,7 +376,7 @@ export const rejectArtist = async (req: Request, res: Response): Promise<void> =
 
         // Send rejection email
         const emailContent = getArtistRejectionTemplate(user.fullName, reason);
-        await sendEmail(user.email, 'Artist Application Update - Muraqqa', emailContent);
+        sendEmailAsync(user.email, 'Artist Application Update - Muraqqa', emailContent);
 
         if (deleteAccount) {
             // Delete the artist profile first (if exists)

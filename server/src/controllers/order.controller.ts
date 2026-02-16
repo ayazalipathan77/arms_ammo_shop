@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import prisma from '../config/database';
 import { env } from '../config/env';
 import {
-    sendEmail,
+    sendEmailAsync,
     getOrderConfirmationTemplate,
     getAdminOrderCopyTemplate,
     getArtistAvailabilityRequestTemplate,
@@ -364,7 +364,7 @@ export const requestArtistConfirmation = async (req: Request, res: Response): Pr
                     declineUrl
                 );
 
-                await sendEmail(
+                sendEmailAsync(
                     artist.user.email,
                     `Artwork Sold: ${item.artwork.title} - Action Required`,
                     emailContent
@@ -453,7 +453,7 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
             );
 
             // Send to admin email
-            await sendEmail(
+            sendEmailAsync(
                 env.SMTP_USER || 'admin@muraqqa.art',
                 `Artist Confirmed: Order #${order.id.slice(-8).toUpperCase()}`,
                 emailContent
@@ -478,7 +478,7 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
                 order as any,
                 'The artwork is currently not available. We apologize for the inconvenience.'
             );
-            await sendEmail(
+            sendEmailAsync(
                 order.user.email,
                 `Order Cancelled: #${order.id.slice(-8).toUpperCase()}`,
                 cancellationEmail
@@ -548,7 +548,7 @@ export const adminConfirmOrder = async (req: Request, res: Response): Promise<vo
 
         // Send confirmation email to collector
         const emailContent = getOrderConfirmedTemplate(order as any);
-        await sendEmail(
+        sendEmailAsync(
             order.user.email,
             `Order Confirmed: #${order.id.slice(-8).toUpperCase()}`,
             emailContent
@@ -603,7 +603,7 @@ export const markOrderPaid = async (req: Request, res: Response): Promise<void> 
         });
 
         // Send confirmation email to collector
-        await sendEmail(
+        sendEmailAsync(
             order.user.email,
             'Payment Confirmed - Muraqqa Art Gallery',
             getOrderConfirmationTemplate(order as any)
@@ -679,7 +679,7 @@ export const markOrderShipped = async (req: Request, res: Response): Promise<voi
 
         // Send shipping update email to collector
         const emailContent = getShippingUpdateTemplate(order as any, trackingNumber, carrier);
-        await sendEmail(
+        sendEmailAsync(
             order.user.email,
             `Your Order Has Shipped: #${order.id.slice(-8).toUpperCase()}`,
             emailContent
@@ -745,7 +745,7 @@ export const markOrderDelivered = async (req: Request, res: Response): Promise<v
 
         // Send delivery confirmation email to collector
         const emailContent = getDeliveryConfirmationTemplate(order as any);
-        await sendEmail(
+        sendEmailAsync(
             order.user.email,
             `Order Delivered: #${order.id.slice(-8).toUpperCase()}`,
             emailContent
@@ -815,7 +815,7 @@ export const cancelOrder = async (req: Request, res: Response): Promise<void> =>
 
         // Send cancellation email to collector
         const emailContent = getOrderCancellationTemplate(order as any, reason);
-        await sendEmail(
+        sendEmailAsync(
             order.user.email,
             `Order Cancelled: #${order.id.slice(-8).toUpperCase()}`,
             emailContent
@@ -901,7 +901,7 @@ export const sendOrderConfirmationEmails = async (orderId: string): Promise<void
 
         // 1. Send confirmation to collector
         const collectorEmail = getOrderConfirmationTemplate(order as any);
-        await sendEmail(
+        sendEmailAsync(
             order.user.email,
             `Order Confirmation: #${order.id.slice(-8).toUpperCase()}`,
             collectorEmail
@@ -910,7 +910,7 @@ export const sendOrderConfirmationEmails = async (orderId: string): Promise<void
         // 2. Send copy to admin with action button
         const requestArtistUrl = `${env.CLIENT_URL}/admin?action=request-artist&order=${order.id}`;
         const adminEmail = getAdminOrderCopyTemplate(order as any, requestArtistUrl);
-        await sendEmail(
+        sendEmailAsync(
             env.SMTP_USER || 'admin@muraqqa.art',
             `New Order Received: #${order.id.slice(-8).toUpperCase()}`,
             adminEmail

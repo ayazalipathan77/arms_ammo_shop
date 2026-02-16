@@ -33,6 +33,11 @@ if (resend) {
     console.warn('⚠️  No email service configured. Set RESEND_API_KEY or SMTP_USER/SMTP_PASS.');
 }
 
+// Fire-and-forget version — doesn't block the caller
+export const sendEmailAsync = (to: string, subject: string, html: string) => {
+    sendEmail(to, subject, html).catch(err => console.error('❌ Background email error:', err.message || err));
+};
+
 export const sendEmail = async (to: string, subject: string, html: string) => {
     try {
         // In development, always log email details to console
