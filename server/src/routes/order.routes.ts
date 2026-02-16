@@ -7,6 +7,7 @@ import {
     requestArtistConfirmation,
     artistConfirmAvailability,
     adminConfirmOrder,
+    markOrderPaid,
     markOrderShipped,
     markOrderDelivered,
     cancelOrder,
@@ -28,6 +29,7 @@ router.get('/', authenticate, authorizeRole('ADMIN'), getAllOrders);
 // Allow users to view their own orders (ownership checked in controller)
 router.get('/:id', authenticate, getOrderById);
 router.post('/:id/request-artist-confirmation', authenticate, authorizeRole('ADMIN'), requestArtistConfirmation);
+router.put('/:id/pay', authenticate, authorizeRole('ADMIN'), markOrderPaid);
 router.put('/:id/confirm', authenticate, authorizeRole('ADMIN'), adminConfirmOrder);
 router.put('/:id/ship', authenticate, authorizeRole('ADMIN'), markOrderShipped);
 router.put('/:id/deliver', authenticate, authorizeRole('ADMIN'), markOrderDelivered);

@@ -4,6 +4,7 @@ import { useGallery } from '../context/GalleryContext';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Trash2, CheckCircle, FileText, AlertCircle, Lock, Loader2, ArrowRight } from 'lucide-react';
+import Button from '../components/ui/Button';
 import { orderApi, paymentApi, shippingApi, userApi } from '../services/api';
 import { StripeCheckout } from '../components/StripeCheckout';
 import { formatCurrency, cn } from '../lib/utils';
@@ -242,8 +243,8 @@ export const Cart: React.FC = () => {
             <div className="relative z-10 text-center">
                <h2 className="text-4xl font-display mb-4 text-pearl">Your Collection is Empty</h2>
                {cartError && <p className="text-red-500 mb-4 font-mono text-xs">{cartError}</p>}
-               <Link to="/collections" className="inline-block bg-tangerine text-void px-8 py-3 text-xs uppercase tracking-[0.2em] font-bold hover:bg-white transition-colors">
-                  Browse Collections
+               <Link to="/collections">
+                  <Button variant="primary" size="lg">Browse Collections</Button>
                </Link>
             </div>
          </div>
@@ -284,17 +285,15 @@ export const Cart: React.FC = () => {
                   {whatsappNotify && <p className="text-green-400 text-xs mb-8 uppercase tracking-widest">WhatsApp updates enabled</p>}
 
                   <div className="space-y-3">
-                     <Link
-                        to="/"
-                        className="flex items-center justify-center gap-2 w-full bg-tangerine hover:bg-white text-void px-6 py-4 text-xs font-bold transition-colors uppercase tracking-[0.2em]"
-                     >
-                        Return Home
+                     <Link to="/" className="block w-full">
+                        <Button variant="primary" className="w-full py-4">
+                           Return Home
+                        </Button>
                      </Link>
-                     <Link
-                        to="/profile"
-                        className="flex items-center justify-center gap-2 w-full border border-pearl/10 hover:border-tangerine/30 px-6 py-4 text-xs text-warm-gray hover:text-tangerine transition-colors uppercase tracking-[0.2em]"
-                     >
-                        View My Orders
+                     <Link to="/profile" className="block w-full">
+                        <Button variant="secondary" className="w-full py-4">
+                           View My Orders
+                        </Button>
                      </Link>
                   </div>
                </div>
@@ -512,7 +511,7 @@ export const Cart: React.FC = () => {
                               placeholder="CODE"
                               className="flex-1 bg-void border border-pearl/20 px-3 py-2 text-xs text-pearl focus:border-tangerine outline-none font-mono placeholder:text-warm-gray/30"
                            />
-                           <button onClick={handleApplyDiscount} className="bg-pearl/10 text-pearl hover:bg-tangerine hover:text-void px-4 py-2 text-[10px] uppercase tracking-widest font-bold transition-all">Apply</button>
+                           <Button onClick={handleApplyDiscount} variant="outline" size="sm">Apply</Button>
                         </div>
 
                         <div className="flex justify-between text-2xl font-display text-pearl mb-8 bg-void p-4 border border-pearl/10">
@@ -522,23 +521,26 @@ export const Cart: React.FC = () => {
 
                         {step === 'CART' && (
                            <>
-                              <button
+                              <Button
                                  onClick={handleProceedToShipping}
-                                 className="w-full bg-tangerine hover:bg-white text-void py-4 uppercase tracking-[0.2em] text-xs font-bold transition-all shadow-[4px_4px_0px_#ffffff]"
+                                 variant="primary"
+                                 className="w-full py-4"
                               >
                                  {token ? 'Checkout' : 'Login to Checkout'}
-                              </button>
+                              </Button>
                               <Link
-                                 to="/exhibitions"
-                                 className="block w-full mt-4 text-warm-gray hover:text-tangerine py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
+                                 to="/collections"
+                                 className="block w-full mt-4"
                               >
-                                 Continue Shopping
+                                 <Button variant="outline" className="w-full py-3">
+                                    Continue Shopping
+                                 </Button>
                               </Link>
                            </>
                         )}
                         {step === 'SHIPPING' && (
                            <>
-                              <button
+                              <Button
                                  onClick={handleProceedToPayment}
                                  disabled={
                                     isProcessing ||
@@ -549,26 +551,29 @@ export const Cart: React.FC = () => {
                                     shippingDetails.city.length < 2 ||
                                     !selectedRateId
                                  }
-                                 className="w-full bg-tangerine hover:bg-white text-void py-4 uppercase tracking-[0.2em] text-xs font-bold transition-all shadow-[4px_4px_0px_#ffffff] disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                 variant="primary"
+                                 className="w-full py-4 flex items-center justify-center gap-2"
                               >
                                  {isProcessing ? <Loader2 className="animate-spin w-4 h-4" /> : 'Proceed'}
-                              </button>
+                              </Button>
 
-                              <button
+                              <Button
                                  onClick={() => setStep('CART')}
-className="w-full mt-4 text-warm-gray hover:text-tangerine py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
+                                 variant="outline"
+                                 className="w-full mt-4 py-3"
                               >
                                  Back
-                              </button>
+                              </Button>
                            </>
                         )}
                         {step === 'PAYMENT' && (
-                           <button
+                           <Button
                               onClick={() => setStep('SHIPPING')}
-                              className="w-full mt-4 text-warm-gray hover:text-tangerine py-2 text-[10px] uppercase tracking-[0.25em] transition-colors text-center font-bold"
+                              variant="outline"
+                              className="w-full mt-4 py-3"
                            >
                               Back
-                           </button>
+                           </Button>
                         )}
                      </div>
                   </div>

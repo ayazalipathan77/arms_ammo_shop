@@ -176,6 +176,17 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
+   const handleMarkAsPaid = async (orderId: string) => {
+      setOrderActionLoading(orderId);
+      try {
+         await adminApi.markOrderPaid(orderId);
+         await refreshOrders(orderId);
+      } catch (err: any) {
+         alert(err.message || 'Failed to mark as paid');
+      }
+      setOrderActionLoading(null);
+   };
+
    const handleRequestArtistConfirmation = async (orderId: string) => {
       setOrderActionLoading(orderId);
       try {
@@ -1007,6 +1018,9 @@ export const AdminDashboard: React.FC = () => {
                               <td className="p-4 text-warm-gray text-xs">{format(new Date(order.createdAt), 'MMM d, yyyy')}</td>
                               <td className="p-4" onClick={e => e.stopPropagation()}>
                                  <div className="flex gap-2">
+                                    {order.status === 'PENDING' && (
+                                       <button onClick={() => handleMarkAsPaid(order.id)} className="text-blue-400 hover:text-tangerine transition-colors" title="Mark as Paid" disabled={orderActionLoading === order.id}><DollarSign size={16} /></button>
+                                    )}
                                     {order.status === 'PAID' && (
                                        <button onClick={() => handleRequestArtistConfirmation(order.id)} className="text-amber hover:text-tangerine transition-colors" title="Request Artist Confirmation" disabled={orderActionLoading === order.id}><Mail size={16} /></button>
                                     )}
@@ -1054,6 +1068,15 @@ export const AdminDashboard: React.FC = () => {
                               <div className="bg-void/50 border border-pearl/10 p-4">
                                  <h4 className="text-xs text-warm-gray uppercase tracking-widest mb-3">Change Status</h4>
                                  <div className="flex flex-wrap gap-2">
+                                    {selectedOrder.status === 'PENDING' && (
+                                       <button
+                                          onClick={() => { handleMarkAsPaid(selectedOrder.id); }}
+                                          disabled={orderActionLoading === selectedOrder.id}
+                                          className="px-4 py-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs uppercase tracking-widest hover:bg-tangerine/20 hover:text-tangerine hover:border-tangerine transition-colors disabled:opacity-50 flex items-center gap-2"
+                                       >
+                                          <DollarSign size={14} /> Mark as Paid
+                                       </button>
+                                    )}
                                     {selectedOrder.status === 'PAID' && (
                                        <button
                                           onClick={() => { handleRequestArtistConfirmation(selectedOrder.id); }}

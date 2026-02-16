@@ -564,6 +564,61 @@ export const adminConfirmOrder = async (req: Request, res: Response): Promise<vo
     }
 };
 
+// Mark order as paid (Admin)
+export const markOrderPaid = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const orderId = req.params.id;
+
+        const order = await prisma.order.findUnique({
+            where: { id: orderId },
+            include: {
+                user: { select: { id: true, fullName: true, email: true } },
+                items: {
+                    include: {
+                        artwork: {
+                            include: {
+                                artist: { include: { user: { select: { fullName: true } } } }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!order) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Order not found' });
+            return;
+        }
+
+        if (order.status !== 'PENDING') {
+            res.status(StatusCodes.BAD_REQUEST).json({
+                message: `Cannot mark order as paid — current status: ${order.status}`
+            });
+            return;
+        }
+
+        const updatedOrder = await prisma.order.update({
+            where: { id: orderId },
+            data: { status: 'PAID', paidAt: new Date() },
+        });
+
+        // Send confirmation email to collector
+        await sendEmail(
+            order.user.email,
+            'Payment Confirmed - Muraqqa Art Gallery',
+            getOrderConfirmationTemplate(order as any)
+        );
+
+        res.status(StatusCodes.OK).json({
+            message: 'Order marked as paid',
+            order: { id: updatedOrder.id, status: updatedOrder.status }
+        });
+    } catch (error) {
+        console.error('Mark order paid error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to mark order as paid' });
+    }
+};
+
 // Mark order as shipped (Admin)
 export const markOrderShipped = async (req: Request, res: Response): Promise<void> => {
     try {

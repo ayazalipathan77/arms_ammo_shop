@@ -595,7 +595,7 @@ export const orderApi = {
             }
         });
 
-        const response = await authFetch(`${API_URL}/orders?${params}`);
+        const response = await authFetch(`${API_URL}/orders/my-orders?${params}`);
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to fetch orders');
@@ -944,6 +944,18 @@ export const adminApi = {
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.message || 'Failed to send artist confirmation request');
+        }
+        return response.json();
+    },
+
+    // Admin marks order as paid
+    markOrderPaid: async (id: string): Promise<any> => {
+        const response = await authFetch(`${API_URL}/orders/${id}/pay`, {
+            method: 'PUT',
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to mark order as paid');
         }
         return response.json();
     },

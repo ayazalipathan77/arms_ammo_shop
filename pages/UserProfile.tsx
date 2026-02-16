@@ -264,8 +264,13 @@ export const UserProfile: React.FC = () => {
                                           <span className="font-mono text-tangerine text-lg">#{order.id.slice(0, 8)}</span>
                                           <span className={cn("text-[10px] uppercase tracking-widest px-2 py-1 border",
                                              order.status === 'DELIVERED' ? "border-green-500/30 text-green-400 bg-green-500/5" :
+                                             order.status === 'PAID' ? "border-blue-500/30 text-blue-400 bg-blue-500/5" :
+                                             order.status === 'SHIPPED' ? "border-purple-500/30 text-purple-400 bg-purple-500/5" :
+                                             order.status === 'CONFIRMED' ? "border-tangerine/30 text-tangerine bg-tangerine/5" :
+                                             order.status === 'CANCELLED' ? "border-red-500/30 text-red-400 bg-red-500/5" :
+                                             order.status === 'PENDING' ? "border-amber-500/30 text-amber-400 bg-amber-500/5" :
                                                 "border-pearl/20 text-warm-gray"
-                                          )}>{order.status}</span>
+                                          )}>{order.status === 'AWAITING_CONFIRMATION' ? 'Processing' : order.status}</span>
                                        </div>
                                        <div className="flex gap-2">
                                           {order.items.map((item: any, i: number) => (
