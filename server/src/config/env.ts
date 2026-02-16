@@ -36,6 +36,7 @@ const envSchema = z.object({
 
     // Resend Email API
     RESEND_API_KEY: z.string().optional(),
+    RESEND_FROM_EMAIL: z.string().optional(), // e.g. 'noreply@yourdomain.com' (must be verified in Resend)
 
     // reCAPTCHA v3
     RECAPTCHA_SITE_KEY: z.string().optional(),

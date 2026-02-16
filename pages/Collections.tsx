@@ -13,6 +13,7 @@ export const Collections: React.FC = () => {
 
     // Filters State
     const [activeCategory, setActiveCategory] = useState<string>('All');
+    const [activeArtist, setActiveArtist] = useState<string>('All');
     const [activeMedium, setActiveMedium] = useState<string>('All');
     const [availability, setAvailability] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('newest');
@@ -25,6 +26,11 @@ export const Collections: React.FC = () => {
     const categories = useMemo(() => {
         const cats = [...new Set(artworks.map(a => a.category))].sort();
         return ['All', ...cats];
+    }, [artworks]);
+
+    const artists = useMemo(() => {
+        const arts = [...new Set(artworks.map(a => a.artistName).filter(Boolean))].sort();
+        return ['All', ...arts];
     }, [artworks]);
 
     const mediums = useMemo(() => {
@@ -74,6 +80,8 @@ export const Collections: React.FC = () => {
         // Simple filters
         const cat = params.get('category');
         if (cat) setActiveCategory(cat);
+        const artist = params.get('artist');
+        if (artist) setActiveArtist(artist);
         const med = params.get('medium');
         if (med) setActiveMedium(med);
         const avail = params.get('availability');
@@ -116,6 +124,7 @@ export const Collections: React.FC = () => {
 
         const params = new URLSearchParams();
         if (activeCategory !== 'All') params.set('category', activeCategory);
+        if (activeArtist !== 'All') params.set('artist', activeArtist);
         if (activeMedium !== 'All') params.set('medium', activeMedium);
         if (availability !== 'all') params.set('availability', availability);
         if (sortBy !== 'newest') params.set('sort', sortBy);
@@ -126,11 +135,12 @@ export const Collections: React.FC = () => {
         if (yearRange[1] < yearBounds.max) params.set('yearMax', String(yearRange[1]));
 
         setSearchParams(params, { replace: true });
-    }, [activeCategory, activeMedium, availability, sortBy, searchQuery, priceRange, yearRange]);
+    }, [activeCategory, activeArtist, activeMedium, availability, sortBy, searchQuery, priceRange, yearRange]);
 
     // Active filter count
     const activeFilterCount = [
         activeCategory !== 'All',
+        activeArtist !== 'All',
         activeMedium !== 'All',
         availability !== 'all',
         searchQuery !== '',
@@ -143,6 +153,9 @@ export const Collections: React.FC = () => {
         return artworks.filter(art => {
             // Category Filter
             if (activeCategory !== 'All' && art.category !== activeCategory) return false;
+
+            // Artist Filter
+            if (activeArtist !== 'All' && art.artistName !== activeArtist) return false;
 
             // Medium Filter
             if (activeMedium !== 'All' && art.medium !== activeMedium) return false;
@@ -175,7 +188,7 @@ export const Collections: React.FC = () => {
             // Default newest
             return (b.year || 0) - (a.year || 0);
         });
-    }, [artworks, activeCategory, activeMedium, availability, sortBy, searchQuery, priceRange, yearRange]);
+    }, [artworks, activeCategory, activeArtist, activeMedium, availability, sortBy, searchQuery, priceRange, yearRange]);
 
     const updateCategory = (cat: string) => {
         setActiveCategory(cat);
@@ -183,6 +196,7 @@ export const Collections: React.FC = () => {
 
     const clearAllFilters = () => {
         setActiveCategory('All');
+        setActiveArtist('All');
         setActiveMedium('All');
         setAvailability('all');
         setSearchQuery('');
@@ -324,6 +338,22 @@ export const Collections: React.FC = () => {
                                         className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-tangerine transition-colors ${activeCategory === cat ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
                                     >
                                         {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Artist */}
+                        <div>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Artist</h3>
+                            <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
+                                {artists.map(artist => (
+                                    <button
+                                        key={artist}
+                                        onClick={() => setActiveArtist(artist)}
+                                        className={`block w-full text-left font-display uppercase tracking-wider text-sm hover:text-tangerine transition-colors ${activeArtist === artist ? 'text-white font-bold pl-2 border-l-2 border-tangerine' : 'text-warm-gray'}`}
+                                    >
+                                        {artist}
                                     </button>
                                 ))}
                             </div>
@@ -553,6 +583,22 @@ export const Collections: React.FC = () => {
                                             className={`p-3 border rounded-sm text-xs font-mono uppercase tracking-widest transition-all ${activeCategory === cat ? 'bg-tangerine text-void border-tangerine font-bold' : 'border-pearl/20 text-warm-gray'}`}
                                         >
                                             {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Mobile Artist */}
+                            <div>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Artist</h3>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {artists.map(artist => (
+                                        <button
+                                            key={artist}
+                                            onClick={() => setActiveArtist(artist)}
+                                            className={`p-3 border rounded-sm text-xs font-mono uppercase tracking-widest transition-all ${activeArtist === artist ? 'bg-tangerine text-void border-tangerine font-bold' : 'border-pearl/20 text-warm-gray'}`}
+                                        >
+                                            {artist}
                                         </button>
                                     ))}
                                 </div>

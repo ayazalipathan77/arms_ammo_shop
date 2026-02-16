@@ -21,6 +21,18 @@ const transporter = !env.RESEND_API_KEY && env.SMTP_USER ? nodemailer.createTran
     debug: env.NODE_ENV === 'development',
 }) : null;
 
+// Log email service status on startup
+if (resend) {
+    console.log(`📧 Email service: Resend (from: ${env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'})`);
+    if (!env.RESEND_FROM_EMAIL) {
+        console.warn('⚠️  Using onboarding@resend.dev — emails will ONLY deliver to your Resend account email. Set RESEND_FROM_EMAIL to a verified domain address for production use.');
+    }
+} else if (transporter) {
+    console.log(`📧 Email service: SMTP (${env.SMTP_HOST}:${env.SMTP_PORT})`);
+} else {
+    console.warn('⚠️  No email service configured. Set RESEND_API_KEY or SMTP_USER/SMTP_PASS.');
+}
+
 export const sendEmail = async (to: string, subject: string, html: string) => {
     try {
         // In development, always log email details to console
@@ -38,9 +50,10 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 
         // Prefer Resend HTTP API (more reliable with hosting providers like Render)
         if (resend) {
-            console.log('📧 Sending email via Resend HTTP API...');
+            const fromEmail = env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+            console.log(`📧 Sending email via Resend HTTP API to: ${to}, from: ${fromEmail}`);
             const { data, error } = await resend.emails.send({
-                from: 'Muraqqa Art Gallery <onboarding@resend.dev>',
+                from: `Muraqqa Art Gallery <${fromEmail}>`,
                 to: [to],
                 subject,
                 html,

@@ -125,10 +125,11 @@ export const ExhibitionDetail = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-void/40 to-transparent" />
 
                 {/* Back Link - overlaid */}
-                <Link to="/exhibitions" className="absolute top-28 left-6 md:left-12 z-20 text-pearl/70 hover:text-tangerine flex items-center gap-2 group/back">
-                    <ArrowLeft size={18} className="group-hover/back:-translate-x-1 transition-transform" />
-                    <span className="uppercase tracking-widest text-xs font-mono">Back</span>
-                </Link>
+                <div className="absolute top-28 left-6 md:left-12 z-20 pointer-events-none">
+                    <Link to="/exhibitions" className="inline-flex items-center gap-2 text-pearl hover:text-tangerine uppercase tracking-widest text-xs pointer-events-auto transition-colors bg-void/50 backdrop-blur-md border border-pearl/10 px-4 py-2 rounded-full font-bold">
+                        <ArrowLeft size={14} /> Back to Exhibitions
+                    </Link>
+                </div>
 
                 {/* Status Badge */}
                 <div className="absolute top-28 right-6 md:right-12 z-20">
