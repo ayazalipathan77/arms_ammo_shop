@@ -40,7 +40,7 @@ const CheckoutForm: React.FC<{
         const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                return_url: `${window.location.origin}/#/cart?payment=success`,
+                return_url: `${window.location.origin}/cart?payment=success`,
             },
             redirect: 'if_required',
         });

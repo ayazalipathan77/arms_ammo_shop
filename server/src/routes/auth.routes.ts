@@ -66,7 +66,7 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
     router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
     router.get(
         '/google/callback',
-        passport.authenticate('google', { session: false, failureRedirect: '/#/auth?error=google_failed' }),
+        passport.authenticate('google', { session: false, failureRedirect: '/auth?error=google_failed' }),
         googleCallback
     );
 }
@@ -76,7 +76,7 @@ if (env.FACEBOOK_APP_ID && env.FACEBOOK_APP_SECRET) {
     router.get('/facebook', passport.authenticate('facebook', { scope: ['email'], session: false }));
     router.get(
         '/facebook/callback',
-        passport.authenticate('facebook', { session: false, failureRedirect: '/#/auth?error=facebook_failed' }),
+        passport.authenticate('facebook', { session: false, failureRedirect: '/auth?error=facebook_failed' }),
         facebookCallback
     );
 }
