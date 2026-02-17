@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGallery } from '../context/GalleryContext';
+import { useShop } from '../context/ShopContext';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowRight, Layers, Search, Filter, X, ChevronDown, AlertCircle } from 'lucide-react';
-import ArtworkCard from '../components/ui/ArtworkCard';
+import ProductCard from '../components/ui/ProductCard';
 import Button from '../components/ui/Button';
 
 export const Collections: React.FC = () => {
-    const { artworks } = useGallery();
+    const { products: artworks } = useShop();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -29,12 +29,12 @@ export const Collections: React.FC = () => {
     }, [artworks]);
 
     const artists = useMemo(() => {
-        const arts = [...new Set(artworks.map(a => a.artistName).filter(Boolean))].sort();
+        const arts = [...new Set(artworks.map(a => a.manufacturerName).filter(Boolean))].sort();
         return ['All', ...arts];
     }, [artworks]);
 
     const mediums = useMemo(() => {
-        const meds = [...new Set(artworks.map(a => a.medium).filter(Boolean))].sort();
+        const meds = [...new Set(artworks.map(a => a.type).filter(Boolean))].sort();
         return ['All', ...meds];
     }, [artworks]);
 
@@ -155,10 +155,10 @@ export const Collections: React.FC = () => {
             if (activeCategory !== 'All' && art.category !== activeCategory) return false;
 
             // Artist Filter
-            if (activeArtist !== 'All' && art.artistName !== activeArtist) return false;
+            if (activeArtist !== 'All' && art.manufacturerName !== activeArtist) return false;
 
             // Medium Filter
-            if (activeMedium !== 'All' && art.medium !== activeMedium) return false;
+            if (activeMedium !== 'All' && art.type !== activeMedium) return false;
 
             // Availability Filter
             if (availability === 'available' && !art.inStock) return false;
@@ -174,9 +174,9 @@ export const Collections: React.FC = () => {
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
                 const matchTitle = art.title.toLowerCase().includes(query);
-                const matchArtist = art.artistName.toLowerCase().includes(query);
+                const matchArtist = art.manufacturerName.toLowerCase().includes(query);
                 const matchDesc = art.description?.toLowerCase().includes(query);
-                const matchMedium = art.medium?.toLowerCase().includes(query);
+                const matchMedium = art.type?.toLowerCase().includes(query);
                 if (!matchTitle && !matchArtist && !matchDesc && !matchMedium) return false;
             }
 
@@ -345,7 +345,7 @@ export const Collections: React.FC = () => {
 
                         {/* Artist */}
                         <div>
-                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Artist</h3>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Brand</h3>
                             <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
                                 {artists.map(artist => (
                                     <button
@@ -361,7 +361,7 @@ export const Collections: React.FC = () => {
 
                         {/* Medium */}
                         <div>
-                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Medium</h3>
+                            <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Type</h3>
                             <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
                                 {mediums.map(med => (
                                     <button
@@ -461,7 +461,7 @@ export const Collections: React.FC = () => {
                                             exit={{ opacity: 0, scale: 0.9 }}
                                             transition={{ duration: 0.3 }}
                                         >
-                                            <ArtworkCard artwork={art} />
+                                            <ProductCard product={art} />
                                         </motion.div>
                                     ))}
                                 </AnimatePresence>
@@ -590,7 +590,7 @@ export const Collections: React.FC = () => {
 
                             {/* Mobile Artist */}
                             <div>
-                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Artist</h3>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Brand</h3>
                                 <div className="grid grid-cols-2 gap-2">
                                     {artists.map(artist => (
                                         <button
@@ -606,7 +606,7 @@ export const Collections: React.FC = () => {
 
                             {/* Mobile Medium */}
                             <div>
-                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Medium</h3>
+                                <h3 className="text-tangerine font-mono text-xs uppercase tracking-widest mb-2 font-bold">Type</h3>
                                 <div className="grid grid-cols-2 gap-2">
                                     {mediums.map(med => (
                                         <button

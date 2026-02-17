@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import Hero from '../components/features/Hero';
-import ArtworkCard from '../components/ui/ArtworkCard';
+import ProductCard from '../components/ui/ProductCard';
 import Button from '../components/ui/Button';
 import { artworkApi, transformArtwork } from '../services/api';
-import { Artwork } from '../types';
-import { useGallery } from '../context/GalleryContext';
+import { Product } from '../types';
+import { useShop } from '../context/ShopContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Star, Crown, Calendar, MapPin } from 'lucide-react';
 
 const Home = () => {
-  const { landingPageContent, artworks: allArtworks, exhibitions } = useGallery();
-  const [latestArtworks, setLatestArtworks] = useState<Artwork[]>([]);
+  const { landingPageContent, products: allArtworks, collections: exhibitions } = useShop();
+  const [latestArtworks, setLatestArtworks] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Carousel State
@@ -33,6 +33,7 @@ const Home = () => {
 
       try {
         const response = await artworkApi.getAll({ limit: 9 });
+        // @ts-ignore - Temporary ignore for type mismatch during refactor if transformArtwork returns Product
         const transformed = response.artworks.map(transformArtwork);
         setLatestArtworks(transformed); // API usually returns newest first? If not we reverse.
       } catch (error) {
@@ -55,8 +56,8 @@ const Home = () => {
   const curatorsConfig = landingPageContent?.curatedCollections;
   const curatedArtworks = curatorsConfig?.enabled
     ? allArtworks.filter(art =>
-        curatorsConfig.collections.some(col => col.artworkIds.includes(art.id))
-      )
+      curatorsConfig.collections.some(col => col.artworkIds.includes(art.id))
+    )
     : [];
 
   // Carousel Logic
@@ -128,7 +129,7 @@ const Home = () => {
                   {latestArtworks
                     .slice(currentSlide * ITEMS_PER_SLIDE, (currentSlide + 1) * ITEMS_PER_SLIDE)
                     .map((art) => (
-                      <ArtworkCard key={art.id} artwork={art} />
+                      <ProductCard key={art.id} product={art} />
                     ))
                   }
                 </motion.div>
@@ -183,7 +184,7 @@ const Home = () => {
                     {idx + 1}
                   </div>
                   {/* Using Standard ArtworkCard for consistency */}
-                  <ArtworkCard artwork={artwork} />
+                  <ProductCard product={artwork} />
                 </motion.div>
               ))}
             </div>
@@ -221,7 +222,7 @@ const Home = () => {
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1 }}
                 >
-                  <ArtworkCard artwork={artwork} />
+                  <ProductCard product={artwork} />
                 </motion.div>
               ))}
             </div>

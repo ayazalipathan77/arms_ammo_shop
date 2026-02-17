@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGallery } from '../context/GalleryContext';
+import { useShop } from '../context/ShopContext';
 import { Play, X, Mic, Image, ArrowRight, Quote } from 'lucide-react';
 import { Conversation } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +8,7 @@ import Button from '../components/ui/Button';
 type CategoryFilter = 'ALL' | 'INTERVIEWS' | 'CLIENT_STORIES';
 
 export const Conversations: React.FC = () => {
-   const { conversations } = useGallery();
+   const { conversations } = useShop();
    const [activeVideo, setActiveVideo] = useState<Conversation | null>(null);
    const [filter, setFilter] = useState<CategoryFilter>('ALL');
 
@@ -52,29 +52,29 @@ export const Conversations: React.FC = () => {
 
                   {/* Filter Tabs */}
                   <div className="flex flex-wrap gap-2">
-               {[
-                  { key: 'ALL', label: 'All Stories' },
-                  { key: 'INTERVIEWS', label: 'Interviews' },
-                  { key: 'CLIENT_STORIES', label: 'Client Stories' }
-               ].map((tab) => (
-                  <button
-                     key={tab.key}
-                     onClick={() => setFilter(tab.key as CategoryFilter)}
-                     className={`px-6 py-2 text-xs font-display font-bold uppercase tracking-widest transition-all duration-300 border ${filter === tab.key
-                        ? 'bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black'
-                        : 'text-warm-gray border-warm-gray/30 hover:border-tangerine hover:text-tangerine bg-transparent high-contrast:text-black high-contrast:border-black/50'
-                        }`}
-                  >
-                     {tab.label}
-                  </button>
-                ))}
-             </div>
-             </div>
-           </motion.div>
+                     {[
+                        { key: 'ALL', label: 'All Stories' },
+                        { key: 'INTERVIEWS', label: 'Interviews' },
+                        { key: 'CLIENT_STORIES', label: 'Client Stories' }
+                     ].map((tab) => (
+                        <button
+                           key={tab.key}
+                           onClick={() => setFilter(tab.key as CategoryFilter)}
+                           className={`px-6 py-2 text-xs font-display font-bold uppercase tracking-widest transition-all duration-300 border ${filter === tab.key
+                              ? 'bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black'
+                              : 'text-warm-gray border-warm-gray/30 hover:border-tangerine hover:text-tangerine bg-transparent high-contrast:text-black high-contrast:border-black/50'
+                              }`}
+                        >
+                           {tab.label}
+                        </button>
+                     ))}
+                  </div>
+               </div>
+            </motion.div>
 
             {/* Content Section */}
-           {/* Featured Story */}
-             <AnimatePresence mode="wait">
+            {/* Featured Story */}
+            <AnimatePresence mode="wait">
                {featured && (
                   <motion.div
                      key={featured.id}
@@ -212,11 +212,11 @@ export const Conversations: React.FC = () => {
                            <img src={activeVideo.thumbnailUrl} className="w-full h-full object-contain" alt="" />
                         )}
                      </div>
-                   </motion.div>
-                 )}
-                </AnimatePresence>
-            </div>
+                  </motion.div>
+               )}
+            </AnimatePresence>
          </div>
-      );
-   };
+      </div>
+   );
+};
 

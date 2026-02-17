@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import Button from '../ui/Button';
-import { useGallery } from '../../context/GalleryContext';
+import { useShop } from '../../context/ShopContext';
 
 // Default Fallback Images
 const DEFAULT_BANNERS = [
@@ -27,7 +27,7 @@ const DEFAULT_BANNERS = [
 ];
 
 const Hero = () => {
-    const { landingPageContent, isContentLoading } = useGallery();
+    const { landingPageContent, isContentLoading } = useShop();
     const [current, setCurrent] = useState(0);
 
     // Determine content source

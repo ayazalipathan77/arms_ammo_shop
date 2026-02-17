@@ -5,10 +5,10 @@ import {
    Video, Globe, MessageSquare, Save, Facebook, Instagram, Image as ImageIcon, Calendar,
    UserCheck, UserX, Clock, Mail, Shield, AlertCircle, Loader2, Palette, Type, Upload
 } from 'lucide-react';
-import { useGallery } from '../context/GalleryContext';
+import { useShop } from '../context/ShopContext';
 import { useTheme, PRESET_THEMES, ThemeConfig } from '../context/ThemeContext';
-import { OrderStatus, Artwork, Conversation, PrintSizeOption } from '../types';
-import { uploadApi, adminApi, artistApi, reviewApi, settingsApi, artworkApi, transformArtwork } from '../services/api';
+import { OrderStatus, Product, Conversation } from '../types';
+import { uploadApi, adminApi, artistApi as manufacturerApi, reviewApi, settingsApi, artworkApi as productApi, transformArtwork as transformProduct } from '../services/api';
 import Button from '../components/ui/Button';
 import StarRating from '../components/ui/StarRating';
 import { cn } from '../lib/utils';
@@ -16,19 +16,19 @@ import { format } from 'date-fns';
 
 // Helper to get CSRF token from cookies
 const getCsrfToken = (): string | null => {
-    const match = document.cookie.match(new RegExp('(^| )XSRF-TOKEN=([^;]+)'));
-    return match ? match[2] : null;
+   const match = document.cookie.match(new RegExp('(^| )XSRF-TOKEN=([^;]+)'));
+   return match ? match[2] : null;
 };
 
 const ORDER_STATUSES = ['PENDING', 'PAID', 'AWAITING_CONFIRMATION', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
 
 export const AdminDashboard: React.FC = () => {
    const {
-      artworks, orders, shippingConfig, stripeConnected, conversations, siteContent, exhibitions,
-      addArtwork, updateArtwork, deleteArtwork, updateOrderStatus, updateShippingConfig, connectStripe,
-      addConversation, deleteConversation, updateSiteContent, addExhibition, updateExhibition, deleteExhibition,
-      landingPageContent, updateLandingPageContent, fetchArtworks, availableCategories
-   } = useGallery();
+      products: artworks, orders, shippingConfig, stripeConnected, conversations, siteContent, collections: exhibitions,
+      addProduct: addArtwork, updateProduct: updateArtwork, deleteProduct: deleteArtwork, updateOrderStatus, updateShippingConfig, connectStripe,
+      addConversation, deleteConversation, updateSiteContent, addCollection: addExhibition, updateCollection: updateExhibition, deleteCollection: deleteExhibition,
+      landingPageContent, updateLandingPageContent, fetchProducts: fetchArtworks, availableCategories
+   } = useShop();
 
    const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
 
@@ -99,9 +99,9 @@ export const AdminDashboard: React.FC = () => {
    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
    const [editingArtworkId, setEditingArtworkId] = useState<string | null>(null);
    const [newArtwork, setNewArtwork] = useState<any>({
-      title: '', artistId: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
-      year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: '',
-      printOptions: { enabled: false, sizes: [] }
+      title: '', manufacturerId: '', manufacturerName: '', price: 0, category: 'Pistol', type: 'FIREARM', inStock: true,
+      year: new Date().getFullYear(), description: '', imageUrl: '',
+      caliber: '', action: '', capacity: '', barrelLength: '', weight: ''
    });
 
    // Local State for Conversations
@@ -207,8 +207,8 @@ export const AdminDashboard: React.FC = () => {
          if (inventoryCategory !== 'ALL') filters.category = inventoryCategory;
          if (inventoryStock === 'IN_STOCK') filters.inStock = true;
          if (inventoryStock === 'SOLD_OUT') filters.inStock = false;
-         const data = await artworkApi.getAll(filters);
-         setInventoryArtworks(data.artworks.map(transformArtwork));
+         const data = await productApi.getAll(filters);
+         setInventoryArtworks(data.artworks.map(transformProduct));
          setInventoryPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
          if ((data as any).counts) setInventoryCounts((data as any).counts);
       } catch (err) {
@@ -361,7 +361,7 @@ export const AdminDashboard: React.FC = () => {
 
    const loadArtists = async () => {
       try {
-         const data = await artistApi.getAll();
+         const data = await manufacturerApi.getAll();
          setArtists(data.artists);
       } catch (err) {
          console.error('Failed to load artists', err);
@@ -384,20 +384,20 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
-    const handleApproveArtist = async (userId: string, force: boolean = false) => {
-       setApprovingId(userId);
-       try {
-          const token = localStorage.getItem('authToken');
-          const csrfToken = getCsrfToken();
-          const forceParam = force ? '?force=true' : '';
-          const response = await fetch(`${API_URL}/admin/artists/${userId}/approve${forceParam}`, {
-             method: 'PUT',
-             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                ...(csrfToken && { 'X-XSRF-TOKEN': csrfToken })
-             }
-          });
+   const handleApproveArtist = async (userId: string, force: boolean = false) => {
+      setApprovingId(userId);
+      try {
+         const token = localStorage.getItem('authToken');
+         const csrfToken = getCsrfToken();
+         const forceParam = force ? '?force=true' : '';
+         const response = await fetch(`${API_URL}/admin/artists/${userId}/approve${forceParam}`, {
+            method: 'PUT',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json',
+               ...(csrfToken && { 'X-XSRF-TOKEN': csrfToken })
+            }
+         });
 
          if (response.ok) {
             loadPendingArtists();
@@ -421,20 +421,20 @@ export const AdminDashboard: React.FC = () => {
       }
    };
 
-    const handleRejectArtist = async (userId: string, deleteAccount: boolean = false) => {
-       setRejectingId(userId);
-       try {
-          const token = localStorage.getItem('authToken');
-          const csrfToken = getCsrfToken();
-          const response = await fetch(`${API_URL}/admin/artists/${userId}/reject`, {
-             method: 'PUT',
-             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                ...(csrfToken && { 'X-XSRF-TOKEN': csrfToken })
-             },
-             body: JSON.stringify({ reason: rejectReason, deleteAccount })
-          });
+   const handleRejectArtist = async (userId: string, deleteAccount: boolean = false) => {
+      setRejectingId(userId);
+      try {
+         const token = localStorage.getItem('authToken');
+         const csrfToken = getCsrfToken();
+         const response = await fetch(`${API_URL}/admin/artists/${userId}/reject`, {
+            method: 'PUT',
+            headers: {
+               'Authorization': `Bearer ${token}`,
+               'Content-Type': 'application/json',
+               ...(csrfToken && { 'X-XSRF-TOKEN': csrfToken })
+            },
+            body: JSON.stringify({ reason: rejectReason, deleteAccount })
+         });
 
          if (response.ok) {
             setShowRejectModal(null);
@@ -624,8 +624,8 @@ export const AdminDashboard: React.FC = () => {
          alert('Please fill in Title and Price');
          return;
       }
-      if (!editingArtworkId && !newArtwork.artistId) {
-         alert('Please select an artist');
+      if (!editingArtworkId && !newArtwork.manufacturerId) {
+         alert('Please select a manufacturer');
          return;
       }
       try {
@@ -633,29 +633,32 @@ export const AdminDashboard: React.FC = () => {
             title: newArtwork.title,
             description: newArtwork.description || '',
             price: Number(newArtwork.price),
-            category: newArtwork.category || 'Abstract',
-            medium: newArtwork.medium || 'Mixed Media',
-            dimensions: newArtwork.dimensions || '24x24',
+            category: newArtwork.category || 'Pistol',
+            type: newArtwork.type || 'FIREARM',
             imageUrl: newArtwork.imageUrl || `https://picsum.photos/800/800?random=${Date.now()}`,
             year: newArtwork.year || new Date().getFullYear(),
             inStock: newArtwork.inStock ?? true,
-            printOptions: newArtwork.printOptions || null,
+            manufacturerId: newArtwork.manufacturerId,
+            manufacturerName: newArtwork.manufacturerName,
+            caliber: newArtwork.caliber,
+            action: newArtwork.action,
+            capacity: newArtwork.capacity,
+            barrelLength: newArtwork.barrelLength,
+            weight: newArtwork.weight,
          };
 
          if (editingArtworkId) {
             await updateArtwork(editingArtworkId, artData);
          } else {
-            artData.artistId = newArtwork.artistId;
-            artData.artistName = newArtwork.artistName;
             await addArtwork(artData);
          }
 
          setIsAddModalOpen(false);
          setEditingArtworkId(null);
          setNewArtwork({
-            title: '', artistId: '', artistName: '', price: 0, category: 'Abstract', medium: '', inStock: true,
-            year: new Date().getFullYear(), dimensions: '', description: '', imageUrl: '',
-            printOptions: { enabled: false, sizes: [] }
+            title: '', manufacturerId: '', manufacturerName: '', price: 0, category: 'Pistol', type: 'FIREARM', inStock: true,
+            year: new Date().getFullYear(), description: '', imageUrl: '',
+            caliber: '', action: '', capacity: '', barrelLength: '', weight: ''
          });
          // Reload inventory grid
          if (activeTab === 'INVENTORY') loadInventory(inventoryPagination.page);
@@ -669,17 +672,20 @@ export const AdminDashboard: React.FC = () => {
       setEditingArtworkId(art.id);
       setNewArtwork({
          title: art.title,
-         artistId: art.artistId,
-         artistName: art.artistName,
+         manufacturerId: art.manufacturerId,
+         manufacturerName: art.manufacturerName,
          price: art.price,
          category: art.category,
-         medium: art.medium,
+         type: art.type || 'FIREARM',
          inStock: art.inStock,
          year: art.year,
-         dimensions: art.dimensions,
          description: art.description,
          imageUrl: art.imageUrl,
-         printOptions: art.printOptions || { enabled: false, sizes: [] }
+         caliber: art.caliber,
+         action: art.action,
+         capacity: art.capacity,
+         barrelLength: art.barrelLength,
+         weight: art.weight
       });
       setIsAddModalOpen(true);
    };
@@ -883,7 +889,7 @@ export const AdminDashboard: React.FC = () => {
          className={`px-4 py-2 border text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${active
             ? 'border-tangerine text-tangerine bg-tangerine/10'
             : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
-         }`}
+            }`}
       >
          {tab}
       </button>
@@ -986,7 +992,7 @@ export const AdminDashboard: React.FC = () => {
                         className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${inventoryCategory === cat
                            ? 'border-tangerine text-tangerine bg-tangerine/10'
                            : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
-                        }`}
+                           }`}
                      >
                         {cat}
                      </button>
@@ -999,7 +1005,7 @@ export const AdminDashboard: React.FC = () => {
                         className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${inventoryStock === st
                            ? 'border-tangerine text-tangerine bg-tangerine/10'
                            : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
-                        }`}
+                           }`}
                      >
                         {st === 'ALL' ? 'All Stock' : st === 'IN_STOCK' ? 'In Stock' : 'Sold Out'}
                         {inventoryCounts[st] !== undefined && <span className="ml-1 opacity-60">({inventoryCounts[st]})</span>}
@@ -1015,65 +1021,65 @@ export const AdminDashboard: React.FC = () => {
                         <span className="ml-3 text-warm-gray text-sm">Loading artworks...</span>
                      </div>
                   ) : (
-                  <table className="w-full text-left text-sm">
-                     <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
-                        <tr>
-                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('title')}>
-                              <span className="flex items-center gap-1">Artwork {inventorySortField === 'title' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
-                           </th>
-                           <th className="p-4">Artist</th>
-                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('price')}>
-                              <span className="flex items-center gap-1">Price {inventorySortField === 'price' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
-                           </th>
-                           <th className="p-4">Status</th>
-                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('createdAt')}>
-                              <span className="flex items-center gap-1">Added {inventorySortField === 'createdAt' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
-                           </th>
-                           <th className="p-4">Actions</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-pearl/5">
-                        {inventoryArtworks.map((art: any) => (
-                           <tr key={art.id} className="hover:bg-pearl/5 transition-colors">
-                              <td className="p-4">
-                                 <div className="flex items-center gap-3">
-                                    <img src={art.imageUrl} className="w-10 h-10 object-cover border border-pearl/20 cursor-pointer hover:border-tangerine transition-colors" alt="" onClick={e => { e.stopPropagation(); setPreviewImage(art.imageUrl); }} />
-                                    <div>
-                                       <span className="text-pearl font-medium">{art.title}</span>
-                                       <div className="text-xs text-warm-gray">{art.category}</div>
-                                    </div>
-                                 </div>
-                              </td>
-                              <td className="p-4 text-warm-gray">{art.artistName}</td>
-                              <td className="p-4 text-tangerine font-mono">{convertPrice(art.price)}</td>
-                              <td className="p-4">
-                                 <button
-                                    onClick={() => { updateArtwork(art.id, { inStock: !art.inStock }); setTimeout(() => loadInventory(inventoryPagination.page), 500); }}
-                                    className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${art.inStock ? 'border-green-500/30 text-green-400 bg-green-500/10' : 'border-red-500/30 text-red-400 bg-red-500/10'}`}
-                                 >
-                                    {art.inStock ? 'In Stock' : 'Sold Out'}
-                                 </button>
-                              </td>
-                              <td className="p-4 text-warm-gray text-xs font-mono">
-                                 {art.createdAt ? format(new Date(art.createdAt), 'MMM d, yyyy') : '-'}
-                              </td>
-                              <td className="p-4">
-                                 <div className="flex gap-2">
-                                    <button onClick={() => handleEditArtwork(art)} className="text-warm-gray hover:text-tangerine transition-colors">
-                                       <Edit size={16} />
-                                    </button>
-                                    <button onClick={() => { deleteArtwork(art.id); setTimeout(() => loadInventory(inventoryPagination.page), 500); }} className="text-warm-gray hover:text-tangerine transition-colors">
-                                       <Trash2 size={16} />
-                                    </button>
-                                 </div>
-                              </td>
+                     <table className="w-full text-left text-sm">
+                        <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
+                           <tr>
+                              <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('title')}>
+                                 <span className="flex items-center gap-1">Artwork {inventorySortField === 'title' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
+                              </th>
+                              <th className="p-4">Manufacturer</th>
+                              <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('price')}>
+                                 <span className="flex items-center gap-1">Price {inventorySortField === 'price' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
+                              </th>
+                              <th className="p-4">Status</th>
+                              <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleInventorySort('createdAt')}>
+                                 <span className="flex items-center gap-1">Added {inventorySortField === 'createdAt' && (inventorySortDir === 'asc' ? '↑' : '↓')}</span>
+                              </th>
+                              <th className="p-4">Actions</th>
                            </tr>
-                        ))}
-                        {inventoryArtworks.length === 0 && (
-                           <tr><td colSpan={6} className="p-8 text-center text-warm-gray">No artworks found</td></tr>
-                        )}
-                     </tbody>
-                  </table>
+                        </thead>
+                        <tbody className="divide-y divide-pearl/5">
+                           {inventoryArtworks.map((art: any) => (
+                              <tr key={art.id} className="hover:bg-pearl/5 transition-colors">
+                                 <td className="p-4">
+                                    <div className="flex items-center gap-3">
+                                       <img src={art.imageUrl} className="w-10 h-10 object-cover border border-pearl/20 cursor-pointer hover:border-tangerine transition-colors" alt="" onClick={e => { e.stopPropagation(); setPreviewImage(art.imageUrl); }} />
+                                       <div>
+                                          <span className="text-pearl font-medium">{art.title}</span>
+                                          <div className="text-xs text-warm-gray">{art.category}</div>
+                                       </div>
+                                    </div>
+                                 </td>
+                                 <td className="p-4 text-warm-gray">{art.manufacturerName}</td>
+                                 <td className="p-4 text-tangerine font-mono">{convertPrice(art.price)}</td>
+                                 <td className="p-4">
+                                    <button
+                                       onClick={() => { updateArtwork(art.id, { inStock: !art.inStock }); setTimeout(() => loadInventory(inventoryPagination.page), 500); }}
+                                       className={`px-3 py-1 text-[10px] font-bold uppercase tracking-widest border ${art.inStock ? 'border-green-500/30 text-green-400 bg-green-500/10' : 'border-red-500/30 text-red-400 bg-red-500/10'}`}
+                                    >
+                                       {art.inStock ? 'In Stock' : 'Sold Out'}
+                                    </button>
+                                 </td>
+                                 <td className="p-4 text-warm-gray text-xs font-mono">
+                                    {art.createdAt ? format(new Date(art.createdAt), 'MMM d, yyyy') : '-'}
+                                 </td>
+                                 <td className="p-4">
+                                    <div className="flex gap-2">
+                                       <button onClick={() => handleEditArtwork(art)} className="text-warm-gray hover:text-tangerine transition-colors">
+                                          <Edit size={16} />
+                                       </button>
+                                       <button onClick={() => { deleteArtwork(art.id); setTimeout(() => loadInventory(inventoryPagination.page), 500); }} className="text-warm-gray hover:text-tangerine transition-colors">
+                                          <Trash2 size={16} />
+                                       </button>
+                                    </div>
+                                 </td>
+                              </tr>
+                           ))}
+                           {inventoryArtworks.length === 0 && (
+                              <tr><td colSpan={6} className="p-8 text-center text-warm-gray">No artworks found</td></tr>
+                           )}
+                        </tbody>
+                     </table>
                   )}
 
                   {/* Pagination */}
@@ -1136,7 +1142,7 @@ export const AdminDashboard: React.FC = () => {
                         className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${orderStatusFilter === s
                            ? 'border-tangerine text-tangerine bg-tangerine/10'
                            : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
-                        }`}
+                           }`}
                      >
                         {s === 'ALL' ? 'All' : getOrderStatusLabel(s)}
                         {orderCounts[s] !== undefined && <span className="ml-1 opacity-60">({orderCounts[s]})</span>}
@@ -1360,11 +1366,10 @@ export const AdminDashboard: React.FC = () => {
                                           <div className={`absolute left-[-17px] top-3 w-px h-full ${event.date ? (event.isError ? 'bg-red-500/30' : 'bg-tangerine/30') : 'bg-pearl/10'}`} />
                                        )}
                                        {/* Dot */}
-                                       <div className={`absolute left-[-20px] top-1.5 w-[7px] h-[7px] rounded-full border ${
-                                          event.date
-                                             ? event.isError ? 'bg-red-500 border-red-500' : 'bg-tangerine border-tangerine'
-                                             : 'bg-charcoal border-pearl/30'
-                                       }`} />
+                                       <div className={`absolute left-[-20px] top-1.5 w-[7px] h-[7px] rounded-full border ${event.date
+                                          ? event.isError ? 'bg-red-500 border-red-500' : 'bg-tangerine border-tangerine'
+                                          : 'bg-charcoal border-pearl/30'
+                                          }`} />
                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                                           <span className={`text-xs font-medium ${event.date ? (event.isError ? 'text-red-400' : 'text-pearl') : 'text-warm-gray/40'}`}>
                                              {event.label}
@@ -1704,7 +1709,7 @@ export const AdminDashboard: React.FC = () => {
                            className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${userSubTab === sub
                               ? 'border-tangerine text-tangerine bg-tangerine/10'
                               : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
-                           }`}
+                              }`}
                         >
                            {sub} <span className="ml-1 opacity-60">({countMap[sub]})</span>
                         </button>
@@ -1731,88 +1736,88 @@ export const AdminDashboard: React.FC = () => {
                         <span className="ml-3 text-warm-gray text-sm">Loading users...</span>
                      </div>
                   ) : (
-                  <table className="w-full text-left text-sm">
-                     <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
-                        <tr>
-                           <th className="p-4">User</th>
-                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleSort('role')}>
-                              <span className="flex items-center gap-1">Role {userSortField === 'role' && (userSortDir === 'asc' ? '↑' : '↓')}</span>
-                           </th>
-                           <th className="p-4">Status</th>
-                           <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleSort('createdAt')}>
-                              <span className="flex items-center gap-1">Joined {userSortField === 'createdAt' && (userSortDir === 'asc' ? '↑' : '↓')}</span>
-                           </th>
-                           <th className="p-4">Actions</th>
-                        </tr>
-                     </thead>
-                     <tbody className="divide-y divide-pearl/5">
-                        {(userSubTab === 'PENDING' ? pendingArtists : sortedUsers).map((u: any) => (
-                           <tr key={u.id} className="hover:bg-pearl/5 transition-colors">
-                              <td className="p-4">
-                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-warm-gray/20 rounded-full flex items-center justify-center text-xs font-bold text-pearl">
-                                       {u.fullName?.[0] || u.email[0]}
-                                    </div>
-                                    <div>
-                                       <div className="text-pearl font-medium">{u.fullName || 'Guest'}</div>
-                                       <div className="text-xs text-warm-gray">{u.email}</div>
-                                    </div>
-                                 </div>
-                              </td>
-                              <td className="p-4">
-                                 <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider border ${u.role === 'ADMIN' ? 'border-tangerine text-tangerine' : u.role === 'ARTIST' ? 'border-purple-400 text-purple-400' : 'border-warm-gray/50 text-warm-gray'}`}>
-                                    {u.role}
-                                 </span>
-                              </td>
-                              <td className="p-4">
-                                 {(userSubTab === 'PENDING' || (u.role === 'ARTIST' && !u.isApproved)) ? (
-                                    <span className="text-amber-500 text-xs font-bold uppercase tracking-wider">
-                                       {!u.isEmailVerified ? 'Unverified' : 'Pending Approval'}
-                                    </span>
-                                 ) : !u.isEmailVerified ? (
-                                    <span className="text-warm-gray text-xs font-bold uppercase tracking-wider">Unverified</span>
-                                 ) : (
-                                    <span className="text-green-500 text-xs font-bold uppercase tracking-wider">Active</span>
-                                 )}
-                              </td>
-                              <td className="p-4 text-warm-gray font-mono text-xs">
-                                 {u.createdAt ? format(new Date(u.createdAt), 'MMM d, yyyy') : '-'}
-                              </td>
-                              <td className="p-4">
-                                 {(userSubTab === 'PENDING' || (u.role === 'ARTIST' && !u.isApproved)) ? (
-                                    <div className="flex gap-2">
-                                       <button onClick={() => handleApproveArtist(u.id)} disabled={approvingId === u.id} className="p-2 border border-green-500/30 text-green-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors disabled:opacity-50" title="Approve Artist">
-                                          {approvingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                                       </button>
-                                       <button onClick={() => handleRejectArtist(u.id)} disabled={rejectingId === u.id} className="p-2 border border-red-500/30 text-red-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors disabled:opacity-50" title="Reject Artist">
-                                          {rejectingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
-                                       </button>
-                                    </div>
-                                 ) : (
-                                    <div className="flex gap-2">
-                                       {u.role === 'USER' && (
-                                          <button onClick={() => handleUpdateUserRole(u.id, 'ARTIST')} className="p-2 border border-purple-500/30 text-purple-400 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Promote to Artist">
-                                             <Palette size={16} />
-                                          </button>
-                                       )}
-                                       {u.role === 'ARTIST' && u.isApproved && (
-                                          <button onClick={() => handleUpdateUserRole(u.id, 'USER')} className="p-2 border border-warm-gray/30 text-warm-gray hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Demote to User">
-                                             <UserX size={16} />
-                                          </button>
-                                       )}
-                                       <button onClick={() => handleDeleteUser(u.id, u.fullName || u.email)} className="p-2 border border-red-500/30 text-red-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Delete User">
-                                          <Trash2 size={16} />
-                                       </button>
-                                    </div>
-                                 )}
-                              </td>
+                     <table className="w-full text-left text-sm">
+                        <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
+                           <tr>
+                              <th className="p-4">User</th>
+                              <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleSort('role')}>
+                                 <span className="flex items-center gap-1">Role {userSortField === 'role' && (userSortDir === 'asc' ? '↑' : '↓')}</span>
+                              </th>
+                              <th className="p-4">Status</th>
+                              <th className="p-4 cursor-pointer hover:text-tangerine select-none" onClick={() => toggleSort('createdAt')}>
+                                 <span className="flex items-center gap-1">Joined {userSortField === 'createdAt' && (userSortDir === 'asc' ? '↑' : '↓')}</span>
+                              </th>
+                              <th className="p-4">Actions</th>
                            </tr>
-                        ))}
-                        {(userSubTab === 'PENDING' ? pendingArtists : sortedUsers).length === 0 && (
-                           <tr><td colSpan={5} className="p-8 text-center text-warm-gray">No users found</td></tr>
-                        )}
-                     </tbody>
-                  </table>
+                        </thead>
+                        <tbody className="divide-y divide-pearl/5">
+                           {(userSubTab === 'PENDING' ? pendingArtists : sortedUsers).map((u: any) => (
+                              <tr key={u.id} className="hover:bg-pearl/5 transition-colors">
+                                 <td className="p-4">
+                                    <div className="flex items-center gap-3">
+                                       <div className="w-8 h-8 bg-warm-gray/20 rounded-full flex items-center justify-center text-xs font-bold text-pearl">
+                                          {u.fullName?.[0] || u.email[0]}
+                                       </div>
+                                       <div>
+                                          <div className="text-pearl font-medium">{u.fullName || 'Guest'}</div>
+                                          <div className="text-xs text-warm-gray">{u.email}</div>
+                                       </div>
+                                    </div>
+                                 </td>
+                                 <td className="p-4">
+                                    <span className={`px-2 py-0.5 text-[10px] uppercase tracking-wider border ${u.role === 'ADMIN' ? 'border-tangerine text-tangerine' : u.role === 'ARTIST' ? 'border-purple-400 text-purple-400' : 'border-warm-gray/50 text-warm-gray'}`}>
+                                       {u.role}
+                                    </span>
+                                 </td>
+                                 <td className="p-4">
+                                    {(userSubTab === 'PENDING' || (u.role === 'ARTIST' && !u.isApproved)) ? (
+                                       <span className="text-amber-500 text-xs font-bold uppercase tracking-wider">
+                                          {!u.isEmailVerified ? 'Unverified' : 'Pending Approval'}
+                                       </span>
+                                    ) : !u.isEmailVerified ? (
+                                       <span className="text-warm-gray text-xs font-bold uppercase tracking-wider">Unverified</span>
+                                    ) : (
+                                       <span className="text-green-500 text-xs font-bold uppercase tracking-wider">Active</span>
+                                    )}
+                                 </td>
+                                 <td className="p-4 text-warm-gray font-mono text-xs">
+                                    {u.createdAt ? format(new Date(u.createdAt), 'MMM d, yyyy') : '-'}
+                                 </td>
+                                 <td className="p-4">
+                                    {(userSubTab === 'PENDING' || (u.role === 'ARTIST' && !u.isApproved)) ? (
+                                       <div className="flex gap-2">
+                                          <button onClick={() => handleApproveArtist(u.id)} disabled={approvingId === u.id} className="p-2 border border-green-500/30 text-green-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors disabled:opacity-50" title="Approve Artist">
+                                             {approvingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                                          </button>
+                                          <button onClick={() => handleRejectArtist(u.id)} disabled={rejectingId === u.id} className="p-2 border border-red-500/30 text-red-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors disabled:opacity-50" title="Reject Artist">
+                                             {rejectingId === u.id ? <Loader2 size={16} className="animate-spin" /> : <X size={16} />}
+                                          </button>
+                                       </div>
+                                    ) : (
+                                       <div className="flex gap-2">
+                                          {u.role === 'USER' && (
+                                             <button onClick={() => handleUpdateUserRole(u.id, 'ARTIST')} className="p-2 border border-purple-500/30 text-purple-400 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Promote to Artist">
+                                                <Palette size={16} />
+                                             </button>
+                                          )}
+                                          {u.role === 'ARTIST' && u.isApproved && (
+                                             <button onClick={() => handleUpdateUserRole(u.id, 'USER')} className="p-2 border border-warm-gray/30 text-warm-gray hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Demote to User">
+                                                <UserX size={16} />
+                                             </button>
+                                          )}
+                                          <button onClick={() => handleDeleteUser(u.id, u.fullName || u.email)} className="p-2 border border-red-500/30 text-red-500 hover:bg-tangerine/10 hover:text-tangerine hover:border-tangerine rounded transition-colors" title="Delete User">
+                                             <Trash2 size={16} />
+                                          </button>
+                                       </div>
+                                    )}
+                                 </td>
+                              </tr>
+                           ))}
+                           {(userSubTab === 'PENDING' ? pendingArtists : sortedUsers).length === 0 && (
+                              <tr><td colSpan={5} className="p-8 text-center text-warm-gray">No users found</td></tr>
+                           )}
+                        </tbody>
+                     </table>
                   )}
 
                   {/* Pagination */}
@@ -1862,7 +1867,7 @@ export const AdminDashboard: React.FC = () => {
                         className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${reviewFilter === status
                            ? 'border-tangerine text-tangerine bg-tangerine/10'
                            : 'border-pearl/10 text-warm-gray bg-charcoal/30 hover:bg-tangerine/10 hover:border-tangerine hover:text-tangerine'
-                        }`}
+                           }`}
                      >
                         {status}
                         {reviewCounts[status] !== undefined && <span className="ml-1 opacity-60">({reviewCounts[status]})</span>}
@@ -2033,79 +2038,79 @@ export const AdminDashboard: React.FC = () => {
                      <span className="ml-3 text-warm-gray text-sm">Loading referral data...</span>
                   </div>
                ) : (
-               <>
-                  {/* Stats Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                     <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
-                        <Users size={32} className="text-tangerine mx-auto mb-3" />
-                        <div className="text-3xl font-display text-pearl mb-1">{referralStats?.totalReferredUsers || 0}</div>
-                        <div className="text-xs text-warm-gray uppercase tracking-widest">Total Referrals</div>
-                     </div>
-                     <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
-                        <UserCheck size={32} className="text-tangerine mx-auto mb-3" />
-                        <div className="text-3xl font-display text-pearl mb-1">{referralStats?.totalReferrers || 0}</div>
-                        <div className="text-xs text-warm-gray uppercase tracking-widest">Active Referrers</div>
-                     </div>
-                     <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
-                        <DollarSign size={32} className="text-tangerine mx-auto mb-3" />
-                        <div className="text-3xl font-display text-pearl mb-1">{referralConfig.isEnabled ? `${referralConfig.rewardPercentage}%` : 'Off'}</div>
-                        <div className="text-xs text-warm-gray uppercase tracking-widest">Reward Rate</div>
-                     </div>
-                  </div>
-
-                  {/* Configuration Form */}
-                  <div className="bg-charcoal/30 border border-pearl/10 p-8 space-y-6">
-                     <h4 className="text-warm-gray text-xs uppercase tracking-widest">Program Settings</h4>
+                  <>
+                     {/* Stats Cards */}
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                           <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Reward Percentage (%)</label>
-                           <input type="number" min="0" max="100" value={referralConfig.rewardPercentage} onChange={(e) => setReferralConfig(c => ({ ...c, rewardPercentage: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                        <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
+                           <Users size={32} className="text-tangerine mx-auto mb-3" />
+                           <div className="text-3xl font-display text-pearl mb-1">{referralStats?.totalReferredUsers || 0}</div>
+                           <div className="text-xs text-warm-gray uppercase tracking-widest">Total Referrals</div>
                         </div>
-                        <div>
-                           <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Fixed Reward Amount (PKR)</label>
-                           <input type="number" min="0" value={referralConfig.rewardAmount} onChange={(e) => setReferralConfig(c => ({ ...c, rewardAmount: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                        <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
+                           <UserCheck size={32} className="text-tangerine mx-auto mb-3" />
+                           <div className="text-3xl font-display text-pearl mb-1">{referralStats?.totalReferrers || 0}</div>
+                           <div className="text-xs text-warm-gray uppercase tracking-widest">Active Referrers</div>
                         </div>
-                        <div>
-                           <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Max Rewards Per User</label>
-                           <input type="number" min="1" value={referralConfig.maxRewardsPerUser} onChange={(e) => setReferralConfig(c => ({ ...c, maxRewardsPerUser: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                        <div className="bg-charcoal/30 border border-pearl/10 p-6 text-center">
+                           <DollarSign size={32} className="text-tangerine mx-auto mb-3" />
+                           <div className="text-3xl font-display text-pearl mb-1">{referralConfig.isEnabled ? `${referralConfig.rewardPercentage}%` : 'Off'}</div>
+                           <div className="text-xs text-warm-gray uppercase tracking-widest">Reward Rate</div>
                         </div>
                      </div>
-                     <Button variant="primary" onClick={handleSaveReferralConfig} disabled={isSavingReferralConfig}>
-                        {isSavingReferralConfig ? <><Loader2 size={16} className="animate-spin mr-2" /> Saving...</> : 'Save Configuration'}
-                     </Button>
-                  </div>
 
-                  {/* Top Referrers Table */}
-                  <div className="border border-pearl/10 rounded overflow-hidden">
-                     <div className="bg-charcoal/30 px-6 py-4 border-b border-pearl/10">
-                        <h4 className="text-warm-gray text-xs uppercase tracking-widest">Top Referrers</h4>
+                     {/* Configuration Form */}
+                     <div className="bg-charcoal/30 border border-pearl/10 p-8 space-y-6">
+                        <h4 className="text-warm-gray text-xs uppercase tracking-widest">Program Settings</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                           <div>
+                              <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Reward Percentage (%)</label>
+                              <input type="number" min="0" max="100" value={referralConfig.rewardPercentage} onChange={(e) => setReferralConfig(c => ({ ...c, rewardPercentage: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                           </div>
+                           <div>
+                              <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Fixed Reward Amount (PKR)</label>
+                              <input type="number" min="0" value={referralConfig.rewardAmount} onChange={(e) => setReferralConfig(c => ({ ...c, rewardAmount: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                           </div>
+                           <div>
+                              <label className="text-xs text-warm-gray uppercase tracking-widest block mb-2">Max Rewards Per User</label>
+                              <input type="number" min="1" value={referralConfig.maxRewardsPerUser} onChange={(e) => setReferralConfig(c => ({ ...c, maxRewardsPerUser: Number(e.target.value) }))} className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" />
+                           </div>
+                        </div>
+                        <Button variant="primary" onClick={handleSaveReferralConfig} disabled={isSavingReferralConfig}>
+                           {isSavingReferralConfig ? <><Loader2 size={16} className="animate-spin mr-2" /> Saving...</> : 'Save Configuration'}
+                        </Button>
                      </div>
-                     <table className="w-full text-left text-sm">
-                        <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
-                           <tr>
-                              <th className="p-4">User</th>
-                              <th className="p-4">Referral Code</th>
-                              <th className="p-4">Referrals</th>
-                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-pearl/5">
-                           {referralStats?.topReferrers.map((r: any) => (
-                              <tr key={r.id} className="hover:bg-pearl/5 transition-colors">
-                                 <td className="p-4">
-                                    <div className="text-pearl font-medium">{r.fullName}</div>
-                                    <div className="text-xs text-warm-gray">{r.email}</div>
-                                 </td>
-                                 <td className="p-4 font-mono text-tangerine text-xs">{r.referralCode}</td>
-                                 <td className="p-4 text-pearl font-display text-lg">{r.referralCount}</td>
+
+                     {/* Top Referrers Table */}
+                     <div className="border border-pearl/10 rounded overflow-hidden">
+                        <div className="bg-charcoal/30 px-6 py-4 border-b border-pearl/10">
+                           <h4 className="text-warm-gray text-xs uppercase tracking-widest">Top Referrers</h4>
+                        </div>
+                        <table className="w-full text-left text-sm">
+                           <thead className="bg-charcoal text-warm-gray font-mono text-xs uppercase border-b border-pearl/10">
+                              <tr>
+                                 <th className="p-4">User</th>
+                                 <th className="p-4">Referral Code</th>
+                                 <th className="p-4">Referrals</th>
                               </tr>
-                           ))}
-                           {(!referralStats?.topReferrers || referralStats.topReferrers.length === 0) && (
-                              <tr><td colSpan={3} className="p-8 text-center text-warm-gray">No referrals yet</td></tr>
-                           )}
-                        </tbody>
-                     </table>
-                  </div>
-               </>
+                           </thead>
+                           <tbody className="divide-y divide-pearl/5">
+                              {referralStats?.topReferrers.map((r: any) => (
+                                 <tr key={r.id} className="hover:bg-pearl/5 transition-colors">
+                                    <td className="p-4">
+                                       <div className="text-pearl font-medium">{r.fullName}</div>
+                                       <div className="text-xs text-warm-gray">{r.email}</div>
+                                    </td>
+                                    <td className="p-4 font-mono text-tangerine text-xs">{r.referralCode}</td>
+                                    <td className="p-4 text-pearl font-display text-lg">{r.referralCount}</td>
+                                 </tr>
+                              ))}
+                              {(!referralStats?.topReferrers || referralStats.topReferrers.length === 0) && (
+                                 <tr><td colSpan={3} className="p-8 text-center text-warm-gray">No referrals yet</td></tr>
+                              )}
+                           </tbody>
+                        </table>
+                     </div>
+                  </>
                )}
             </div>
          )}
@@ -2240,7 +2245,7 @@ export const AdminDashboard: React.FC = () => {
                            }}
                         >
                            <option value="">+ Add Artwork to Top 5</option>
-                           {artworks.map(a => <option key={a.id} value={a.id}>{a.title} - {a.artistName}</option>)}
+                           {artworks.map(a => <option key={a.id} value={a.id}>{a.title} - {a.manufacturerName}</option>)}
                         </select>
                      )}
                   </div>
@@ -2317,7 +2322,7 @@ export const AdminDashboard: React.FC = () => {
                               }}
                            >
                               <option value="">+ Add Artwork to Collection</option>
-                              {artworks.map(a => <option key={a.id} value={a.id}>{a.title} - {a.artistName}</option>)}
+                              {artworks.map(a => <option key={a.id} value={a.id}>{a.title} - {a.manufacturerName}</option>)}
                            </select>
                         </div>
                      ))}
@@ -2371,16 +2376,16 @@ export const AdminDashboard: React.FC = () => {
                            <input className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none" placeholder="Artwork Title" value={newArtwork.title} onChange={e => setNewArtwork({ ...newArtwork, title: e.target.value })} />
                         </div>
                         <div>
-                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Artist</label>
+                           <label className="text-xs text-warm-gray uppercase tracking-widest mb-1 block">Manufacturer</label>
                            <select
                               className="w-full bg-void border border-pearl/20 p-3 text-pearl focus:border-tangerine outline-none"
-                              value={newArtwork.artistId}
+                              value={newArtwork.manufacturerId}
                               onChange={e => {
                                  const selectedArtist = artists.find(a => a.id === e.target.value);
-                                 setNewArtwork({ ...newArtwork, artistId: e.target.value, artistName: selectedArtist?.user?.fullName || selectedArtist?.name || '' });
+                                 setNewArtwork({ ...newArtwork, manufacturerId: e.target.value, manufacturerName: selectedArtist?.user?.fullName || selectedArtist?.name || '' });
                               }}
                            >
-                              <option value="">Select Artist</option>
+                              <option value="">Select Manufacturer</option>
                               {artists.map(a => <option key={a.id} value={a.id}>{a.user?.fullName || a.name}</option>)}
                            </select>
                         </div>

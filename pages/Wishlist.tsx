@@ -4,14 +4,14 @@ import { Heart, Loader2, ShoppingCart, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { favoriteApi } from '../services/api';
-import ArtworkCard from '../components/ui/ArtworkCard';
+import ProductCard from '../components/ui/ProductCard';
 
 interface FavoriteWithArtwork {
     id: string;
     artworkId: string;
     userId: string;
     createdAt: string;
-    artwork: any; // Full artwork data
+    artwork: any; // Full product data
 }
 
 export const Wishlist: React.FC = () => {
@@ -154,8 +154,8 @@ export const Wishlist: React.FC = () => {
                                     className="relative"
                                 >
                                     {/* Artwork Card */}
-                                    <ArtworkCard
-                                        artwork={favorite.artwork}
+                                    <ProductCard
+                                        product={favorite.artwork}
                                         className="h-full"
                                     />
 

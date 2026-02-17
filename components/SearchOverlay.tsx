@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, ArrowRight, Loader2 } from 'lucide-react';
-import { useGallery } from '../context/GalleryContext';
+import { useShop } from '../context/ShopContext';
 import { Link } from 'react-router-dom';
 const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
 
@@ -10,7 +10,7 @@ interface SearchOverlayProps {
 }
 
 export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose }) => {
-    const { artworks, availableCategories } = useGallery();
+    const { products: artworks, availableCategories } = useShop();
     const [query, setQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -31,7 +31,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
     const results = query
         ? artworks.filter(a =>
             a.title.toLowerCase().includes(query.toLowerCase()) ||
-            a.artistName.toLowerCase().includes(query.toLowerCase())
+            a.manufacturerName?.toLowerCase().includes(query.toLowerCase())
         ).slice(0, 5)
         : [];
 
@@ -62,7 +62,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search Artists, Artworks, or Collections..."
+                        placeholder="Search Manufacturers, Products, or Collections..."
                         className="w-full bg-transparent border-b-2 border-stone-800 focus:border-amber-500 text-3xl md:text-5xl font-serif text-white py-6 pl-12 focus:outline-none transition-colors placeholder:text-stone-800"
                     />
                 </div>
@@ -78,7 +78,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                                 {availableCategories.slice(0, 5).map(cat => (
                                     <Link
                                         key={cat}
-                                        to={`/gallery?category=${cat}`}
+                                        to={`/shop?category=${cat}`}
                                         onClick={onClose}
                                         className="block text-xl font-serif text-stone-300 hover:text-amber-500 transition-colors"
                                     >
@@ -101,7 +101,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                                     {results.map(art => (
                                         <Link
                                             key={art.id}
-                                            to={`/artwork/${art.id}`}
+                                            to={`/product/${art.id}`}
                                             onClick={onClose}
                                             className="group flex gap-6 items-center border-b border-stone-900 pb-6 hover:border-stone-800 transition-colors"
                                         >
@@ -110,7 +110,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                                             </div>
                                             <div className="flex-1">
                                                 <h4 className="font-serif text-2xl text-white group-hover:text-amber-500 transition-colors">{art.title}</h4>
-                                                <p className="text-stone-500 text-sm uppercase tracking-widest">{art.artistName}</p>
+                                                <p className="text-stone-500 text-sm uppercase tracking-widest">{art.manufacturerName}</p>
                                             </div>
                                             <div className="text-right">
                                                 <p className="font-mono text-stone-400 text-sm">{convertPrice(art.price)}</p>
@@ -120,7 +120,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
                                             </div>
                                         </Link>
                                     ))}
-                                    <Link to={`/gallery?search=${query}`} onClick={onClose} className="block text-center py-4 bg-stone-900 hover:bg-stone-800 text-white uppercase tracking-widest text-xs transition-colors mt-8">
+                                    <Link to={`/shop?search=${query}`} onClick={onClose} className="block text-center py-4 bg-stone-900 hover:bg-stone-800 text-white uppercase tracking-widest text-xs transition-colors mt-8">
                                         View All Results
                                     </Link>
                                 </div>
