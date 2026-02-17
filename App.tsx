@@ -45,7 +45,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-void">
-        <div className="text-tangerine text-sm uppercase tracking-widest animate-pulse">Loading...</div>
+        <div className="text-safety text-sm uppercase tracking-widest animate-pulse">Loading...</div>
       </div>
     );
   }

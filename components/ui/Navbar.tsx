@@ -1,248 +1,229 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
-import { cn } from '../../lib/utils';
-import { Menu, X, User, ShoppingBag, LogOut, ChevronDown, Layers } from 'lucide-react';
+import { ShoppingBag, User, Search, Menu, X, Heart, Crosshair, Target, Shield, Radio, LogOut, Layers, ChevronDown } from 'lucide-react';
+import { SearchOverlay } from '../SearchOverlay';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useCartContext as useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { useCartContext } from '../../context/CartContext';
+import { cn } from '../../lib/utils';
+import { AnimatePresence, motion } from 'framer-motion';
 
-const Navbar = () => {
-    const { scrollY } = useScroll();
+const Navbar: React.FC = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { cart } = useCart();
+    const { user, logout } = useAuth();
+
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
-    const { user, logout } = useAuth();
-    const { cart } = useCartContext();
-    const navigate = useNavigate();
-
-    const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
     useEffect(() => {
-        return scrollY.onChange((latest) => {
-            setIsScrolled(latest > 50);
-        });
-    }, [scrollY]);
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [location]);
 
     const handleLogout = () => {
         logout();
         navigate('/');
-        setUserMenuOpen(false);
     };
 
-    const navItems = [
-        { name: 'COLLECTIONS', path: '/collections' },
-        { name: 'EXHIBITIONS', path: '/exhibitions' },
-        { name: 'ARTIST', path: '/artists' },
-        { name: 'STORIES', path: '/stories' },
-        { name: 'CONTACT', path: '/contact' },
+    const navLinks = [
+        { name: 'ARSENAL', path: '/shop' },
+        { name: 'BRANDS', path: '/brands' },
+        { name: 'SHOWCASES', path: '/collections' },
+        { name: 'INTEL', path: '/journal' },
     ];
 
     return (
         <>
-            <motion.nav
+            <nav
                 className={cn(
-                    "fixed top-0 left-0 right-0 z-50 h-[80px] flex items-center px-6 md:px-12 transition-all duration-500",
-                    isScrolled ? "bg-void/80 backdrop-blur-md border-b border-white/5" : "bg-transparent"
+                    "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
+                    isScrolled || mobileMenuOpen
+                        ? "bg-void/95 backdrop-blur-md py-3 border-gunmetal shadow-lg"
+                        : "bg-gradient-to-b from-black/80 to-transparent py-6 border-transparent"
                 )}
-                initial={{ y: -100 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             >
-                <div className="w-full flex justify-between items-center max-w-[1920px] mx-auto">
+                <div className="max-w-screen-2xl mx-auto px-6 md:px-12 flex items-center justify-between">
+
                     {/* Logo */}
-                    <Link to="/" className="relative z-50 group">
-                        <div className="flex items-center gap-2 relative">
-                            <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-widest">
-                                ARMS & AMMO
+                    <Link to="/" className="z-50 relative group flex items-center gap-3">
+                        <div className="w-10 h-10 bg-olive text-void flex items-center justify-center clip-diagonal">
+                            <Target size={24} />
+                        </div>
+                        <div className="flex flex-col items-start">
+                            <h1 className="font-display text-4xl font-bold tracking-tighter text-pearl uppercase leading-none group-hover:text-olive transition-colors">
+                                AAA
                             </h1>
-                            <span className="text-xl md:text-2xl text-tangerine" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
-                            <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-tangerine transition-all duration-300 group-hover:w-full"></span>
+                            <div className="flex items-center gap-2 text-[0.6rem] uppercase tracking-[0.3em] text-camo font-mono">
+                                <Radio size={8} className="text-safety animate-pulse" />
+                                <span>Systems Online</span>
+                            </div>
                         </div>
                     </Link>
 
-                    {/* Desktop Links */}
-                    <div className="hidden md:flex items-center gap-12">
-                        {navItems.map((item) => (
-                            <Link key={item.name} to={item.path} className="group text-sm font-medium text-pearl hover:text-tangerine transition-all duration-300 relative font-display tracking-widest uppercase">
-                                <span className="group-hover:text-tangerine transition-colors duration-300">{item.name}</span>
-                                <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-tangerine transition-all duration-300 group-hover:w-full"></span>
-                            </Link>
-                        ))}
-
-                        <div className="flex items-center gap-6 border-l border-pearl/10 pl-8 ml-4">
-                            {/* Cart Icon */}
-                            <Link to="/cart" className="text-pearl hover:text-tangerine transition-colors relative group">
-                                <ShoppingBag size={20} />
-                                {cartItemCount > 0 && (
-                                    <span className="absolute -top-2 -right-2 bg-tangerine text-void text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                        {cartItemCount}
-                                    </span>
-                                )}
-                            </Link>
-
-                            {/* User Menu */}
-                            {user ? (
-                                <div className="relative">
-                                    <button
-                                        onClick={() => setUserMenuOpen(!userMenuOpen)}
-                                        className="flex items-center gap-2 text-pearl hover:text-tangerine transition-colors font-mono text-xs uppercase tracking-wider"
-                                    >
-                                        <div className="w-8 h-8 rounded-full bg-charcoal border border-pearl/10 flex items-center justify-center text-tangerine">
-                                            {user.fullName.charAt(0)}
-                                        </div>
-                                        <ChevronDown size={14} className={cn("transition-transform duration-300", userMenuOpen ? "rotate-180" : "")} />
-                                    </button>
-
-                                    <AnimatePresence>
-                                        {userMenuOpen && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute top-full right-0 mt-4 w-56 bg-stone-900 border border-stone-800 p-2 shadow-2xl backdrop-blur-xl rounded-lg"
-                                                onMouseLeave={() => setUserMenuOpen(false)}
-                                            >
-                                                <div className="px-4 py-3 border-b border-stone-800 mb-2">
-                                                    <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-1">Signed in as</p>
-                                                    <p className="text-sm font-display font-bold text-white truncate">{user.fullName}</p>
-                                                </div>
-
-                                                {user.role === 'ADMIN' && (
-                                                    <Link
-                                                        to="/admin"
-                                                        className="flex items-center gap-3 px-4 py-3 text-sm text-tangerine hover:bg-stone-800 hover:text-amber-500 transition-colors rounded-md"
-                                                        onClick={() => setUserMenuOpen(false)}
-                                                    >
-                                                        <Layers size={16} />
-                                                        ADMIN DASHBOARD
-                                                    </Link>
-                                                )}
-
-                                                <Link
-                                                    to="/profile"
-                                                    className="flex items-center gap-3 px-4 py-3 text-sm text-stone-300 hover:bg-stone-800 hover:text-amber-500 transition-colors rounded-md"
-                                                    onClick={() => setUserMenuOpen(false)}
-                                                >
-                                                    <User size={16} />
-                                                    MY PROFILE
-                                                </Link>
-
-                                                <button
-                                                    onClick={handleLogout}
-                                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-500 transition-colors rounded-md mt-1"
-                                                >
-                                                    <LogOut size={16} />
-                                                    LOGOUT
-                                                </button>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            ) : (
-                                <Link to="/auth" className="text-pearl hover:text-tangerine transition-colors flex items-center gap-2 font-mono text-xs uppercase tracking-wider border border-pearl/20 px-4 py-2 hover:border-tangerine">
-                                    <User size={14} />
-                                    LOGIN
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center gap-1">
+                        {navLinks.map(link => {
+                            const isActive = location.pathname === link.path || location.pathname.startsWith(link.path + '/');
+                            return (
+                                <Link
+                                    key={link.path}
+                                    to={link.path}
+                                    className={cn(
+                                        "text-xs uppercase tracking-[0.15em] font-bold px-4 py-2 transition-all hover:text-safety hover:bg-white/5 clip-diagonal",
+                                        isActive ? "text-safety bg-white/5" : "text-stone-400"
+                                    )}
+                                >
+                                    {link.name}
                                 </Link>
-                            )}
-                        </div>
+                            );
+                        })}
                     </div>
 
-                    {/* Mobile Menu Toggle */}
-                    <div className="flex items-center gap-6 md:hidden">
-                        {/* Mobile Cart */}
-                        <Link to="/cart" className="text-pearl hover:text-tangerine transition-colors relative">
-                            <ShoppingBag size={24} />
-                            {cartItemCount > 0 && (
-                                <span className="absolute -top-2 -right-2 bg-tangerine text-void text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                    {cartItemCount}
+                    {/* Actions */}
+                    <div className="flex items-center gap-4 z-50">
+                        <button
+                            onClick={() => setSearchOpen(true)}
+                            className="text-stone-400 hover:text-safety transition-colors p-2"
+                        >
+                            <Search size={20} />
+                        </button>
+
+                        {user && (
+                            <Link to="/wishlist" className="text-stone-400 hover:text-safety transition-colors p-2 hidden sm:block" title="Wishlist">
+                                <Heart size={20} />
+                            </Link>
+                        )}
+
+                        <Link to="/cart" className="text-stone-400 hover:text-safety transition-colors relative p-2 group">
+                            <ShoppingBag size={20} className="group-hover:fill-current" />
+                            {cart.length > 0 && (
+                                <span className="absolute top-0 right-0 bg-safety text-void text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-sm">
+                                    {cart.length}
                                 </span>
                             )}
                         </Link>
 
+                        {user ? (
+                            <div className="relative hidden md:block">
+                                <button
+                                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                    onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
+                                    className="flex items-center gap-2 text-stone-400 hover:text-safety transition-colors focus:outline-none p-2"
+                                >
+                                    <User size={20} />
+                                </button>
+
+                                {/* Dropdown Menu */}
+                                <div
+                                    className={cn(
+                                        "absolute right-0 top-full mt-4 w-56 bg-void border border-gunmetal shadow-2xl transition-all duration-300 origin-top-right z-50",
+                                        userMenuOpen ? "opacity-100 scale-100 visible" : "opacity-0 scale-95 invisible"
+                                    )}
+                                >
+                                    <div className="px-4 py-3 border-b border-gunmetal bg-gunmetal/20">
+                                        <p className="text-pearl text-sm font-bold font-display tracking-wider truncate">{user.fullName}</p>
+                                        <p className="text-camo text-[10px] uppercase tracking-widest font-mono">{user.role}</p>
+                                    </div>
+
+                                    <div className="py-2">
+                                        {user.role === 'ADMIN' && (
+                                            <Link
+                                                to="/admin"
+                                                className="block px-4 py-2 text-xs text-olive hover:bg-gunmetal/50 transition-colors uppercase tracking-widest font-bold"
+                                            >
+                                                Command Center
+                                            </Link>
+                                        )}
+
+                                        <Link
+                                            to="/profile"
+                                            className="block px-4 py-2 text-xs text-stone-300 hover:text-safety hover:bg-gunmetal/50 transition-colors uppercase tracking-wider"
+                                        >
+                                            Profile
+                                        </Link>
+                                        <Link
+                                            to="/wishlist"
+                                            className="block px-4 py-2 text-xs text-stone-300 hover:text-safety hover:bg-gunmetal/50 transition-colors uppercase tracking-wider"
+                                        >
+                                            Wishlist
+                                        </Link>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full text-left px-4 py-2 text-xs text-alert hover:bg-gunmetal/50 transition-colors border-t border-gunmetal mt-1 uppercase tracking-wider"
+                                        >
+                                            Disconnect
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <Link to="/auth" className="hidden md:flex items-center gap-2 px-6 py-2 bg-olive text-white font-bold text-xs uppercase tracking-widest hover:bg-olive/80 transition-colors clip-diagonal">
+                                <Shield size={12} /> Access
+                            </Link>
+                        )}
+
+                        {/* Mobile Menu Button */}
                         <button
-                            className="text-pearl z-50"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="md:hidden text-stone-400 hover:text-safety"
                         >
-                            {mobileMenuOpen ? <X size={32} /> : <Menu size={32} />}
+                            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
                     </div>
                 </div>
-            </motion.nav>
+            </nav>
 
-            {/* Mobile Fullscreen asdsss Menu */}
-            <motion.div
-                className="fixed inset-0 bg-void z-40 flex flex-col justify-center items-center md:hidden"
-                initial={{ opacity: 0, pointerEvents: 'none' }}
-                animate={{
-                    opacity: mobileMenuOpen ? 1 : 0,
-                    pointerEvents: mobileMenuOpen ? 'auto' : 'none'
-                }}
-                transition={{ duration: 0.5 }}
-            >
-                <div className="flex flex-col gap-8 text-center">
-                    {navItems.map((item, i) => (
-                        <motion.div
-                            key={item.name}
-                            initial={{ y: 40, opacity: 0 }}
-                            animate={{
-                                y: mobileMenuOpen ? 0 : 40,
-                                opacity: mobileMenuOpen ? 1 : 0
-                            }}
-                            transition={{ delay: i * 0.1 + 0.2 }}
-                        >
+            <SearchOverlay isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+            {/* Mobile Menu Overlay */}
+            <div className={cn(
+                "fixed inset-0 bg-void z-40 transition-transform duration-500 flex flex-col items-center justify-center border-l border-gunmetal",
+                mobileMenuOpen ? "translate-x-0" : "translate-x-full"
+            )}>
+                <div className="flex flex-col items-center gap-8 w-full px-8">
+                    {navLinks.map(link => {
+                        const isActive = location.pathname === link.path;
+                        return (
                             <Link
-                                to={item.path}
-                                className="text-4xl sm:text-5xl md:text-6xl font-display font-bold text-pearl hover:text-tangerine transition-colors duration-300 px-4"
-                                onClick={() => setMobileMenuOpen(false)}
+                                key={link.path}
+                                to={link.path}
+                                className={cn(
+                                    "font-display text-3xl uppercase tracking-widest transition-colors hover:text-safety w-full text-center border-b border-gunmetal pb-4",
+                                    isActive ? "text-safety border-safety" : "text-stone-500"
+                                )}
                             >
-                                {item.name}
+                                {link.name}
                             </Link>
-                        </motion.div>
-                    ))}
+                        );
+                    })}
 
-                    {/* Mobile Auth Link */}
-                    <motion.div
-                        initial={{ y: 40, opacity: 0 }}
-                        animate={{
-                            y: mobileMenuOpen ? 0 : 40,
-                            opacity: mobileMenuOpen ? 1 : 0
-                        }}
-                        transition={{ delay: 0.6 }}
-                    >
+                    <div className="flex flex-col items-center gap-6 mt-8 w-full">
                         {user ? (
-                            <div className="flex flex-col gap-4">
-                                <Link
-                                    to="/profile"
-                                    className="text-xl font-mono text-tangerine flex items-center gap-2 justify-center"
-                                    onClick={() => setMobileMenuOpen(false)}
-                                >
-                                    <User size={20} />
-                                    {user.fullName}
-                                </Link>
-                                <button
-                                    onClick={() => {
-                                        handleLogout();
-                                        setMobileMenuOpen(false);
-                                    }}
-                                    className="text-sm font-mono text-red-400 flex items-center gap-2 justify-center uppercase tracking-widest border border-red-500/30 px-6 py-3"
-                                >
-                                    <LogOut size={16} />
-                                    LOGOUT
-                                </button>
-                            </div>
+                            <>
+                                <div className="text-camo uppercase tracking-widest text-xs font-mono">{user.fullName}</div>
+                                {user.role === 'ADMIN' && (
+                                    <Link to="/admin" className="text-sm uppercase tracking-widest text-olive hover:text-pearl font-bold">Command Center</Link>
+                                )}
+                                <button onClick={handleLogout} className="text-sm uppercase tracking-widest text-alert hover:text-red-400">Disconnect</button>
+                            </>
                         ) : (
-                            <Link
-                                to="/auth"
-                                className="text-2xl font-mono text-pearl hover:text-tangerine transition-colors flex items-center gap-2 justify-center"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                <User size={24} />
-                                LOGIN
+                            <Link to="/auth" className="w-full py-4 bg-olive text-white text-center uppercase tracking-widest font-bold text-sm clip-diagonal">
+                                Establish Connection
                             </Link>
                         )}
-                    </motion.div>
+                    </div>
                 </div>
-            </motion.div>
+            </div>
         </>
     );
 };

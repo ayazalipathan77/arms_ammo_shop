@@ -1,20 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700;900&family=Roboto+Slab:wght@100;300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --color-void: #1B1F23; /* Dark Gunmetal */
-  --color-charcoal: #2D3339; /* Lighter Gunmetal */
-  --color-olive: #4B5320; /* Army Green */
-  --color-coyote: #816C5B; /* Coyote Brown */
-  --color-tangerine: #FF4500; /* Safety Orange */
-  --color-amber: #B5A642; /* Brass */
-  
-  --color-pearl: #E5E5E5; /* Light Gray */
-  --color-warm-gray: #A0A0A0;
+  --color-void: #1A1C18;
+  /* Tactical Black */
+  --color-gunmetal: #2C3025;
+  /* Dark Gunmetal Cards */
+  --color-olive: #4B5320;
+  /* Olive Drab */
+  --color-camo: #8B8C7A;
+  /* Camo Green */
+  --color-safety: #FF5722;
+  /* Safety Orange */
+  --color-brass: #B5A642;
+  /* Brass */
 
-  --font-display: 'Rubik', sans-serif;
-  --font-body: 'Roboto Slab', serif;
+  --color-pearl: #E5E5E5;
+  /* Light Gray */
+  --color-warm-gray: #A0A0A0;
+  --color-alert: #DC2626;
+  /* Standard Red */
+
+  --font-display: 'Oswald', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-tech: 'Rajdhani', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --animate-scramble: scramble 0.3s ease-out;
@@ -47,7 +57,12 @@
 
   body {
     @apply antialiased overflow-x-hidden;
-    font-family: 'Roboto Slab', serif;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-void);
+    background-image:
+      radial-gradient(circle at 50% 50%, rgba(75, 83, 32, 0.05) 0%, transparent 50%),
+      linear-gradient(rgba(26, 28, 24, 0.95), rgba(26, 28, 24, 0.95)),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234B5320' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
   /* Autofill Styles */
@@ -55,9 +70,9 @@
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px #2D3339 inset !important;
+    -webkit-box-shadow: 0 0 0 1000px #2C3025 inset !important;
     -webkit-text-fill-color: #E5E5E5 !important;
-    caret-color: #FF4500;
+    caret-color: #FF5722;
   }
 
   /* Typography Overrides */
@@ -67,13 +82,13 @@
   h4,
   h5,
   h6 {
-    font-family: 'Rubik', sans-serif;
-    @apply uppercase tracking-tight font-bold;
+    font-family: 'Oswald', sans-serif;
+    @apply uppercase tracking-wide font-bold;
   }
 
   /* Custom Selection */
   ::selection {
-    @apply bg-tangerine text-void;
+    @apply bg-safety text-void;
   }
 }
 
@@ -85,6 +100,10 @@
 
   .text-stroke-sm {
     -webkit-text-stroke: 0.5px currentColor;
+  }
+
+  .font-tech {
+    font-family: 'Rajdhani', sans-serif;
   }
 }
 
@@ -98,9 +117,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-charcoal border border-void;
+  @apply bg-gunmetal border border-void;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-tangerine;
+  @apply bg-olive;
 }
