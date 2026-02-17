@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { useGallery } from '../context/GalleryContext';
+import { useShop } from '../context/ShopContext';
 import { Monitor, Calendar, MapPin, ArrowRight, Award, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
 
-export const Exhibitions: React.FC = () => {
-   const { exhibitions } = useGallery();
+export const Showcases: React.FC = () => {
+   const { collections } = useShop();
    const [filter, setFilter] = useState<'ALL' | 'CURRENT' | 'UPCOMING' | 'PAST'>('ALL');
 
    const getStatusColor = (status: string) => {
@@ -18,15 +18,15 @@ export const Exhibitions: React.FC = () => {
       }
    };
 
-   const filteredExhibitions = exhibitions.filter(ex =>
+   const filteredShowcases = collections.filter(ex =>
       filter === 'ALL' || ex.status === filter
    );
 
    return (
-       <div className="pt-24 pb-20 min-h-screen relative z-10 px-6 md:px-12 overflow-hidden">
-          {/* Background Gradient Orbs */}
-          <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-tangerine/25 rounded-full blur-[140px] pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="pt-24 pb-20 min-h-screen relative z-10 px-6 md:px-12 overflow-hidden">
+         {/* Background Gradient Orbs */}
+         <div className="absolute top-0 left-0 w-[700px] h-[700px] bg-tangerine/25 rounded-full blur-[140px] pointer-events-none" />
+         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-amber/20 rounded-full blur-[120px] pointer-events-none" />
 
          <div className="max-w-[1920px] mx-auto relative z-10">
             {/* Header */}
@@ -39,10 +39,10 @@ export const Exhibitions: React.FC = () => {
                <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-pearl/10 pb-8 high-contrast:border-black/20">
                   <div>
                      <h1 className="text-4xl md:text-7xl font-display font-bold text-pearl high-contrast:text-black mb-2">
-                        EXHIBITIONS
+                        SHOWCASES
                      </h1>
                      <p className="text-tangerine font-mono text-sm tracking-widest uppercase high-contrast:text-[#D35400]">
-                        Curated Art Experiences
+                        Curated Gear Collections
                      </p>
                   </div>
 
@@ -53,8 +53,8 @@ export const Exhibitions: React.FC = () => {
                            key={status}
                            onClick={() => setFilter(status as any)}
                            className={`px-6 py-2 text-xs font-display font-bold uppercase tracking-widest transition-all duration-300 border ${filter === status
-                                 ? 'bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black'
-                                 : 'text-warm-gray border-warm-gray/30 hover:border-tangerine hover:text-tangerine bg-transparent high-contrast:text-black high-contrast:border-black/50'
+                              ? 'bg-pearl text-void border-pearl high-contrast:bg-black high-contrast:text-white high-contrast:border-black'
+                              : 'text-warm-gray border-warm-gray/30 hover:border-tangerine hover:text-tangerine bg-transparent high-contrast:text-black high-contrast:border-black/50'
                               }`}
                         >
                            {status}
@@ -64,20 +64,20 @@ export const Exhibitions: React.FC = () => {
                </div>
             </motion.div>
 
-             {/* Exhibitions Grid */}
-             {filteredExhibitions.length === 0 ? (
-                <motion.div
-                   initial={{ opacity: 0 }}
-                   animate={{ opacity: 1 }}
-                   className="text-center py-32 border border-dashed border-pearl/10 rounded-2xl"
-                >
-                   <AlertCircle className="text-warm-gray mx-auto mb-4" size={48} />
-                   <p className="text-pearl font-display text-2xl mb-2 high-contrast:text-black">No exhibitions {filter.toLowerCase()} yet.</p>
-                </motion.div>
-             ) : (
-                <div className="space-y-24">
+            {/* Showcases Grid */}
+            {filteredShowcases.length === 0 ? (
+               <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center py-32 border border-dashed border-pearl/10 rounded-2xl"
+               >
+                  <AlertCircle className="text-warm-gray mx-auto mb-4" size={48} />
+                  <p className="text-pearl font-display text-2xl mb-2 high-contrast:text-black">No showcases {filter.toLowerCase()} yet.</p>
+               </motion.div>
+            ) : (
+               <div className="space-y-24">
                   <AnimatePresence mode="wait">
-                     {filteredExhibitions.map((ex, idx) => (
+                     {filteredShowcases.map((ex, idx) => (
                         <motion.div
                            key={ex.id}
                            initial={{ opacity: 0, y: 60 }}
@@ -128,7 +128,7 @@ export const Exhibitions: React.FC = () => {
                            <div className="flex-1 space-y-6">
                               <div className="flex items-center gap-4 text-tangerine high-contrast:text-[#D35400]">
                                  <Award size={20} />
-                                 <span className="font-mono text-xs tracking-widest uppercase">Featured Exhibition</span>
+                                 <span className="font-mono text-xs tracking-widest uppercase">Featured Showcase</span>
                               </div>
 
                               <h2 className="font-display text-4xl md:text-6xl font-bold text-pearl high-contrast:text-black leading-tight group-hover:text-transparent group-hover:text-stroke transition-all duration-500">
@@ -154,19 +154,19 @@ export const Exhibitions: React.FC = () => {
                               </div>
 
                               <div className="pt-6">
-                                 <Link to={`/exhibitions/${ex.id}`}>
+                                 <Link to={`/collections/${ex.id}`}>
                                     <Button variant="primary">
-                                       Explore Exhibition <ArrowRight className="ml-2" size={16} />
+                                       Explore Showcase <ArrowRight className="ml-2" size={16} />
                                     </Button>
                                  </Link>
                               </div>
                            </div>
                         </motion.div>
-                      ))}
-                   </AnimatePresence>
-                </div>
-             )}
-          </div>
-       </div>
-    );
- };
+                     ))}
+                  </AnimatePresence>
+               </div>
+            )}
+         </div>
+      </div>
+   );
+};

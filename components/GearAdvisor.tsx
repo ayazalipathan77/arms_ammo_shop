@@ -50,7 +50,7 @@ export const AICurator: React.FC = () => {
           <div className="bg-stone-800 p-4 border-b border-stone-700 flex justify-between items-center">
             <div className="flex items-center gap-2">
               <Bot className="text-amber-500" size={18} />
-              <h3 className="font-serif text-lg text-stone-100">AI Curator</h3>
+              <h3 className="font-serif text-lg text-stone-100">Gear Advisor</h3>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-stone-400 hover:text-tangerine">
               <X size={18} />
@@ -61,8 +61,8 @@ export const AICurator: React.FC = () => {
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-3 rounded-lg text-sm ${msg.role === 'user'
-                    ? 'bg-amber-900/40 text-stone-100 border border-amber-800/50'
-                    : 'bg-stone-800 text-stone-300 border border-stone-700'
+                  ? 'bg-amber-900/40 text-stone-100 border border-amber-800/50'
+                  : 'bg-stone-800 text-stone-300 border border-stone-700'
                   }`}>
                   {msg.text}
                 </div>
@@ -83,7 +83,7 @@ export const AICurator: React.FC = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask about art..."
+                placeholder="Ask about gear..."
                 className="flex-1 bg-stone-900 border border-stone-600 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
               />
               <button

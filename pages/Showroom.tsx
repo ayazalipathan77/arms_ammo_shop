@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useGallery } from '../context/GalleryContext';
-import { Filter, Search, Loader2, X, ChevronDown, Check, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useShop } from '../context/ShopContext';
+import { Filter, Search, Loader2, X, ChevronDown, Check, Box, ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import { Link, useSearchParams, useLocation } from 'react-router-dom';
 import { artistApi } from '../services/api';
-import { Artist } from '../types';
+import { Manufacturer } from '../types';
 import { motion } from 'framer-motion';
 
 const ITEMS_PER_PAGE = 20;
 
 const convertPrice = (price: number) => `PKR ${price.toLocaleString()}`;
 
-export const Gallery: React.FC = () => {
+export const Showroom: React.FC = () => {
   const {
-    artworks,
+    products,
     isLoading,
     error,
     availableCategories,
-    availableMediums,
-    fetchArtworks,
+    availableTypes,
+    fetchProducts,
     pagination
-  } = useGallery();
+  } = useShop();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
@@ -30,39 +30,39 @@ export const Gallery: React.FC = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState<string>(searchParams.get('category') || 'All');
-  const [selectedMedium, setSelectedMedium] = useState<string>(searchParams.get('medium') || 'All');
+  const [selectedType, setSelectedType] = useState<string>(searchParams.get('type') || 'All');
   const [selectedStock, setSelectedStock] = useState<'All' | 'Available' | 'Sold'>(
     (searchParams.get('stock') as 'All' | 'Available' | 'Sold') || 'All'
   );
   const [currentPage, setCurrentPage] = useState<number>(
     parseInt(searchParams.get('page') || '1', 10)
   );
-  const artistIdParam = searchParams.get('artistId');
+  const manufacturerIdParam = searchParams.get('manufacturerId');
 
   // Sync state from URL params when navigating back (browser back button)
   useEffect(() => {
-    // Only sync if we're on the gallery page and URL has params
+    // Only sync if we're on the showroom page and URL has params
     const urlSearch = searchParams.get('search') || '';
     const urlCategory = searchParams.get('category') || 'All';
-    const urlMedium = searchParams.get('medium') || 'All';
+    const urlType = searchParams.get('type') || 'All';
     const urlStock = (searchParams.get('stock') as 'All' | 'Available' | 'Sold') || 'All';
     const urlPage = parseInt(searchParams.get('page') || '1', 10);
 
     // Update state if URL params differ from current state (handles back navigation)
     if (urlSearch !== searchTerm) setSearchTerm(urlSearch);
     if (urlCategory !== selectedCategory) setSelectedCategory(urlCategory);
-    if (urlMedium !== selectedMedium) setSelectedMedium(urlMedium);
+    if (urlType !== selectedType) setSelectedType(urlType);
     if (urlStock !== selectedStock) setSelectedStock(urlStock);
     if (urlPage !== currentPage) setCurrentPage(urlPage);
   }, [searchParams]); // Only run when URL params change
 
   // Clean filter arrays
   const categories = ['All', ...availableCategories];
-  const mediums = ['All', ...availableMediums];
+  const types = ['All', ...availableTypes];
   const stockOptions: ('All' | 'Available' | 'Sold')[] = ['All', 'Available', 'Sold'];
 
   // Check if any filter is active
-  const hasActiveFilters = searchTerm !== '' || selectedCategory !== 'All' || selectedMedium !== 'All' || selectedStock !== 'All' || artistIdParam;
+  const hasActiveFilters = searchTerm !== '' || selectedCategory !== 'All' || selectedType !== 'All' || selectedStock !== 'All' || manufacturerIdParam;
 
   // Update URL params when filters change (skip initial mount)
   const updateUrlParams = useCallback((page: number = currentPage) => {
@@ -73,59 +73,59 @@ export const Gallery: React.FC = () => {
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
     if (selectedCategory !== 'All') params.set('category', selectedCategory);
-    if (selectedMedium !== 'All') params.set('medium', selectedMedium);
+    if (selectedType !== 'All') params.set('type', selectedType);
     if (selectedStock !== 'All') params.set('stock', selectedStock);
-    if (artistIdParam) params.set('artistId', artistIdParam);
+    if (manufacturerIdParam) params.set('manufacturerId', manufacturerIdParam);
     if (page > 1) params.set('page', String(page));
     setSearchParams(params, { replace: true });
-  }, [searchTerm, selectedCategory, selectedMedium, selectedStock, artistIdParam, currentPage, setSearchParams]);
+  }, [searchTerm, selectedCategory, selectedType, selectedStock, manufacturerIdParam, currentPage, setSearchParams]);
 
   // Client-side filter for stock availability
-  const filteredArtworks = artworks.filter(art => {
+  const filteredProducts = products.filter(prod => {
     if (selectedStock === 'All') return true;
-    if (selectedStock === 'Available') return art.inStock;
-    if (selectedStock === 'Sold') return !art.inStock;
+    if (selectedStock === 'Available') return prod.inStock;
+    if (selectedStock === 'Sold') return !prod.inStock;
     return true;
   });
 
-  // Fetch artworks when filters change and update URL
+  // Fetch products when filters change and update URL
   useEffect(() => {
     const filters: any = {
       page: currentPage,
       limit: ITEMS_PER_PAGE
     };
     if (selectedCategory !== 'All') filters.category = selectedCategory;
-    if (selectedMedium !== 'All') filters.medium = selectedMedium;
+    if (selectedType !== 'All') filters.medium = selectedType; // API still uses 'medium' internally
     if (searchTerm) filters.search = searchTerm;
-    if (artistIdParam) filters.artistId = artistIdParam;
+    if (manufacturerIdParam) filters.artistId = manufacturerIdParam; // API still uses 'artistId' internally
 
     const timeoutId = setTimeout(() => {
-      fetchArtworks(filters);
+      fetchProducts(filters);
       updateUrlParams(currentPage);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [selectedCategory, selectedMedium, searchTerm, artistIdParam, currentPage, fetchArtworks, updateUrlParams]);
+  }, [selectedCategory, selectedType, searchTerm, manufacturerIdParam, currentPage, fetchProducts, updateUrlParams]);
 
   // Reset to page 1 when filters change (not when page changes)
-  const prevFiltersRef = useRef({ searchTerm, selectedCategory, selectedMedium, artistIdParam });
+  const prevFiltersRef = useRef({ searchTerm, selectedCategory, selectedType, manufacturerIdParam });
   useEffect(() => {
     const prev = prevFiltersRef.current;
     if (
       prev.searchTerm !== searchTerm ||
       prev.selectedCategory !== selectedCategory ||
-      prev.selectedMedium !== selectedMedium ||
-      prev.artistIdParam !== artistIdParam
+      prev.selectedType !== selectedType ||
+      prev.manufacturerIdParam !== manufacturerIdParam
     ) {
       setCurrentPage(1);
     }
-    prevFiltersRef.current = { searchTerm, selectedCategory, selectedMedium, artistIdParam };
-  }, [searchTerm, selectedCategory, selectedMedium, artistIdParam]);
+    prevFiltersRef.current = { searchTerm, selectedCategory, selectedType, manufacturerIdParam };
+  }, [searchTerm, selectedCategory, selectedType, manufacturerIdParam]);
 
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('All');
-    setSelectedMedium('All');
+    setSelectedType('All');
     setSelectedStock('All');
     setCurrentPage(1);
     setSearchParams({});
@@ -162,7 +162,7 @@ export const Gallery: React.FC = () => {
   };
 
   // Remove individual filter
-  const removeFilter = (filterType: 'search' | 'category' | 'medium' | 'stock' | 'artistId') => {
+  const removeFilter = (filterType: 'search' | 'category' | 'type' | 'stock' | 'manufacturerId') => {
     switch (filterType) {
       case 'search':
         setSearchTerm('');
@@ -170,15 +170,15 @@ export const Gallery: React.FC = () => {
       case 'category':
         setSelectedCategory('All');
         break;
-      case 'medium':
-        setSelectedMedium('All');
+      case 'type':
+        setSelectedType('All');
         break;
       case 'stock':
         setSelectedStock('All');
         break;
-      case 'artistId':
+      case 'manufacturerId':
         const newParams = new URLSearchParams(searchParams);
-        newParams.delete('artistId');
+        newParams.delete('manufacturerId');
         setSearchParams(newParams);
         break;
     }
@@ -221,9 +221,9 @@ export const Gallery: React.FC = () => {
                 transition={{ delay: 0.2, duration: 0.6 }}
                 className="flex items-center gap-3 mb-2"
               >
-                <Palette className="text-amber-500" size={28} />
+                <Target className="text-amber-500" size={28} />
                 <h1 className="font-serif text-2xl text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-white to-amber-200">
-                  Collection
+                  Inventory Showroom
                 </h1>
               </motion.div>
               <motion.p
@@ -232,8 +232,8 @@ export const Gallery: React.FC = () => {
                 transition={{ delay: 0.3, duration: 0.6 }}
                 className="text-amber-500/60 uppercase tracking-[0.3em] text-xs flex items-center gap-2"
               >
-                <Palette size={14} />
-                {isLoading ? 'Curating...' : `${filteredArtworks.length} Masterpieces`}
+                <Box size={14} />
+                {isLoading ? 'Calibrating...' : `${filteredProducts.length} Tactical Items`}
               </motion.p>
             </div>
 
@@ -248,7 +248,7 @@ export const Gallery: React.FC = () => {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500 group-focus-within:text-amber-500 transition-colors" size={16} />
                 <input
                   type="text"
-                  placeholder="Search Collection..."
+                  placeholder="Search Catalog..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full bg-stone-900/50 backdrop-blur-sm border border-stone-800/50 rounded-full pl-11 pr-4 py-3 text-xs focus:outline-none text-white placeholder:text-stone-600 focus:border-amber-500 transition-all"
@@ -263,7 +263,7 @@ export const Gallery: React.FC = () => {
                 <Filter size={14} /> Filters
                 {hasActiveFilters && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 text-stone-950 text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {[searchTerm, selectedCategory !== 'All', selectedMedium !== 'All', selectedStock !== 'All', artistIdParam].filter(Boolean).length}
+                    {[searchTerm, selectedCategory !== 'All', selectedType !== 'All', selectedStock !== 'All', manufacturerIdParam].filter(Boolean).length}
                   </span>
                 )}
               </button>
@@ -300,12 +300,12 @@ export const Gallery: React.FC = () => {
               </button>
             )}
 
-            {selectedMedium !== 'All' && (
+            {selectedType !== 'All' && (
               <button
-                onClick={() => removeFilter('medium')}
+                onClick={() => removeFilter('type')}
                 className="group flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1.5 rounded-full text-xs uppercase tracking-wider hover:bg-amber-500/20 transition-all"
               >
-                <span>Medium: {selectedMedium}</span>
+                <span>Type: {selectedType}</span>
                 <X size={12} className="group-hover:rotate-90 transition-transform" />
               </button>
             )}
@@ -320,12 +320,12 @@ export const Gallery: React.FC = () => {
               </button>
             )}
 
-            {artistIdParam && (
+            {manufacturerIdParam && (
               <button
-                onClick={() => removeFilter('artistId')}
+                onClick={() => removeFilter('manufacturerId')}
                 className="group flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1.5 rounded-full text-xs uppercase tracking-wider hover:bg-amber-500/20 transition-all"
               >
-                <span>By Artist</span>
+                <span>By Brand</span>
                 <X size={12} className="group-hover:rotate-90 transition-transform" />
               </button>
             )}
@@ -341,129 +341,126 @@ export const Gallery: React.FC = () => {
           </motion.div>
         )}
 
-      {/* Main Grid */}
-      <div className="min-h-[60vh]">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-32 space-y-4">
-            <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
-            <p className="text-stone-500 text-xs uppercase tracking-widest">Curating Collection...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-20">
-            <p className="text-red-500 mb-4 font-serif text-xl">{error}</p>
-            <button onClick={() => fetchArtworks()} className="text-stone-400 hover:text-tangerine underline text-xs uppercase tracking-widest">Try Again</button>
-          </div>
-        ) : filteredArtworks.length === 0 ? (
-          <div className="text-center py-32 border border-dashed border-stone-800">
-            <p className="text-white font-serif text-2xl mb-2">No artworks found</p>
-            <p className="text-stone-500 text-sm mb-6">Try adjusting your search or filters.</p>
-            <button onClick={clearFilters} className="text-amber-500 hover:text-tangerine text-xs uppercase tracking-widest border-b border-amber-500/50 pb-1">Clear All Filters</button>
-          </div>
-        ) : (
-          <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredArtworks.map((art) => (
-              <Link key={art.id} to={`/artwork/${art.id}`} className="group block">
-                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-900 to-neutral-950 rounded-2xl border border-stone-800/30 shadow-2xl group-hover:shadow-amber-900/20 transition-all duration-500 mb-4">
-                  <img
-                    src={art.imageUrl}
-                    alt={art.title}
-                    className={`w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100 ${!art.inStock ? 'grayscale-[50%] group-hover:grayscale-[20%]' : ''}`}
-                  />
-                  {!art.inStock && (
-                    <div className="absolute inset-0 bg-black/30 pointer-events-none rounded-2xl" />
-                  )}
-                  {/* Sold Badge */}
-                  {!art.inStock && (
-                    <div className="absolute top-4 left-4 z-10">
-                      <div className="bg-red-600 text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg border border-red-400/30 rounded-sm">
-                        SOLD
+        {/* Main Grid */}
+        <div className="min-h-[60vh]">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-32 space-y-4">
+              <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+              <p className="text-stone-500 text-xs uppercase tracking-widest">Scanning Catalog...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20">
+              <p className="text-red-500 mb-4 font-serif text-xl">{error}</p>
+              <button onClick={() => fetchProducts()} className="text-stone-400 hover:text-tangerine underline text-xs uppercase tracking-widest">Retry Scan</button>
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-32 border border-dashed border-stone-800">
+              <p className="text-white font-serif text-2xl mb-2">No items found</p>
+              <p className="text-stone-500 text-sm mb-6">Adjust your search parameters or filters.</p>
+              <button onClick={clearFilters} className="text-amber-500 hover:text-tangerine text-xs uppercase tracking-widest border-b border-amber-500/50 pb-1">Clear All Filters</button>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {filteredProducts.map((prod) => (
+                  <Link key={prod.id} to={`/product/${prod.id}`} className="group block">
+                    <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-zinc-900 to-neutral-950 rounded-2xl border border-stone-800/30 shadow-2xl group-hover:shadow-amber-900/20 transition-all duration-500 mb-4">
+                      <img
+                        src={prod.imageUrl}
+                        alt={prod.title}
+                        className={`w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100 ${!prod.inStock ? 'grayscale-[50%] group-hover:grayscale-[20%]' : ''}`}
+                      />
+                      {!prod.inStock && (
+                        <div className="absolute inset-0 bg-black/30 pointer-events-none rounded-2xl" />
+                      )}
+                      {/* Sold Badge */}
+                      {!prod.inStock && (
+                        <div className="absolute top-4 left-4 z-10">
+                          <div className="bg-red-600 text-white px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] shadow-lg border border-red-400/30 rounded-sm">
+                            OUT OF STOCK
+                          </div>
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500 rounded-b-2xl">
+                        <span className="text-amber-500 text-xs uppercase tracking-[0.3em] font-medium">View Specifications</span>
                       </div>
                     </div>
-                  )}
-                  <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-500 rounded-b-2xl">
-                    <span className="text-amber-500 text-xs uppercase tracking-[0.3em] font-medium">View Details</span>
-                  </div>
-                </div>
 
-                <div className="space-y-1.5 px-2">
-                  <h3 className="font-serif text-lg text-white group-hover:text-amber-500 transition-colors truncate tracking-wide">{art.title}</h3>
-                  <p className="text-stone-500 text-xs uppercase tracking-[0.3em] detail-text">{art.artistName}</p>
-                  <div className="flex justify-between items-center pt-1.5 border-t border-stone-800/30">
-                    <span className="text-white font-mono text-sm font-medium">{convertPrice(art.price)}</span>
-                    <span className="text-stone-600 text-[10px] uppercase tracking-wider">{art.year}</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-center gap-2 mt-10 pb-6"
-            >
-              {/* Previous Button */}
-              <button
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`flex items-center gap-1 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${
-                  currentPage === 1
-                    ? 'text-stone-600 cursor-not-allowed'
-                    : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
-                }`}
-              >
-                <ChevronLeft size={14} />
-                Prev
-              </button>
-
-              {/* Page Numbers */}
-              <div className="flex items-center gap-1">
-                {getPageNumbers().map((page, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => typeof page === 'number' && goToPage(page)}
-                    disabled={page === '...'}
-                    className={`w-10 h-10 rounded-full text-sm font-medium transition-all ${
-                      page === currentPage
-                        ? 'bg-amber-500 text-stone-950'
-                        : page === '...'
-                        ? 'text-stone-600 cursor-default'
-                        : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
-                    }`}
-                  >
-                    {page}
-                  </button>
+                    <div className="space-y-1.5 px-2">
+                      <h3 className="font-serif text-lg text-white group-hover:text-amber-500 transition-colors truncate tracking-wide">{prod.title}</h3>
+                      <p className="text-stone-500 text-xs uppercase tracking-[0.3em] detail-text">{prod.manufacturerName}</p>
+                      <div className="flex justify-between items-center pt-1.5 border-t border-stone-800/30">
+                        <span className="text-white font-mono text-sm font-medium">{convertPrice(prod.price)}</span>
+                        <span className="text-stone-600 text-[10px] uppercase tracking-wider">{prod.category}</span>
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
 
-              {/* Next Button */}
-              <button
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === pagination.totalPages}
-                className={`flex items-center gap-1 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${
-                  currentPage === pagination.totalPages
-                    ? 'text-stone-600 cursor-not-allowed'
-                    : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
-                }`}
-              >
-                Next
-                <ChevronRight size={14} />
-              </button>
-            </motion.div>
-          )}
+              {/* Pagination */}
+              {pagination.totalPages > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-center gap-2 mt-10 pb-6"
+                >
+                  {/* Previous Button */}
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`flex items-center gap-1 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${currentPage === 1
+                        ? 'text-stone-600 cursor-not-allowed'
+                        : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                      }`}
+                  >
+                    <ChevronLeft size={14} />
+                    Prev
+                  </button>
 
-          {/* Pagination Info */}
-          {pagination.total > 0 && (
-            <div className="text-center text-stone-600 text-xs uppercase tracking-widest pb-8">
-              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of {pagination.total}
-            </div>
+                  {/* Page Numbers */}
+                  <div className="flex items-center gap-1">
+                    {getPageNumbers().map((page, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => typeof page === 'number' && goToPage(page)}
+                        disabled={page === '...'}
+                        className={`w-10 h-10 rounded-full text-sm font-medium transition-all ${page === currentPage
+                            ? 'bg-amber-500 text-stone-950'
+                            : page === '...'
+                              ? 'text-stone-600 cursor-default'
+                              : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                          }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === pagination.totalPages}
+                    className={`flex items-center gap-1 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all ${currentPage === pagination.totalPages
+                        ? 'text-stone-600 cursor-not-allowed'
+                        : 'text-stone-400 hover:text-amber-500 hover:bg-amber-500/10 border border-stone-800/50 hover:border-amber-500/30'
+                      }`}
+                  >
+                    Next
+                    <ChevronRight size={14} />
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Pagination Info */}
+              {pagination.total > 0 && (
+                <div className="text-center text-stone-600 text-xs uppercase tracking-widest pb-8">
+                  Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, pagination.total)} of {pagination.total}
+                </div>
+              )}
+            </>
           )}
-        </>
-        )}
-      </div>
+        </div>
       </div>
 
       {/* Slide-over Filter Panel */}
@@ -478,7 +475,7 @@ export const Gallery: React.FC = () => {
         <div className={`absolute right-0 top-0 bottom-0 w-full max-w-md bg-gradient-to-br from-zinc-900 to-neutral-950 border-l border-stone-800/50 shadow-2xl transition-transform duration-500 ${filterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-8">
-              <h2 className="font-serif text-3xl text-white tracking-wider">Filters</h2>
+              <h2 className="font-serif text-3xl text-white tracking-wider">Parameters</h2>
               <button onClick={() => setFilterOpen(false)} className="text-stone-500 hover:text-tangerine transition-colors w-10 h-10 rounded-full hover:bg-stone-800/50 flex items-center justify-center">
                 <X size={24} />
               </button>
@@ -503,18 +500,18 @@ export const Gallery: React.FC = () => {
                 </div>
               </div>
 
-              {/* Mediums */}
+              {/* Types */}
               <div>
-                <h3 className="text-amber-500 text-xs uppercase tracking-[0.3em] mb-4 font-bold">Medium</h3>
+                <h3 className="text-amber-500 text-xs uppercase tracking-[0.3em] mb-4 font-bold">Action / Type</h3>
                 <div className="space-y-2">
-                  {mediums.map(med => (
+                  {types.map(typ => (
                     <button
-                      key={med}
-                      onClick={() => setSelectedMedium(med)}
-                      className={`flex items-center justify-between w-full text-left py-3 px-4 rounded-xl transition-all ${selectedMedium === med ? 'bg-amber-500/10 border border-amber-500/30 text-white' : 'text-stone-400 hover:text-tangerine hover:bg-stone-800/30'}`}
+                      key={typ}
+                      onClick={() => setSelectedType(typ)}
+                      className={`flex items-center justify-between w-full text-left py-3 px-4 rounded-xl transition-all ${selectedType === typ ? 'bg-amber-500/10 border border-amber-500/30 text-white' : 'text-stone-400 hover:text-tangerine hover:bg-stone-800/30'}`}
                     >
-                      <span className="text-sm truncate pr-4 tracking-wide">{med}</span>
-                      {selectedMedium === med && <Check size={14} className="text-amber-500" />}
+                      <span className="text-sm truncate pr-4 tracking-wide">{typ}</span>
+                      {selectedType === typ && <Check size={14} className="text-amber-500" />}
                     </button>
                   ))}
                 </div>

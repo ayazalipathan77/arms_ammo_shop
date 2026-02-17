@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle, Star, ArrowRight } from 'lucide-react';
 
-export const ArtistConfirmation: React.FC = () => {
+export const BrandConfirmation: React.FC = () => {
    const [searchParams] = useSearchParams();
    const status = searchParams.get('status');
    const orderRef = searchParams.get('order');
@@ -52,7 +52,7 @@ export const ArtistConfirmation: React.FC = () => {
                <div className="inline-flex items-center gap-2 mb-4">
                   <Star className="text-amber-500" size={24} />
                   <h1 className="font-serif text-4xl font-bold tracking-[0.15em] text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">
-                     MURAQQA
+                     ARMS & AMMO
                   </h1>
                   <span className="text-3xl text-amber-400" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
                   <Star className="text-amber-500" size={24} />
@@ -75,7 +75,7 @@ export const ArtistConfirmation: React.FC = () => {
                      <h2 className="text-white font-serif text-2xl mb-4">Availability Confirmed!</h2>
 
                      <p className="text-stone-400 mb-6">
-                        Thank you for confirming the availability of your artwork for Order #{orderRef?.toUpperCase()}.
+                        Thank you for confirming the availability of your product for Order #{orderRef?.toUpperCase()}.
                      </p>
 
                      <div className="bg-stone-800/50 rounded-lg p-4 mb-6">
@@ -105,12 +105,12 @@ export const ArtistConfirmation: React.FC = () => {
                      <h2 className="text-white font-serif text-2xl mb-4">Availability Declined</h2>
 
                      <p className="text-stone-400 mb-6">
-                        We've recorded that the artwork for Order #{orderRef?.toUpperCase()} is not available.
+                        We've recorded that the product for Order #{orderRef?.toUpperCase()} is not available.
                      </p>
 
                      <div className="bg-stone-800/50 rounded-lg p-4 mb-6">
                         <p className="text-stone-400 text-sm">
-                           The collector has been notified and the order has been cancelled.
+                           The customer has been notified and the order has been cancelled.
                            If this was a mistake, please contact our support team immediately.
                         </p>
                      </div>
@@ -118,7 +118,7 @@ export const ArtistConfirmation: React.FC = () => {
                )}
 
                <Link
-                  to="/artist-dashboard"
+                  to="/brand-dashboard"
                   className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-600 text-stone-950 px-8 py-3 font-bold uppercase tracking-widest text-xs rounded-lg hover:from-amber-400 hover:to-yellow-500 transition-all shadow-lg shadow-amber-900/30"
                >
                   Go to Dashboard
@@ -127,7 +127,7 @@ export const ArtistConfirmation: React.FC = () => {
 
                <div className="mt-6">
                   <a
-                     href="mailto:support@muraqqa.art"
+                     href="mailto:support@armsammo.shop"
                      className="text-stone-500 hover:text-amber-500 text-sm transition-colors"
                   >
                      Need help? Contact Support
@@ -143,7 +143,7 @@ export const ArtistConfirmation: React.FC = () => {
                className="text-center mt-8"
             >
                <p className="text-stone-600 text-xs">
-                  © {new Date().getFullYear()} Muraqqa <span style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
+                  © {new Date().getFullYear()} Arms & Ammo <span style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
                </p>
             </motion.div>
          </motion.div>

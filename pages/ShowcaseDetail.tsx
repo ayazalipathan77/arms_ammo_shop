@@ -8,26 +8,26 @@ import { ScrambleText } from '../components/ui/ScrambleText';
 
 const VirtualTourModal = lazy(() => import('../components/VirtualTour/VirtualTourModal'));
 
-export const ExhibitionDetail = () => {
+export const ShowcaseDetail = () => {
     const { id } = useParams<{ id: string }>();
-    const [exhibition, setExhibition] = useState<Exhibition | null>(null);
+    const [showcase, setShowcase] = useState<Exhibition | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedImageIdx, setSelectedImageIdx] = useState<number | null>(null);
     const [showVirtualTour, setShowVirtualTour] = useState(false);
 
     useEffect(() => {
-        const fetchExhibition = async () => {
+        const fetchShowcase = async () => {
             if (!id) return;
             try {
                 const res = await exhibitionApi.getById(id);
-                setExhibition(res.exhibition);
+                setShowcase(res.exhibition);
             } catch (error) {
-                console.error('Failed to fetch exhibition', error);
+                console.error('Failed to fetch showcase', error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchExhibition();
+        fetchShowcase();
     }, [id]);
 
     // Keyboard navigation for lightbox
@@ -51,12 +51,12 @@ export const ExhibitionDetail = () => {
         );
     }
 
-    if (!exhibition) {
+    if (!showcase) {
         return (
             <div className="min-h-screen bg-void flex flex-col items-center justify-center text-pearl">
-                <h1 className="text-4xl font-display mb-4">Exhibition Not Found</h1>
-                <Link to="/exhibitions" className="text-tangerine hover:underline flex items-center gap-2">
-                    <ArrowLeft size={20} /> Back to Exhibitions
+                <h1 className="text-4xl font-display mb-4">Showcase Not Found</h1>
+                <Link to="/collections" className="text-tangerine hover:underline flex items-center gap-2">
+                    <ArrowLeft size={20} /> Back to Showcases
                 </Link>
             </div>
         );
@@ -69,12 +69,12 @@ export const ExhibitionDetail = () => {
         return (match && match[2].length === 11) ? match[2] : null;
     };
 
-    const videoId = exhibition.videoUrl ? getYoutubeId(exhibition.videoUrl) : null;
+    const videoId = showcase.videoUrl ? getYoutubeId(showcase.videoUrl) : null;
 
     // All viewable images: cover + gallery
     const allImages = [
-        exhibition.imageUrl,
-        ...(exhibition.galleryImages || [])
+        showcase.imageUrl,
+        ...(showcase.galleryImages || [])
     ];
 
     const getStatusStyle = (status: string) => {
@@ -87,9 +87,9 @@ export const ExhibitionDetail = () => {
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case 'CURRENT': return 'Now Open';
-            case 'UPCOMING': return 'Upcoming';
-            default: return 'Past Exhibition';
+            case 'CURRENT': return 'Actively Showcasing';
+            case 'UPCOMING': return 'Coming Soon';
+            default: return 'Past Collection';
         }
     };
 
@@ -116,8 +116,8 @@ export const ExhibitionDetail = () => {
                     initial={{ scale: 1.1 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 1.2, ease: 'easeOut' }}
-                    src={exhibition.imageUrl}
-                    alt={exhibition.title}
+                    src={showcase.imageUrl}
+                    alt={showcase.title}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 {/* Dark gradient overlay */}
@@ -126,15 +126,15 @@ export const ExhibitionDetail = () => {
 
                 {/* Back Link - overlaid */}
                 <div className="absolute top-28 left-6 md:left-12 z-20 pointer-events-none">
-                    <Link to="/exhibitions" className="inline-flex items-center gap-2 text-pearl hover:text-tangerine uppercase tracking-widest text-xs pointer-events-auto transition-colors bg-void/50 backdrop-blur-md border border-pearl/10 px-4 py-2 rounded-full font-bold">
-                        <ArrowLeft size={14} /> Back to Exhibitions
+                    <Link to="/collections" className="inline-flex items-center gap-2 text-pearl hover:text-tangerine uppercase tracking-widest text-xs pointer-events-auto transition-colors bg-void/50 backdrop-blur-md border border-pearl/10 px-4 py-2 rounded-full font-bold">
+                        <ArrowLeft size={14} /> Back to Showcases
                     </Link>
                 </div>
 
                 {/* Status Badge */}
                 <div className="absolute top-28 right-6 md:right-12 z-20">
-                    <div className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] ${getStatusStyle(exhibition.status)}`}>
-                        {getStatusLabel(exhibition.status)}
+                    <div className={`px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] ${getStatusStyle(showcase.status)}`}>
+                        {getStatusLabel(showcase.status)}
                     </div>
                 </div>
 
@@ -154,12 +154,12 @@ export const ExhibitionDetail = () => {
                             transition={{ duration: 0.6, delay: 0.3 }}
                         >
                             <h1 className="text-5xl md:text-7xl lg:text-8xl font-display text-pearl leading-[0.9] mb-6 max-w-4xl">
-                                <ScrambleText text={exhibition.title} />
+                                <ScrambleText text={showcase.title} />
                             </h1>
 
-                            {exhibition.description && (
+                            {showcase.description && (
                                 <p className="text-pearl/70 leading-relaxed text-base md:text-lg max-w-2xl border-l-2 border-tangerine pl-6 mb-8">
-                                    {exhibition.description}
+                                    {showcase.description}
                                 </p>
                             )}
 
@@ -167,17 +167,17 @@ export const ExhibitionDetail = () => {
                             <div className="flex flex-wrap items-center gap-6 text-xs font-mono uppercase tracking-widest text-pearl/50">
                                 <span className="flex items-center gap-2">
                                     <Calendar size={14} className="text-tangerine" />
-                                    {new Date(exhibition.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                    {exhibition.endDate && ` — ${new Date(exhibition.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
+                                    {new Date(showcase.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    {showcase.endDate && ` — ${new Date(showcase.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
                                 </span>
                                 <span className="flex items-center gap-2">
                                     <MapPin size={14} className="text-tangerine" />
-                                    {exhibition.location}
+                                    {showcase.location}
                                 </span>
                                 {allImages.length > 1 && (
                                     <span className="flex items-center gap-2">
                                         <ImageIcon size={14} className="text-tangerine" />
-                                        {allImages.length} photos
+                                        {allImages.length} High-Res Views
                                     </span>
                                 )}
                             </div>
@@ -200,13 +200,13 @@ export const ExhibitionDetail = () => {
                         {/* Date Card */}
                         <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
                             <Calendar size={20} className="text-tangerine mb-3" />
-                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Dates</p>
+                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Duration</p>
                             <p className="text-pearl font-mono text-sm">
-                                {new Date(exhibition.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                                {new Date(showcase.startDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
                             </p>
-                            {exhibition.endDate && (
+                            {showcase.endDate && (
                                 <p className="text-warm-gray/70 text-xs font-mono mt-1">
-                                    to {new Date(exhibition.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                    to {new Date(showcase.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                 </p>
                             )}
                         </div>
@@ -214,40 +214,40 @@ export const ExhibitionDetail = () => {
                         {/* Location Card */}
                         <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
                             <MapPin size={20} className="text-tangerine mb-3" />
-                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Location</p>
-                            <p className="text-pearl text-sm">{exhibition.location}</p>
+                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Showroom</p>
+                            <p className="text-pearl text-sm">{showcase.location}</p>
                         </div>
 
                         {/* Gallery Count Card */}
                         <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
                             <ImageIcon size={20} className="text-tangerine mb-3" />
-                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Gallery</p>
-                            <p className="text-pearl text-sm">{allImages.length} {allImages.length === 1 ? 'photograph' : 'photographs'}</p>
+                            <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Inventory</p>
+                            <p className="text-pearl text-sm">{allImages.length} {allImages.length === 1 ? 'Detailed View' : 'Detailed Views'}</p>
                         </div>
 
                         {/* Virtual / Video Card */}
-                        {exhibition.isVirtual ? (
+                        {showcase.isVirtual ? (
                             <button
                                 onClick={() => setShowVirtualTour(true)}
                                 className="bg-charcoal/40 backdrop-blur-sm border border-tangerine/30 p-6 hover:border-tangerine hover:bg-tangerine/10 transition-all text-left group cursor-pointer"
                             >
                                 <Box size={20} className="text-tangerine mb-3 group-hover:scale-110 transition-transform" />
                                 <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Virtual Tour</p>
-                                <p className="text-tangerine text-sm font-bold">Enter 3D Gallery →</p>
+                                <p className="text-tangerine text-sm font-bold">Enter 3D Experience →</p>
                             </button>
                         ) : (
                             <div className="bg-charcoal/40 backdrop-blur-sm border border-pearl/10 p-6 hover:border-tangerine/30 transition-colors">
                                 {videoId ? (
                                     <>
                                         <Play size={20} className="text-tangerine mb-3" />
-                                        <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Exhibition Film</p>
+                                        <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Showcase Film</p>
                                         <p className="text-pearl text-sm">Video available</p>
                                     </>
                                 ) : (
                                     <>
                                         <Eye size={20} className="text-tangerine mb-3" />
                                         <p className="text-[10px] text-warm-gray uppercase tracking-widest mb-2">Status</p>
-                                        <p className="text-pearl text-sm">{getStatusLabel(exhibition.status)}</p>
+                                        <p className="text-pearl text-sm">{getStatusLabel(showcase.status)}</p>
                                     </>
                                 )}
                             </div>
@@ -255,7 +255,7 @@ export const ExhibitionDetail = () => {
                     </motion.div>
 
                     {/* ─── VIRTUAL TOUR CTA ─── */}
-                    {exhibition.isVirtual && allImages.length > 0 && (
+                    {showcase.isVirtual && allImages.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -273,8 +273,8 @@ export const ExhibitionDetail = () => {
                                             <Box size={24} className="text-tangerine group-hover:text-void transition-colors duration-300" />
                                         </div>
                                         <div className="text-left">
-                                            <h3 className="text-pearl text-lg font-display uppercase tracking-wider group-hover:text-tangerine transition-colors">Enter Virtual Gallery</h3>
-                                            <p className="text-warm-gray/60 text-xs font-mono">Walk through a 3D gallery space · {allImages.length} artworks displayed · WASD + mouse controls</p>
+                                            <h3 className="text-pearl text-lg font-display uppercase tracking-wider group-hover:text-tangerine transition-colors">Enter Virtual Experience</h3>
+                                            <p className="text-warm-gray/60 text-xs font-mono">Walk through a 3D tactical space · {allImages.length} items showcased · WASD + mouse controls</p>
                                         </div>
                                     </div>
                                     <div className="text-pearl/30 group-hover:text-tangerine transition-colors text-2xl font-display">→</div>
@@ -293,12 +293,12 @@ export const ExhibitionDetail = () => {
                         >
                             <div className="flex items-center gap-3 mb-8 border-b border-pearl/10 pb-4">
                                 <Play size={22} className="text-tangerine" />
-                                <h2 className="text-2xl font-display text-pearl uppercase tracking-tight">Exhibition Film</h2>
+                                <h2 className="text-2xl font-display text-pearl uppercase tracking-tight">Showcase Film</h2>
                             </div>
                             <div className="w-full aspect-video border border-pearl/10 bg-black/50 overflow-hidden">
                                 <iframe
                                     src={`https://www.youtube.com/embed/${videoId}`}
-                                    title="Exhibition Video"
+                                    title="Showcase Video"
                                     className="w-full h-full"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
@@ -308,7 +308,7 @@ export const ExhibitionDetail = () => {
                     )}
 
                     {/* ─── GALLERY SECTION ─── */}
-                    {exhibition.galleryImages && exhibition.galleryImages.length > 0 && (
+                    {showcase.galleryImages && showcase.galleryImages.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 30 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -317,31 +317,30 @@ export const ExhibitionDetail = () => {
                             <div className="flex items-end justify-between mb-8 border-b border-pearl/10 pb-4">
                                 <div className="flex items-center gap-3">
                                     <ImageIcon size={22} className="text-tangerine" />
-                                    <h2 className="text-2xl font-display text-pearl uppercase tracking-tight">Gallery View</h2>
+                                    <h2 className="text-2xl font-display text-pearl uppercase tracking-tight">Showroom Preview</h2>
                                 </div>
                                 <span className="text-tangerine font-mono text-xs uppercase tracking-widest">
-                                    {exhibition.galleryImages.length} {exhibition.galleryImages.length === 1 ? 'Image' : 'Images'}
+                                    {showcase.galleryImages.length} {showcase.galleryImages.length === 1 ? 'Shot' : 'Shots'}
                                 </span>
                             </div>
 
                             {/* Masonry-style grid */}
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                {exhibition.galleryImages.map((img, idx) => (
+                                {showcase.galleryImages.map((img, idx) => (
                                     <motion.div
                                         key={idx}
                                         initial={{ opacity: 0, y: 20 }}
                                         whileInView={{ opacity: 1, y: 0 }}
                                         viewport={{ once: true }}
                                         transition={{ delay: idx * 0.04 }}
-                                        className={`relative group cursor-zoom-in overflow-hidden border border-pearl/5 hover:border-tangerine transition-colors duration-300 ${
-                                            idx === 0 && exhibition.galleryImages!.length > 3 ? 'md:col-span-2 md:row-span-2' : ''
-                                        }`}
+                                        className={`relative group cursor-zoom-in overflow-hidden border border-pearl/5 hover:border-tangerine transition-colors duration-300 ${idx === 0 && showcase.galleryImages!.length > 3 ? 'md:col-span-2 md:row-span-2' : ''
+                                            }`}
                                         onClick={() => setSelectedImageIdx(idx + 1)}
                                     >
-                                        <div className={`${idx === 0 && exhibition.galleryImages!.length > 3 ? 'aspect-[4/3]' : 'aspect-square'} overflow-hidden`}>
+                                        <div className={`${idx === 0 && showcase.galleryImages!.length > 3 ? 'aspect-[4/3]' : 'aspect-square'} overflow-hidden`}>
                                             <img
                                                 src={img}
-                                                alt={`${exhibition.title} - Gallery ${idx + 1}`}
+                                                alt={`${showcase.title} - View ${idx + 1}`}
                                                 className="w-full h-full object-cover grayscale-[15%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
                                             />
                                         </div>
@@ -350,7 +349,7 @@ export const ExhibitionDetail = () => {
                                             <Expand size={20} className="text-pearl" />
                                         </div>
                                         <div className="absolute bottom-2 right-2 bg-void/70 backdrop-blur-sm text-pearl text-[10px] font-mono px-2 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {idx + 1} / {exhibition.galleryImages!.length}
+                                            {idx + 1} / {showcase.galleryImages!.length}
                                         </div>
                                     </motion.div>
                                 ))}
@@ -406,7 +405,7 @@ export const ExhibitionDetail = () => {
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
                             src={allImages[selectedImageIdx]}
-                            alt={`${exhibition.title} - Image ${selectedImageIdx + 1}`}
+                            alt={`${showcase.title} - Image ${selectedImageIdx + 1}`}
                             className="max-w-[90vw] max-h-[85vh] object-contain shadow-2xl shadow-tangerine/10"
                             onClick={e => e.stopPropagation()}
                         />
@@ -428,9 +427,8 @@ export const ExhibitionDetail = () => {
                                     <button
                                         key={idx}
                                         onClick={(e) => { e.stopPropagation(); setSelectedImageIdx(idx); }}
-                                        className={`w-12 h-12 shrink-0 overflow-hidden border-2 transition-all ${
-                                            idx === selectedImageIdx ? 'border-tangerine opacity-100' : 'border-transparent opacity-40 hover:opacity-70'
-                                        }`}
+                                        className={`w-12 h-12 shrink-0 overflow-hidden border-2 transition-all ${idx === selectedImageIdx ? 'border-tangerine opacity-100' : 'border-transparent opacity-40 hover:opacity-70'
+                                            }`}
                                     >
                                         <img src={img} alt="" className="w-full h-full object-cover" />
                                     </button>
@@ -447,7 +445,7 @@ export const ExhibitionDetail = () => {
                     <div className="fixed inset-0 z-[100] bg-void flex items-center justify-center">
                         <div className="text-center">
                             <div className="w-6 h-6 bg-tangerine animate-ping mx-auto mb-4" />
-                            <p className="text-warm-gray font-mono text-xs uppercase tracking-widest">Loading 3D Gallery...</p>
+                            <p className="text-warm-gray font-mono text-xs uppercase tracking-widest">Loading Tactical Experience...</p>
                         </div>
                     </div>
                 }>
@@ -455,7 +453,7 @@ export const ExhibitionDetail = () => {
                         isOpen={showVirtualTour}
                         onClose={() => setShowVirtualTour(false)}
                         images={allImages}
-                        title={exhibition.title}
+                        title={showcase.title}
                     />
                 </Suspense>
             )}
