@@ -11,7 +11,7 @@ const Footer = () => {
                     <Link to="/" className="block mb-6">
                         <div className="flex items-center gap-2">
                             <h2 className="font-display text-3xl font-bold tracking-widest text-white">
-                                MURAQQA
+                                ARMS & AMMO
                             </h2>
                             <span className="text-2xl text-tangerine" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
                         </div>
@@ -67,7 +67,7 @@ const Footer = () => {
 
             {/* Bottom */}
             <div className="border-t border-pearl/10 pt-10 flex flex-col md:flex-row justify-between items-center text-[10px] font-mono uppercase tracking-widest text-warm-gray/50">
-                <p>&copy; {new Date().getFullYear()} Muraqqa <span className="text-sm" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>. All Rights Reserved.</p>
+                <p>&copy; {new Date().getFullYear()} Arms & Ammo <span className="text-sm" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>. All Rights Reserved.</p>
                 <p className="mt-4 md:mt-0">Developed by Ayaz Ali • 03453662534</p>
             </div>
         </footer>

@@ -162,125 +162,125 @@ export const InvoiceView: React.FC = () => {
             {/* Invoice Layout */}
             <div className="max-w-[210mm] mx-auto bg-white min-h-[297mm] relative p-12 md:p-16 border border-zinc-100 shadow-xl print:shadow-none print:border-none print:w-full">
 
-            {/* Header Section */}
-            <div className="flex justify-between items-start mb-24">
-               <div className="space-y-6">
-                  {/* Logo */}
-                  <div className="flex flex-col">
-                     <div className="flex items-center gap-3">
-                        <h1 className="font-display text-5xl tracking-tight leading-none text-black selection:bg-black selection:text-white">
-                           MURAQQA
-                        </h1>
-                        <span className="text-3xl text-amber-600" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
+               {/* Header Section */}
+               <div className="flex justify-between items-start mb-24">
+                  <div className="space-y-6">
+                     {/* Logo */}
+                     <div className="flex flex-col">
+                        <div className="flex items-center gap-3">
+                           <h1 className="font-display text-5xl tracking-tight leading-none text-black selection:bg-black selection:text-white">
+                              ARMS & AMMO
+                           </h1>
+                           <span className="text-3xl text-amber-600" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
+                        </div>
+                        <span className="text-[10px] uppercase tracking-[0.3em] font-medium mt-2 ml-1 text-black">Premium Firearms & Gear</span>
                      </div>
-                     <span className="text-[10px] uppercase tracking-[0.3em] font-medium mt-2 ml-1 text-black">Contemporary Art Gallery</span>
+
+                     <div className="text-xs font-mono space-y-1 mt-8 opacity-60">
+                        <p>DHA Phase 6, Lahore</p>
+                        <p>Pakistan</p>
+                        <p>support@armsammo.shop</p>
+                     </div>
                   </div>
 
-                  <div className="text-xs font-mono space-y-1 mt-8 opacity-60">
-                     <p>DHA Phase 6, Lahore</p>
-                     <p>Pakistan</p>
-                     <p>support@muraqqa.art</p>
+                  <div className="text-right">
+                     <p className="text-4xl font-mono mb-2">{formatPrice(order.totalAmount)}</p>
+                     <p className="text-[10px] uppercase tracking-widest font-bold opacity-40">Total Due</p>
                   </div>
                </div>
 
-               <div className="text-right">
-                  <p className="text-4xl font-mono mb-2">{formatPrice(order.totalAmount)}</p>
-                  <p className="text-[10px] uppercase tracking-widest font-bold opacity-40">Total Due</p>
+               {/* Invoice Meta */}
+               <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 mb-20 pb-12 border-b border-black">
+                  <div>
+                     <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-2">Invoice No</p>
+                     <p className="font-mono text-sm">{order.id.slice(0, 8).toUpperCase()}</p>
+                  </div>
+                  <div>
+                     <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-2">Date Issued</p>
+                     <p className="font-mono text-sm">{new Date(order.date).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                     <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-2">Billed To</p>
+                     <p className="font-display text-lg">{order.customerName}</p>
+                     <p className="font-mono text-xs opacity-60 break-all">{order.customerEmail}</p>
+                  </div>
+                  <div>
+                     <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-2">Ship To</p>
+                     <p className="font-mono text-xs leading-relaxed">
+                        {order.shippingAddress},<br />
+                        {order.shippingCountry}
+                     </p>
+                  </div>
                </div>
-            </div>
 
-            {/* Invoice Meta */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 mb-20 pb-12 border-b border-black">
-               <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-2">Invoice No</p>
-                  <p className="font-mono text-sm">{order.id.slice(0, 8).toUpperCase()}</p>
-               </div>
-               <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-2">Date Issued</p>
-                  <p className="font-mono text-sm">{new Date(order.date).toLocaleDateString()}</p>
-               </div>
-               <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-2">Billed To</p>
-                  <p className="font-display text-lg">{order.customerName}</p>
-                  <p className="font-mono text-xs opacity-60 break-all">{order.customerEmail}</p>
-               </div>
-               <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mb-2">Ship To</p>
-                  <p className="font-mono text-xs leading-relaxed">
-                     {order.shippingAddress},<br />
-                     {order.shippingCountry}
-                  </p>
-               </div>
-            </div>
-
-            {/* Line Items */}
-            <div className="mb-12">
-               <table className="w-full">
-                  <thead>
-                     <tr className="border-b border-black">
-                        <th className="text-left py-4 text-[10px] uppercase tracking-widest font-bold opacity-40 w-1/2">Artwork</th>
-                        <th className="text-center py-4 text-[10px] uppercase tracking-widest font-bold opacity-40">Category</th>
-                        <th className="text-right py-4 text-[10px] uppercase tracking-widest font-bold opacity-40">Price</th>
-                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-100">
-                     {order.items.map((item, idx) => (
-                        <tr key={`${item.id}-${idx}`}>
-                           <td className="py-8">
-                              <div className="flex gap-6 items-start">
-                                 <div className="w-20 h-20 bg-zinc-50 border border-zinc-100 overflow-hidden shrink-0 grayscale">
-                                    <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
-                                 </div>
-                                 <div>
-                                    <p className="font-display text-xl mb-1">{item.title}</p>
-                                    <p className="text-xs uppercase tracking-wider font-bold opacity-60 mb-2">{item.artistName}</p>
-                                    <p className="text-[10px] font-mono opacity-40">{item.dimensions} — {item.medium}</p>
-                                 </div>
-                              </div>
-                           </td>
-                           <td className="py-8 text-center text-xs font-mono uppercase">
-                              {item.selectedPrintSize === 'ORIGINAL' || !item.selectedPrintSize ? 'Original' : `Print: ${item.selectedPrintSize}`}
-                           </td>
-                           <td className="py-8 text-right font-mono text-sm">
-                              {formatPrice(item.finalPrice)}
-                           </td>
+               {/* Line Items */}
+               <div className="mb-12">
+                  <table className="w-full">
+                     <thead>
+                        <tr className="border-b border-black">
+                           <th className="text-left py-4 text-[10px] uppercase tracking-widest font-bold opacity-40 w-1/2">Product</th>
+                           <th className="text-center py-4 text-[10px] uppercase tracking-widest font-bold opacity-40">Category</th>
+                           <th className="text-right py-4 text-[10px] uppercase tracking-widest font-bold opacity-40">Price</th>
                         </tr>
-                     ))}
-                  </tbody>
-               </table>
-            </div>
+                     </thead>
+                     <tbody className="divide-y divide-zinc-100">
+                        {order.items.map((item, idx) => (
+                           <tr key={`${item.id}-${idx}`}>
+                              <td className="py-8">
+                                 <div className="flex gap-6 items-start">
+                                    <div className="w-20 h-20 bg-zinc-50 border border-zinc-100 overflow-hidden shrink-0 grayscale">
+                                       <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div>
+                                       <p className="font-display text-xl mb-1">{item.title}</p>
+                                       <p className="text-xs uppercase tracking-wider font-bold opacity-60 mb-2">{item.artistName}</p>
+                                       <p className="text-[10px] font-mono opacity-40">{item.dimensions} — {item.medium}</p>
+                                    </div>
+                                 </div>
+                              </td>
+                              <td className="py-8 text-center text-xs font-mono uppercase">
+                                 {item.selectedPrintSize === 'ORIGINAL' || !item.selectedPrintSize ? 'Original' : `Print: ${item.selectedPrintSize}`}
+                              </td>
+                              <td className="py-8 text-right font-mono text-sm">
+                                 {formatPrice(item.finalPrice)}
+                              </td>
+                           </tr>
+                        ))}
+                     </tbody>
+                  </table>
+               </div>
 
-            {/* Summary */}
-            <div className="flex justify-end mb-24">
-               <div className="w-64 space-y-4">
-                  <div className="flex justify-between text-xs font-mono">
-                     <span className="opacity-40">Subtotal</span>
-                     <span>{formatPrice(itemsTotal)}</span>
-                  </div>
-                  <div className="flex justify-between text-xs font-mono">
-                     <span className="opacity-40">Shipping & Tax</span>
-                     <span>{formatPrice(shippingAndTax)}</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-display pt-4 border-t border-black">
-                     <span>Total</span>
-                     <span>{formatPrice(order.totalAmount)}</span>
+               {/* Summary */}
+               <div className="flex justify-end mb-24">
+                  <div className="w-64 space-y-4">
+                     <div className="flex justify-between text-xs font-mono">
+                        <span className="opacity-40">Subtotal</span>
+                        <span>{formatPrice(itemsTotal)}</span>
+                     </div>
+                     <div className="flex justify-between text-xs font-mono">
+                        <span className="opacity-40">Shipping & Tax</span>
+                        <span>{formatPrice(shippingAndTax)}</span>
+                     </div>
+                     <div className="flex justify-between text-lg font-display pt-4 border-t border-black">
+                        <span>Total</span>
+                        <span>{formatPrice(order.totalAmount)}</span>
+                     </div>
                   </div>
                </div>
-            </div>
 
-            {/* Footer */}
-            <div className="text-center space-y-4">
-               <div className="h-px w-16 bg-black mx-auto mb-8"></div>
-               <p className="font-display text-2xl">Thank you for your patronage</p>
-               <div className="flex justify-center gap-6 text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">
-                  <span>www.muraqqa.art</span>
-                  <span>•</span>
-                  <span>est. 2024</span>
+               {/* Footer */}
+               <div className="text-center space-y-4">
+                  <div className="h-px w-16 bg-black mx-auto mb-8"></div>
+                  <p className="font-display text-2xl">Thank you for your patronage</p>
+                  <div className="flex justify-center gap-6 text-[10px] uppercase tracking-[0.2em] font-bold opacity-40">
+                     <span>www.armsammo.shop</span>
+                     <span>•</span>
+                     <span>est. 2024</span>
+                  </div>
                </div>
-            </div>
 
+            </div>
          </div>
-      </div>
       </>
    );
 };

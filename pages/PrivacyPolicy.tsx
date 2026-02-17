@@ -13,8 +13,8 @@ export const PrivacyPolicy: React.FC = () => {
                text: 'When you create an account, make a purchase, or contact us, we may collect your name, email address, phone number, shipping address, billing address, and payment information.'
             },
             {
-               subtitle: 'Artist Information',
-               text: 'If you register as an artist, we additionally collect your biography, portfolio URL, city of origin, and artwork details including images, descriptions, dimensions, and pricing.'
+               subtitle: 'Brand Information',
+               text: 'If you register as a brand or manufacturer, we additionally collect your company profile, website URL, location, and product details including images, descriptions, specifications, and pricing.'
             },
             {
                subtitle: 'Browsing Data',
@@ -33,7 +33,7 @@ export const PrivacyPolicy: React.FC = () => {
                text: 'We use the information we collect to:'
             },
             {
-               text: '- Process and fulfil artwork purchases and shipping arrangements\n- Manage your account and provide customer support\n- Communicate order updates, shipping notifications, and artist confirmations\n- Curate and personalise your gallery browsing experience\n- Send exhibition announcements and newsletter updates (with your consent)\n- Verify artist identities and approve artist accounts\n- Process payments securely through our third-party payment providers\n- Improve our website, services, and overall user experience\n- Comply with legal obligations and protect against fraud'
+               text: '- Process and fulfil product purchases and shipping arrangements\n- Manage your account and provide customer support\n- Communicate order updates, shipping notifications, and brand confirmations\n- Curate and personalise your shop browsing experience\n- Send product announcements and newsletter updates (with your consent)\n- Verify brand identities and approve brand accounts\n- Process payments securely through our third-party payment providers\n- Improve our website, services, and overall user experience\n- Comply with legal obligations and protect against fraud'
             }
          ]
       },
@@ -46,11 +46,11 @@ export const PrivacyPolicy: React.FC = () => {
             },
             {
                subtitle: 'Shipping Partners',
-               text: 'We share your shipping address and contact details with our logistics partners to deliver purchased artworks safely and securely.'
+               text: 'We share your shipping address and contact details with our logistics partners to deliver purchased products safely and securely.'
             },
             {
-               subtitle: 'Artists',
-               text: 'When you purchase an artwork, relevant order information is shared with the artist to confirm availability and coordinate fulfilment.'
+               subtitle: 'Brands',
+               text: 'When you purchase a product, relevant order information is shared with the manufacturer to confirm availability and coordinate fulfilment.'
             },
             {
                subtitle: 'Service Providers',
@@ -65,10 +65,10 @@ export const PrivacyPolicy: React.FC = () => {
          title: '4. Intellectual Property & Artwork',
          content: [
             {
-               text: 'All artworks displayed on Muraqqa remain the intellectual property of the respective artists. Purchasing an artwork grants you ownership of the physical piece but does not transfer copyright or reproduction rights unless explicitly agreed upon in writing.'
+               text: 'All products displayed on Arms & Ammo remain the intellectual property of the respective brands. Purchasing an item grants you ownership of the physical product but does not transfer copyright or reproduction rights unless explicitly agreed upon in writing.'
             },
             {
-               text: 'Images, descriptions, and other content on this website are protected by copyright. Viewing or purchasing artwork from Muraqqa grants only a limited, personal, non-commercial licence. Reproduction, distribution, or creation of derivative works from any content on this site without prior written permission is prohibited.'
+               text: 'Images, descriptions, and other content on this website are protected by copyright. Viewing or purchasing from Arms & Ammo grants only a limited, personal, non-commercial licence. Reproduction, distribution, or creation of derivative works from any content on this site without prior written permission is prohibited.'
             }
          ]
       },
@@ -104,7 +104,7 @@ export const PrivacyPolicy: React.FC = () => {
                text: '- Access: Request a copy of the personal information we hold about you\n- Correction: Request that we update or correct inaccurate information\n- Deletion: Request that we delete your personal data, subject to legal retention requirements\n- Opt-out: Unsubscribe from marketing communications at any time\n- Data Portability: Request your data in a structured, machine-readable format'
             },
             {
-               text: 'To exercise any of these rights, please contact us at privacy@muraqqa.art.'
+               text: 'To exercise any of these rights, please contact us at privacy@armsammo.shop.'
             }
          ]
       },
@@ -139,7 +139,7 @@ export const PrivacyPolicy: React.FC = () => {
                text: 'If you have any questions about this Privacy Policy or how we handle your data, please contact us at:'
             },
             {
-               text: 'Muraqqa Art Gallery\nDHA Phase 6, Lahore, Punjab, Pakistan\nEmail: privacy@muraqqa.art\nPhone: Available upon request'
+               text: 'Arms & Ammo Shop\nDHA Phase 6, Lahore, Punjab, Pakistan\nEmail: privacy@armsammo.shop\nPhone: Available upon request'
             }
          ]
       }
@@ -180,7 +180,7 @@ export const PrivacyPolicy: React.FC = () => {
                   Last Updated: January 2025
                </p>
                <p className="text-warm-gray mt-6 leading-relaxed">
-                  At Muraqqa Art Gallery, we are committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website, create an account, or make a purchase.
+                  At Arms & Ammo Shop, we are committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website, create an account, or make a purchase.
                </p>
             </motion.div>
 

@@ -482,7 +482,7 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
 
             // Send to admin email
             sendEmailAsync(
-                env.SMTP_USER || 'admin@muraqqa.art',
+                env.SMTP_USER || 'admin@armsammo.shop',
                 `Artist Confirmed: Order #${order.id.slice(-8).toUpperCase()}`,
                 emailContent
             );
@@ -633,7 +633,7 @@ export const markOrderPaid = async (req: Request, res: Response): Promise<void> 
         // Send confirmation email to collector
         sendEmailAsync(
             order.user.email,
-            'Payment Confirmed - Muraqqa Art Gallery',
+            'Payment Confirmed - Arms & Ammo Shop',
             getOrderConfirmationTemplate(order as any)
         );
 

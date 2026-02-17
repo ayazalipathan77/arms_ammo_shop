@@ -99,7 +99,7 @@ export const createPaymentIntent = async (req: Request, res: Response): Promise<
                 orderId: order.id,
                 userId: req.user.userId,
             },
-            description: `Muraqqa Art Gallery - Order ${order.id}`,
+            description: `Arms & Ammo Shop - Order ${order.id}`,
             automatic_payment_methods: {
                 enabled: true,
             },
@@ -253,14 +253,14 @@ export const handleStripeWebhook = async (req: Request, res: Response): Promise<
                     // Send confirmation email to collector (fire-and-forget)
                     sendEmailAsync(
                         order.user.email,
-                        'Order Confirmation - Muraqqa Art Gallery',
+                        'Order Confirmation - Arms & Ammo Shop',
                         getOrderConfirmationTemplate(order as any)
                     );
 
                     // Send order copy to admin (fire-and-forget)
                     const requestArtistUrl = `${env.CLIENT_URL}/admin?tab=orders&orderId=${order.id}`;
                     sendEmailAsync(
-                        'admin@muraqqa.art',
+                        'admin@armsammo.shop',
                         `New Order Received - #${order.id.slice(-8).toUpperCase()}`,
                         getAdminOrderCopyTemplate(order as any, requestArtistUrl)
                     );
@@ -367,14 +367,14 @@ export const confirmBankTransfer = async (req: Request, res: Response): Promise<
         // Send confirmation email to collector (fire-and-forget)
         sendEmailAsync(
             updatedOrder.user.email,
-            'Payment Confirmed - Muraqqa Art Gallery',
+            'Payment Confirmed - Arms & Ammo Shop',
             getOrderConfirmationTemplate(updatedOrder as any)
         );
 
         // Send order copy to admin (fire-and-forget)
         const requestArtistUrl = `${env.CLIENT_URL}/admin?tab=orders&orderId=${updatedOrder.id}`;
         sendEmailAsync(
-            'admin@muraqqa.art',
+            'admin@armsammo.shop',
             `Payment Confirmed - Order #${updatedOrder.id.slice(-8).toUpperCase()}`,
             getAdminOrderCopyTemplate(updatedOrder as any, requestArtistUrl)
         );

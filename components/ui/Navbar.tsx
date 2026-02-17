@@ -53,7 +53,7 @@ const Navbar = () => {
                     <Link to="/" className="relative z-50 group">
                         <div className="flex items-center gap-2 relative">
                             <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-widest">
-                                MURAQQA
+                                ARMS & AMMO
                             </h1>
                             <span className="text-xl md:text-2xl text-tangerine" style={{ fontFamily: "var(--font-urdu)" }}>مرقع</span>
                             <span className="absolute -bottom-2 left-0 w-0 h-[2px] bg-tangerine transition-all duration-300 group-hover:w-full"></span>

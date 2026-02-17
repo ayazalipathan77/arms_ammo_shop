@@ -97,7 +97,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         // Send verification email
         const verifyUrl = `${env.CLIENT_URL}/verify-email?token=${verificationToken}&id=${user.id}`;
         const emailContent = getVerificationTemplate(verifyUrl);
-        sendEmailAsync(user.email, 'Verify Your Email - Muraqqa Art Gallery', emailContent);
+        sendEmailAsync(user.email, 'Verify Your Email - Arms & Ammo Shop', emailContent);
 
         res.status(StatusCodes.CREATED).json({
             message: validatedData.role === 'ARTIST'
@@ -499,7 +499,7 @@ export const resendVerificationEmail = async (req: Request, res: Response): Prom
         // Send verification email
         const verifyUrl = `${env.CLIENT_URL}/verify-email?token=${verificationToken}&id=${user.id}`;
         const emailContent = getVerificationTemplate(verifyUrl);
-        sendEmailAsync(user.email, 'Verify Your Email - Muraqqa Art Gallery', emailContent);
+        sendEmailAsync(user.email, 'Verify Your Email - Arms & Ammo Shop', emailContent);
 
         res.status(StatusCodes.OK).json({ message: 'Verification email sent successfully' });
     } catch (error) {

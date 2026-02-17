@@ -9,7 +9,7 @@ export const TermsOfService: React.FC = () => {
          title: '1. Acceptance of Terms',
          content: [
             {
-               text: 'By accessing or using the Muraqqa Art Gallery website, creating an account, or making a purchase, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.'
+               text: 'By accessing or using the Arms & Ammo Shop website, creating an account, or making a purchase, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.'
             },
             {
                text: 'We reserve the right to modify these terms at any time. Continued use of the website after changes are posted constitutes acceptance of the revised terms. Material changes will be communicated to registered users via email.'
@@ -20,35 +20,35 @@ export const TermsOfService: React.FC = () => {
          title: '2. Account Registration',
          content: [
             {
-               text: 'To access certain features of our website, including purchasing artwork, you must create an account. You agree to provide accurate, complete, and current information during registration and to keep your account information updated.'
+               text: 'To access certain features of our website, including purchasing products, you must create an account. You agree to provide accurate, complete, and current information during registration and to keep your account information updated.'
             },
             {
                text: 'You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must notify us immediately of any unauthorised access or use of your account.'
             },
             {
-               subtitle: 'Artist Accounts',
-               text: 'Artists who wish to sell artwork through Muraqqa must apply for an artist account, which is subject to review and approval by our team. Approved artists must comply with all artist-specific guidelines, including accurate representation of their work, timely fulfilment of orders, and adherence to quality standards.'
+               subtitle: 'Brand Accounts',
+               text: 'Brands who wish to sell gear through Arms & Ammo must apply for a brand account, which is subject to review and approval by our team. Approved brands must comply with all brand-specific guidelines, including accurate representation of their work, timely fulfilment of orders, and adherence to quality standards.'
             }
          ]
       },
       {
-         title: '3. Purchasing Artworks',
+         title: '3. Purchasing Products',
          content: [
             {
                subtitle: 'Pricing & Availability',
-               text: 'All artwork prices are listed in Pakistani Rupees (PKR) and may be displayed in other currencies for reference. Prices are subject to change without notice. The availability of artworks is subject to confirmation by the respective artist.'
+               text: 'All product prices are listed in Pakistani Rupees (PKR) and may be displayed in other currencies for reference. Prices are subject to change without notice. The availability of products is subject to confirmation by the respective brand.'
             },
             {
                subtitle: 'Order Process',
-               text: 'When you place an order, it constitutes an offer to purchase. Your order is confirmed only after the artist verifies availability and we process payment. We reserve the right to refuse or cancel any order at our discretion, including for suspected fraud, pricing errors, or unavailability of artwork.'
+               text: 'When you place an order, it constitutes an offer to purchase. Your order is confirmed only after the manufacturer verifies availability and we process payment. We reserve the right to refuse or cancel any order at our discretion, including for suspected fraud, pricing errors, or unavailability of product.'
             },
             {
-               subtitle: 'Originals & Prints',
-               text: 'Muraqqa offers both original artworks and limited-edition prints. The listing will clearly indicate whether an item is an original or a print, along with the edition size where applicable. Purchasing an original artwork transfers physical ownership of the piece to the buyer.'
+               subtitle: 'Firearms & Gear',
+               text: 'Arms & Ammo offers a wide range of firearms, ammunition, and tactical gear. The listing will clearly indicate the specifications and condition of each item. Purchasing an item transfers physical ownership to the buyer, subject to local laws.'
             },
             {
                subtitle: 'Payment',
-               text: 'We accept payments through Stripe and bank transfer. All payment processing is handled by our secure third-party payment providers. By providing payment information, you authorise us to charge the total order amount, including artwork price, applicable shipping fees, and any taxes.'
+               text: 'We accept payments through Stripe and bank transfer. All payment processing is handled by our secure third-party payment providers. By providing payment information, you authorise us to charge the total order amount, including product price, applicable shipping fees, and any taxes.'
             }
          ]
       },
@@ -56,15 +56,15 @@ export const TermsOfService: React.FC = () => {
          title: '4. Shipping & Delivery',
          content: [
             {
-               text: 'Muraqqa ships artworks domestically within Pakistan and internationally. Shipping costs are calculated based on the destination, artwork dimensions, and chosen shipping method. All artworks are professionally packaged and insured during transit.'
+               text: 'Arms & Ammo ships products domestically within Pakistan and internationally. Shipping costs are calculated based on the destination, dimensions, and chosen shipping method. All products are professionally packaged and insured during transit.'
             },
             {
                subtitle: 'Delivery Times',
-               text: 'Estimated delivery times vary by destination and shipping method. These estimates are provided as guidelines and are not guaranteed. Muraqqa is not liable for delays caused by customs, weather, or carrier issues beyond our control.'
+               text: 'Estimated delivery times vary by destination and shipping method. These estimates are provided as guidelines and are not guaranteed. Arms & Ammo is not liable for delays caused by customs, weather, or carrier issues beyond our control.'
             },
             {
                subtitle: 'Risk of Loss',
-               text: 'All artworks are insured during shipping. Risk of loss or damage transfers to the buyer upon delivery. If your artwork arrives damaged, please contact us within 48 hours of receipt with photographs documenting the damage, and we will work with you and the shipping insurer to resolve the issue.'
+               text: 'All products are insured during shipping. Risk of loss or damage transfers to the buyer upon delivery. If your item arrives damaged, please contact us within 48 hours of receipt with photographs documenting the damage, and we will work with you and the shipping insurer to resolve the issue.'
             }
          ]
       },
@@ -72,16 +72,16 @@ export const TermsOfService: React.FC = () => {
          title: '5. Returns & Refunds',
          content: [
             {
-               text: 'Due to the unique nature of original artworks, returns are accepted only in the following circumstances:'
+               text: 'Due to the unique nature of our products, returns are accepted only in the following circumstances:'
             },
             {
-               text: '- The artwork was significantly misrepresented in the listing\n- The artwork arrived damaged and was reported within 48 hours\n- The wrong artwork was delivered'
+               text: '- The product was significantly misrepresented in the listing\n- The product arrived damaged and was reported within 48 hours\n- The wrong item was delivered'
             },
             {
-               text: 'For eligible returns, the artwork must be returned in its original packaging and condition. Return shipping costs may be the responsibility of the buyer unless the return is due to our error. Refunds will be processed within 14 business days of receiving the returned artwork.'
+               text: 'For eligible returns, the item must be returned in its original packaging and condition. Return shipping costs may be the responsibility of the buyer unless the return is due to our error. Refunds will be processed within 14 business days of receiving the returned item.'
             },
             {
-               text: 'Prints and custom-framed items are generally non-refundable unless they arrive damaged or defective.'
+               text: 'Custom items or ammunition are generally non-refundable unless they arrive damaged or defective.'
             }
          ]
       },
@@ -89,24 +89,24 @@ export const TermsOfService: React.FC = () => {
          title: '6. Intellectual Property',
          content: [
             {
-               subtitle: 'Artist Copyright',
-               text: 'All artwork displayed on Muraqqa is the intellectual property of the respective artist. Purchasing an artwork grants ownership of the physical piece only. Copyright, reproduction rights, and all other intellectual property rights remain with the artist unless explicitly transferred in a separate written agreement.'
+               subtitle: 'Brand Rights',
+               text: 'All products displayed on Arms & Ammo are the intellectual property of the respective brand or manufacturer. Purchasing an item grants ownership of the physical product only. Copyright, reproduction rights, and all other intellectual property rights remain with the brand unless explicitly transferred in a separate written agreement.'
             },
             {
                subtitle: 'Website Content',
-               text: 'The Muraqqa website, including its design, text, graphics, logos, and software, is the property of Muraqqa Art Gallery and is protected by Pakistani and international intellectual property laws. You may not reproduce, distribute, modify, or create derivative works from any content on this site without our prior written consent.'
+               text: 'The Arms & Ammo website, including its design, text, graphics, logos, and software, is the property of Arms & Ammo Shop and is protected by Pakistani and international intellectual property laws. You may not reproduce, distribute, modify, or create derivative works from any content on this site without our prior written consent.'
             },
             {
-               subtitle: 'Artist Licence to Gallery',
-               text: 'By listing artwork on Muraqqa, artists grant us a non-exclusive, royalty-free licence to display, promote, and market their artworks on our website, social media, and marketing materials for the duration their work is listed with us.'
+               subtitle: 'Brand Licence',
+               text: 'By listing products on Arms & Ammo, brands grant us a non-exclusive, royalty-free licence to display, promote, and market their products on our website, social media, and marketing materials for the duration their items are listed with us.'
             }
          ]
       },
       {
-         title: '7. Certificate of Authenticity',
+         title: '7. Authenticity Guarantee',
          content: [
             {
-               text: 'All original artworks sold through Muraqqa come with a Certificate of Authenticity (COA), which includes details about the artwork, the artist, medium, dimensions, and year of creation. The COA serves as verification of the artwork\'s genuineness and provenance.'
+               text: 'All products sold through Arms & Ammo are guaranteed authentic. We work directly with manufacturers and verified distributors to ensure the genuineness and quality of every item in our shop.'
             }
          ]
       },
@@ -125,13 +125,13 @@ export const TermsOfService: React.FC = () => {
          title: '9. Limitation of Liability',
          content: [
             {
-               text: 'Muraqqa Art Gallery acts as a platform connecting art collectors with artists. While we take every reasonable measure to verify the authenticity and quality of artworks listed on our platform, we provide our services on an "as-is" basis.'
+               text: 'Arms & Ammo Shop acts as a premier marketplace for firearms and gear. While we take every reasonable measure to verify the quality of products listed on our platform, we provide our services on an "as-is" basis.'
             },
             {
-               text: 'To the maximum extent permitted by law, Muraqqa shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of our services, including but not limited to loss of revenue, data, or anticipated profits.'
+               text: 'To the maximum extent permitted by law, Arms & Ammo shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of our services, including but not limited to loss of revenue, data, or anticipated profits.'
             },
             {
-               text: 'Our total liability for any claim arising from or related to these terms or our services shall not exceed the amount you paid to Muraqqa in the twelve months preceding the claim.'
+               text: 'Our total liability for any claim arising from or related to these terms or our services shall not exceed the amount you paid to Arms & Ammo in the twelve months preceding the claim.'
             }
          ]
       },
@@ -139,7 +139,7 @@ export const TermsOfService: React.FC = () => {
          title: '10. Dispute Resolution',
          content: [
             {
-               text: 'In the event of a dispute between a buyer and an artist regarding a purchase, Muraqqa will make reasonable efforts to mediate the issue. However, Muraqqa is not a party to the sale agreement between buyers and artists and shall not be held liable for disputes regarding artwork quality, condition, or authenticity beyond what was represented on our platform.'
+               text: 'In the event of a dispute between a buyer and a brand regarding a purchase, Arms & Ammo will make reasonable efforts to mediate the issue. However, Arms & Ammo is not a party to the sale agreement between buyers and brands and shall not be held liable for disputes regarding quality or condition beyond what was represented on our platform.'
             }
          ]
       },
@@ -155,7 +155,7 @@ export const TermsOfService: React.FC = () => {
          title: '12. Termination',
          content: [
             {
-               text: 'We reserve the right to suspend or terminate your account at our discretion if we believe you have violated these terms, engaged in fraudulent activity, or acted in a manner harmful to Muraqqa, its users, or its artists. Upon termination, your right to use the services immediately ceases.'
+               text: 'We reserve the right to suspend or terminate your account at our discretion if we believe you have violated these terms, engaged in fraudulent activity, or acted in a manner harmful to Arms & Ammo, its users, or its brands. Upon termination, your right to use the services immediately ceases.'
             }
          ]
       },
@@ -166,7 +166,7 @@ export const TermsOfService: React.FC = () => {
                text: 'If you have any questions about these Terms of Service, please contact us at:'
             },
             {
-               text: 'Muraqqa Art Gallery\nDHA Phase 6, Lahore, Punjab, Pakistan\nEmail: legal@muraqqa.art\nPhone: Available upon request'
+               text: 'Arms & Ammo Shop\nDHA Phase 6, Lahore, Punjab, Pakistan\nEmail: legal@armsammo.shop\nPhone: Available upon request'
             }
          ]
       }
@@ -207,7 +207,7 @@ export const TermsOfService: React.FC = () => {
                   Last Updated: January 2025
                </p>
                <p className="text-warm-gray mt-6 leading-relaxed">
-                  Welcome to Muraqqa Art Gallery. These Terms of Service govern your use of our website and services. By using Muraqqa, you agree to comply with and be bound by the following terms and conditions. Please read them carefully.
+                  Welcome to Arms & Ammo Shop. These Terms of Service govern your use of our website and services. By using Arms & Ammo, you agree to comply with and be bound by the following terms and conditions. Please read them carefully.
                </p>
             </motion.div>
 

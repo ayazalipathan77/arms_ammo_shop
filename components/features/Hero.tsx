@@ -38,7 +38,7 @@ const Hero = () => {
         ? heroConfig.backgroundImages.map((img, idx) => ({
             id: idx,
             image: img,
-            title: heroConfig.title || 'MURAQQA',
+            title: heroConfig.title || 'ARMS & AMMO',
             subtitle: heroConfig.subtitle || 'CONTEMPORARY ART'
         }))
         : DEFAULT_BANNERS;

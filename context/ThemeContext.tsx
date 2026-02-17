@@ -43,8 +43,8 @@ export interface ThemeConfig {
 }
 
 export const PRESET_THEMES: Record<string, ThemeConfig> = {
-    'MURAQQA_DEFAULT': {
-        name: 'MuraqQa Default',
+    'ARMS_AMMO_DEFAULT': {
+        name: 'Arms & Ammo Default',
         colors: {
             void: '#0A0A0A',
             charcoal: '#1A1A1A',
@@ -58,6 +58,13 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             display: "'Monument Extended', 'Syne', sans-serif",
             body: "'Inter', 'Satoshi', sans-serif",
             urdu: "'Noto Nastaliq Urdu', serif"
+        },
+        gradient: {
+            enabled: true,
+            orbs: [
+                { enabled: true, color: '#FF6B35', opacity: 0.15, size: 600, blur: 100, position: { top: '10%', right: '10%' } },
+                { enabled: true, color: '#F7931E', opacity: 0.1, size: 800, blur: 120, position: { bottom: '10%', left: '10%' } }
+            ]
         }
     },
     'DEEP_BURGUNDY': {
@@ -75,6 +82,12 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             display: "'Playfair Display', serif",
             body: "'Lora', serif",
             urdu: "'Noto Nastaliq Urdu', serif"
+        },
+        gradient: {
+            enabled: true,
+            orbs: [
+                { enabled: true, color: '#4A0404', opacity: 0.2, size: 600, blur: 100, position: { top: '20%', left: '20%' } }
+            ]
         }
     },
     'PEACH_AQUA': {
@@ -92,6 +105,12 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             display: "'Outfit', sans-serif",
             body: "'Quicksand', sans-serif",
             urdu: "'Noto Nastaliq Urdu', serif"
+        },
+        gradient: {
+            enabled: true,
+            orbs: [
+                { enabled: true, color: '#E0FFFF', opacity: 0.1, size: 700, blur: 150, position: { bottom: '0%', right: '0%' } }
+            ]
         }
     },
     'LEMON_VIOLET': {
@@ -109,6 +128,12 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             display: "'Space Grotesk', sans-serif",
             body: "'DM Sans', sans-serif",
             urdu: "'Noto Nastaliq Urdu', serif"
+        },
+        gradient: {
+            enabled: true,
+            orbs: [
+                { enabled: true, color: '#240046', opacity: 0.3, size: 800, blur: 100, position: { top: '0%', left: '0%' } }
+            ]
         }
     },
     'PUMPKIN_CHARCOAL': {
@@ -126,6 +151,10 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             display: "'Anton', sans-serif",
             body: "'Roboto', sans-serif",
             urdu: "'Noto Nastaliq Urdu', serif"
+        },
+        gradient: {
+            enabled: false,
+            orbs: []
         }
     },
     'CLOUDY_OCEAN': {
@@ -143,6 +172,12 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             display: "'Montserrat', sans-serif",
             body: "'Open Sans', sans-serif",
             urdu: "'Noto Nastaliq Urdu', serif"
+        },
+        gradient: {
+            enabled: true,
+            orbs: [
+                { enabled: true, color: '#4682B4', opacity: 0.1, size: 1000, blur: 200, position: { top: '30%', right: '0%' } }
+            ]
         }
     },
     'SAGE_OLIVE': {
@@ -160,8 +195,14 @@ export const PRESET_THEMES: Record<string, ThemeConfig> = {
             display: "'Cinzel', serif",
             body: "'Cormorant Garamond', serif",
             urdu: "'Noto Nastaliq Urdu', serif"
+        },
+        gradient: {
+            enabled: true,
+            orbs: [
+                { enabled: true, color: '#8FBC8F', opacity: 0.1, size: 500, blur: 80, position: { top: '10%', left: '10%' } }
+            ]
         }
-    }
+    },
 };
 
 interface ThemeContextType {
@@ -173,11 +214,11 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [currentTheme, setCurrentTheme] = useState<ThemeConfig>(PRESET_THEMES['MURAQQA_DEFAULT']);
+    const [currentTheme, setCurrentTheme] = useState<ThemeConfig>(PRESET_THEMES['ARMS_AMMO_DEFAULT']);
 
     // Load theme from local storage on mount
     useEffect(() => {
-        const savedTheme = localStorage.getItem('muraqqa_theme');
+        const savedTheme = localStorage.getItem('arms_ammo_theme');
         if (savedTheme) {
             try {
                 const parsed = JSON.parse(savedTheme);
@@ -206,12 +247,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         root.style.setProperty('--font-urdu', theme.fonts.urdu);
 
         if (save) {
-            localStorage.setItem('muraqqa_theme', JSON.stringify(theme));
+            try {
+                localStorage.setItem('arms_ammo_theme', JSON.stringify(theme));
+            } catch (err) {
+                console.error('Failed to save theme:', err);
+            }
         }
     };
 
     const resetTheme = () => {
-        applyTheme(PRESET_THEMES['MURAQQA_DEFAULT']);
+        setCurrentTheme(PRESET_THEMES['ARMS_AMMO_DEFAULT']);
+        applyTheme(PRESET_THEMES['ARMS_AMMO_DEFAULT']);
+        localStorage.removeItem('arms_ammo_theme');
     };
 
     return (

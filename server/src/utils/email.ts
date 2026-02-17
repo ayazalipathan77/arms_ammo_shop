@@ -58,7 +58,7 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
             const fromEmail = env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
             console.log(`📧 Sending email via Resend HTTP API to: ${to}, from: ${fromEmail}`);
             const { data, error } = await resend.emails.send({
-                from: `Muraqqa Art Gallery <${fromEmail}>`,
+                from: `Arms & Ammo Shop <${fromEmail}>`,
                 to: [to],
                 subject,
                 html,
@@ -77,7 +77,7 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
         if (transporter) {
             console.log('📧 Sending email via SMTP...');
             const info = await transporter.sendMail({
-                from: `"Muraqqa Art Gallery" <${env.SMTP_FROM || env.SMTP_USER}>`,
+                from: `"Arms & Ammo Shop" <${env.SMTP_FROM || env.SMTP_USER}>`,
                 to,
                 subject,
                 html,
@@ -110,9 +110,9 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 export const getPasswordResetTemplate = (resetUrl: string) => {
     return `
     <div style="font-family: serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #d97706; text-align: center; border-bottom: 1px solid #e7e5e4; padding-bottom: 20px;">MURAQQA</h1>
+        <h1 style="color: #d97706; text-align: center; border-bottom: 1px solid #e7e5e4; padding-bottom: 20px;">ARMS & AMMO</h1>
         <p>Hello,</p>
-        <p>You requested a password reset for your Muraqqa account. Please click the button below to verify your email and set a new password.</p>
+        <p>You requested a password reset for your Arms & Ammo account. Please click the button below to verify your email and set a new password.</p>
         <div style="text-align: center; margin: 30px 0;">
             <a href="${resetUrl}" style="background-color: #1c1917; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-family: sans-serif;">Reset Password</a>
         </div>
@@ -127,15 +127,15 @@ export const getPasswordResetTemplate = (resetUrl: string) => {
 export const getVerificationTemplate = (verifyUrl: string) => {
     return `
     <div style="font-family: serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h1 style="color: #d97706; text-align: center; border-bottom: 1px solid #e7e5e4; padding-bottom: 20px;">MURAQQA</h1>
-        <p>Welcome to Muraqqa,</p>
+        <h1 style="color: #d97706; text-align: center; border-bottom: 1px solid #e7e5e4; padding-bottom: 20px;">ARMS & AMMO</h1>
+        <p>Welcome to Arms & Ammo,</p>
         <p>Thank you for creating an account. Please verify your email address to complete your registration.</p>
         <div style="text-align: center; margin: 30px 0;">
             <a href="${verifyUrl}" style="background-color: #1c1917; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-family: sans-serif;">Verify Email</a>
         </div>
         <p style="font-size: 0.9em; color: #57534e;">If you didn't create an account, please ignore this email.</p>
         <hr style="border: 0; border-top: 1px solid #e7e5e4; margin: 20px 0;">
-        <p style="font-size: 0.8em; text-align: center; color: #78716c;">Muraqqa Art Gallery</p>
+        <p style="font-size: 0.8em; text-align: center; color: #78716c;">Arms & Ammo Shop</p>
     </div>
     `;
 };
@@ -212,8 +212,8 @@ export const getOrderConfirmationTemplate = (order: OrderData) => {
     return `
     <div style="font-family: 'Georgia', serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px; background: #fafaf9;">
         <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">MURAQQA</h1>
-            <p style="color: #a8a29e; margin: 10px 0 0; font-size: 0.9em; letter-spacing: 0.2em;">CONTEMPORARY PAKISTANI ART</p>
+            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">ARMS & AMMO</h1>
+            <p style="color: #a8a29e; margin: 10px 0 0; font-size: 0.9em; letter-spacing: 0.2em;">PREMIUM FIREARMS & GEAR</p>
         </div>
 
         <div style="background: white; padding: 30px; border: 1px solid #e7e5e4; border-top: none;">
@@ -226,7 +226,7 @@ export const getOrderConfirmationTemplate = (order: OrderData) => {
             </div>
 
             <p>Dear ${order.user.fullName},</p>
-            <p>We're thrilled to confirm your order from Muraqqa Art Gallery. Your appreciation for fine art means the world to us.</p>
+            <p>We're thrilled to confirm your order from Arms & Ammo Shop. Your trust in our quality means the world to us.</p>
 
             <div style="background: #fafaf9; border-radius: 8px; padding: 20px; margin: 25px 0;">
                 <h3 style="margin: 0 0 15px; color: #1c1917; font-size: 1.1em;">Order Summary</h3>
@@ -244,7 +244,7 @@ export const getOrderConfirmationTemplate = (order: OrderData) => {
             <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 15px; margin: 25px 0;">
                 <h4 style="margin: 0 0 10px; color: #92400e;">What's Next?</h4>
                 <ol style="margin: 0; padding-left: 20px; color: #78716c;">
-                    <li>We'll verify availability with the artist</li>
+                    <li>We'll verify availability with the manufacturer</li>
                     <li>You'll receive a confirmation once ready to ship</li>
                     <li>We'll send tracking information when shipped</li>
                 </ol>
@@ -261,8 +261,8 @@ export const getOrderConfirmationTemplate = (order: OrderData) => {
         </div>
 
         <div style="text-align: center; padding: 20px; color: #78716c; font-size: 0.85em;">
-            <p style="margin: 0;">Questions? Contact us at <a href="mailto:support@muraqqa.art" style="color: #d97706;">support@muraqqa.art</a></p>
-            <p style="margin: 10px 0 0;">© ${new Date().getFullYear()} Muraqqa Art Gallery</p>
+            <p style="margin: 0;">Questions? Contact us at <a href="mailto:support@armsammo.shop" style="color: #d97706;">support@armsammo.shop</a></p>
+            <p style="margin: 10px 0 0;">© ${new Date().getFullYear()} Arms & Ammo Shop</p>
         </div>
     </div>
     `;
@@ -273,7 +273,7 @@ export const getAdminOrderCopyTemplate = (order: OrderData, requestArtistUrl: st
     return `
     <div style="font-family: 'Georgia', serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px; background: #fafaf9;">
         <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">MURAQQA</h1>
+            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">ARMS & AMMO</h1>
             <p style="color: #fbbf24; margin: 10px 0 0; font-size: 0.9em;">🔔 NEW ORDER RECEIVED</p>
         </div>
 
@@ -318,8 +318,8 @@ export const getAdminOrderCopyTemplate = (order: OrderData, requestArtistUrl: st
 
             <div style="background: #ecfdf5; border: 1px solid #10b981; border-radius: 8px; padding: 20px; text-align: center;">
                 <h4 style="margin: 0 0 15px; color: #065f46;">Action Required</h4>
-                <p style="color: #57534e; margin: 0 0 20px;">Request availability confirmation from the artist(s)</p>
-                <a href="${requestArtistUrl}" style="display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-weight: bold;">📧 Send Artist Confirmation Request</a>
+                <p style="color: #57534e; margin: 0 0 20px;">Request availability confirmation from the manufacturer(s)</p>
+                <a href="${requestArtistUrl}" style="display: inline-block; background: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-weight: bold;">📧 Send Brand Confirmation Request</a>
             </div>
 
             <div style="margin-top: 25px; text-align: center;">
@@ -342,8 +342,8 @@ export const getArtistAvailabilityRequestTemplate = (
     return `
     <div style="font-family: 'Georgia', serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px; background: #fafaf9;">
         <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">MURAQQA</h1>
-            <p style="color: #a8a29e; margin: 10px 0 0; font-size: 0.9em;">🎨 ARTWORK SOLD!</p>
+            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">ARMS & AMMO</h1>
+            <p style="color: #a8a29e; margin: 10px 0 0; font-size: 0.9em;">🔥 PRODUCT SOLD!</p>
         </div>
 
         <div style="background: white; padding: 30px; border: 1px solid #e7e5e4; border-top: none;">
@@ -364,7 +364,7 @@ export const getArtistAvailabilityRequestTemplate = (
 
             <div style="background: #fef3c7; border-left: 4px solid #d97706; padding: 15px; margin: 25px 0;">
                 <h4 style="margin: 0 0 10px; color: #92400e;">⚡ Action Required</h4>
-                <p style="margin: 0; color: #78716c;">Please confirm the artwork is available and ready for delivery. This helps us provide excellent service to our collectors.</p>
+                <p style="margin: 0; color: #78716c;">Please confirm the product is available and ready for delivery.</p>
             </div>
 
             <div style="display: flex; gap: 15px; margin: 30px 0; text-align: center;">
@@ -392,8 +392,8 @@ export const getArtistConfirmedNotificationTemplate = (
     return `
     <div style="font-family: 'Georgia', serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px; background: #fafaf9;">
         <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">MURAQQA</h1>
-            <p style="color: #10b981; margin: 10px 0 0; font-size: 0.9em;">✓ ARTIST CONFIRMED</p>
+            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">ARMS & AMMO</h1>
+            <p style="color: #10b981; margin: 10px 0 0; font-size: 0.9em;">✓ BRAND CONFIRMED</p>
         </div>
 
         <div style="background: white; padding: 30px; border: 1px solid #e7e5e4; border-top: none;">
@@ -434,7 +434,7 @@ export const getOrderConfirmedTemplate = (order: OrderData) => {
     return `
     <div style="font-family: 'Georgia', serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px; background: #fafaf9;">
         <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">MURAQQA</h1>
+            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">ARMS & AMMO</h1>
             <p style="color: #a8a29e; margin: 10px 0 0; font-size: 0.9em; letter-spacing: 0.2em;">ORDER UPDATE</p>
         </div>
 
@@ -448,7 +448,7 @@ export const getOrderConfirmedTemplate = (order: OrderData) => {
             </div>
 
             <p>Dear ${order.user.fullName},</p>
-            <p>Great news! The artist has confirmed availability and your order is now being prepared for shipping.</p>
+            <p>Great news! The manufacturer has confirmed availability and your order is now being prepared for shipping.</p>
 
             <div style="background: #fafaf9; border-radius: 8px; padding: 20px; margin: 25px 0;">
                 <h3 style="margin: 0 0 15px; color: #1c1917;">Order Summary</h3>
@@ -459,7 +459,7 @@ export const getOrderConfirmedTemplate = (order: OrderData) => {
 
             <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 25px 0;">
                 <h4 style="margin: 0 0 10px; color: #1e40af;">📦 Next Step</h4>
-                <p style="margin: 0; color: #57534e;">Your artwork is being carefully packaged. We'll send you tracking information once it ships.</p>
+                <p style="margin: 0; color: #57534e;">Your order is being carefully packaged. We'll send you tracking information once it ships.</p>
             </div>
 
             <div style="text-align: center; margin-top: 30px;">
@@ -479,7 +479,7 @@ export const getShippingUpdateTemplate = (order: OrderData, trackingNumber: stri
     return `
     <div style="font-family: 'Georgia', serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px; background: #fafaf9;">
         <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">MURAQQA</h1>
+            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">ARMS & AMMO</h1>
             <p style="color: #a8a29e; margin: 10px 0 0; font-size: 0.9em;">🚚 YOUR ORDER HAS SHIPPED!</p>
         </div>
 
@@ -488,11 +488,11 @@ export const getShippingUpdateTemplate = (order: OrderData, trackingNumber: stri
                 <div style="width: 60px; height: 60px; background: #dbeafe; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
                     <span style="font-size: 30px;">📦</span>
                 </div>
-                <h2 style="color: #1e40af; margin: 0;">Your Art is On Its Way!</h2>
+                <h2 style="color: #1e40af; margin: 0;">Your Order is On Its Way!</h2>
             </div>
 
             <p>Dear ${order.user.fullName},</p>
-            <p>Your carefully packaged artwork has been shipped and is making its way to you.</p>
+            <p>Your carefully packaged order has been shipped and is making its way to you.</p>
 
             <div style="background: #f0f9ff; border: 2px dashed #3b82f6; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
                 <p style="margin: 0 0 10px; color: #57534e; font-size: 0.9em;">Tracking Number</p>
@@ -520,7 +520,7 @@ export const getShippingUpdateTemplate = (order: OrderData, trackingNumber: stri
         </div>
 
         <div style="text-align: center; padding: 20px; color: #78716c; font-size: 0.85em;">
-            <p style="margin: 0;">Questions about your delivery? <a href="mailto:support@muraqqa.art" style="color: #d97706;">Contact Support</a></p>
+            <p style="margin: 0;">Questions about your delivery? <a href="mailto:support@armsammo.shop" style="color: #d97706;">Contact Support</a></p>
         </div>
     </div>
     `;
@@ -531,47 +531,47 @@ export const getDeliveryConfirmationTemplate = (order: OrderData) => {
     return `
     <div style="font-family: 'Georgia', serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px; background: #fafaf9;">
         <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">MURAQQA</h1>
+            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">ARMS & AMMO</h1>
             <p style="color: #10b981; margin: 10px 0 0; font-size: 0.9em;">🎉 ORDER DELIVERED</p>
         </div>
 
         <div style="background: white; padding: 30px; border: 1px solid #e7e5e4; border-top: none;">
             <div style="text-align: center; margin-bottom: 30px;">
                 <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
-                    <span style="font-size: 40px;">🖼️</span>
+                    <span style="font-size: 40px;">🔫</span>
                 </div>
-                <h2 style="color: #1c1917; margin: 0;">Your Art Has Arrived!</h2>
+                <h2 style="color: #1c1917; margin: 0;">Your Order Has Arrived!</h2>
                 <p style="color: #57534e; margin: 10px 0 0;">Order #${order.id.slice(-8).toUpperCase()}</p>
             </div>
 
             <p>Dear ${order.user.fullName},</p>
-            <p>We hope your new artwork brings you joy for years to come. Thank you for supporting Pakistani artists through Muraqqa.</p>
+            <p>We hope your new purchase brings you satisfaction for years to come. Thank you for choosing Arms & Ammo.</p>
 
             <div style="background: linear-gradient(135deg, #fafaf9 0%, #f5f5f4 100%); border-radius: 8px; padding: 25px; margin: 25px 0; text-align: center;">
                 <h3 style="margin: 0 0 15px; color: #1c1917;">Share Your Experience</h3>
-                <p style="color: #57534e; margin: 0 0 20px;">We'd love to hear about your new artwork! Leave a review to help other collectors discover great art.</p>
+                <p style="color: #57534e; margin: 0 0 20px;">We'd love to hear about your new purchase! Leave a review to help others discover great gear.</p>
                 <a href="${env.CLIENT_URL}/profile" style="display: inline-block; background: #d97706; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-weight: bold;">Write a Review</a>
             </div>
 
             <div style="border: 1px solid #e7e5e4; border-radius: 8px; padding: 20px; margin: 25px 0;">
-                <h4 style="margin: 0 0 15px; color: #1c1917;">🎁 Care Tips for Your Artwork</h4>
+                <h4 style="margin: 0 0 15px; color: #1c1917;">🛡️ Maintenance Tips</h4>
                 <ul style="margin: 0; padding-left: 20px; color: #57534e;">
-                    <li>Avoid direct sunlight to prevent fading</li>
-                    <li>Maintain stable humidity levels</li>
-                    <li>Clean gently with a soft, dry cloth</li>
-                    <li>Consider professional framing for longevity</li>
+                    <li>Keep and store in a dry, secure place</li>
+                    <li>Perform regular cleaning and lubrication</li>
+                    <li>Use appropriate cleaning kits or accessories</li>
+                    <li>Refer to the manual for specific care instructions</li>
                 </ul>
             </div>
 
             <div style="text-align: center; margin-top: 30px;">
-                <p style="color: #57534e; margin-bottom: 15px;">Continue exploring our collection</p>
-                <a href="${env.CLIENT_URL}/gallery" style="display: inline-block; border: 2px solid #d97706; color: #d97706; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-weight: bold;">Browse More Art</a>
+                <p style="color: #57534e; margin-bottom: 15px;">Continue exploring our shop</p>
+                <a href="${env.CLIENT_URL}/shop" style="display: inline-block; border: 2px solid #d97706; color: #d97706; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-weight: bold;">Browse More Gear</a>
             </div>
         </div>
 
         <div style="text-align: center; padding: 20px; color: #78716c; font-size: 0.85em;">
-            <p style="margin: 0;">Thank you for being part of the Muraqqa family</p>
-            <p style="margin: 10px 0 0;">© ${new Date().getFullYear()} Muraqqa Art Gallery</p>
+            <p style="margin: 0;">Thank you for being part of the Arms & Ammo family</p>
+            <p style="margin: 10px 0 0;">© ${new Date().getFullYear()} Arms & Ammo Shop</p>
         </div>
     </div>
     `;
@@ -582,7 +582,7 @@ export const getOrderCancellationTemplate = (order: OrderData, reason?: string) 
     return `
     <div style="font-family: 'Georgia', serif; color: #1c1917; max-width: 600px; margin: 0 auto; padding: 20px; background: #fafaf9;">
         <div style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">MURAQQA</h1>
+            <h1 style="color: #d97706; margin: 0; font-size: 2em; letter-spacing: 0.1em;">ARMS & AMMO</h1>
             <p style="color: #ef4444; margin: 10px 0 0; font-size: 0.9em;">ORDER CANCELLED</p>
         </div>
 
@@ -602,15 +602,15 @@ export const getOrderCancellationTemplate = (order: OrderData, reason?: string) 
                 <p style="margin: 0; color: #57534e;">If payment was processed, a full refund of ${formatCurrency(order.totalAmount)} will be issued to your original payment method within 5-10 business days.</p>
             </div>
 
-            <p>We apologize for any inconvenience. Please don't hesitate to reach out if you have questions or would like help finding similar artwork.</p>
+            <p>We apologize for any inconvenience. Please don't hesitate to reach out if you have questions or would like help finding similar gear.</p>
 
             <div style="text-align: center; margin-top: 30px;">
-                <a href="${env.CLIENT_URL}/gallery" style="display: inline-block; background: #d97706; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-weight: bold;">Explore More Art</a>
+                <a href="${env.CLIENT_URL}/shop" style="display: inline-block; background: #d97706; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; font-family: sans-serif; font-weight: bold;">Explore More Gear</a>
             </div>
         </div>
 
         <div style="text-align: center; padding: 20px; color: #78716c; font-size: 0.85em;">
-            <p style="margin: 0;">Questions? <a href="mailto:support@muraqqa.art" style="color: #d97706;">Contact Support</a></p>
+            <p style="margin: 0;">Questions? <a href="mailto:support@armsammo.shop" style="color: #d97706;">Contact Support</a></p>
         </div>
     </div>
     `;
