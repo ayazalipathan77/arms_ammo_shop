@@ -79,7 +79,7 @@ const Home = () => {
 
 
   return (
-    <div className="bg-void text-pearl selection:bg-safety selection:text-void font-body">
+    <div className="bg-void text-pearl selection:bg-sulphur selection:text-void font-body">
       <Hero />
 
       {/* 1. LATEST ARRIVALS */}
@@ -96,16 +96,16 @@ const Home = () => {
                 <Target size={14} /> New Acquisitions
               </p>
               <h2 className="text-4xl md:text-6xl font-display font-bold text-pearl uppercase leading-none">
-                Latest <span className="text-outline-safety">Arrivals</span>
+                Latest <span className="text-outline-sulphur">Arrivals</span>
               </h2>
             </div>
             <div className="hidden md:flex gap-4 items-center">
               {/* Carousel Controls */}
               <div className="flex gap-2 mr-8">
-                <button onClick={prevSlide} className="p-3 border border-gunmetal text-stone-400 hover:text-safety hover:border-safety transition-all">
+                <button onClick={prevSlide} className="p-3 border border-gunmetal text-stone-400 hover:text-sulphur hover:border-sulphur transition-all">
                   <ArrowLeft size={20} />
                 </button>
-                <button onClick={nextSlide} className="p-3 border border-gunmetal text-stone-400 hover:text-safety hover:border-safety transition-all">
+                <button onClick={nextSlide} className="p-3 border border-gunmetal text-stone-400 hover:text-sulphur hover:border-sulphur transition-all">
                   <ArrowRight size={20} />
                 </button>
               </div>
@@ -152,9 +152,9 @@ const Home = () => {
         <section className="py-20 px-6 md:px-12 relative overflow-hidden bg-gunmetal/10">
           <div className="max-w-[1920px] mx-auto relative z-10">
             <div className="mb-10 flex items-center gap-4">
-              <Star className="text-safety fill-safety" />
+              <Star className="text-sulphur fill-sulphur" />
               <h2 className="text-3xl md:text-5xl font-display font-bold text-pearl uppercase tracking-tighter">
-                HIGH DEMAND <span className="text-safety">UNIT</span>
+                HIGH DEMAND <span className="text-sulphur">UNIT</span>
               </h2>
             </div>
 
@@ -168,7 +168,7 @@ const Home = () => {
                   transition={{ delay: idx * 0.1 }}
                   className="relative group"
                 >
-                  <div className="absolute -top-3 -left-3 bg-safety text-void font-bold font-mono text-lg w-8 h-8 flex items-center justify-center z-30 shadow-lg clip-diagonal">
+                  <div className="absolute -top-3 -left-3 bg-sulphur text-void font-bold font-mono text-lg w-8 h-8 flex items-center justify-center z-30 shadow-lg clip-diagonal">
                     {idx + 1}
                   </div>
                   <ProductCard product={prod} />
@@ -246,7 +246,7 @@ const Home = () => {
                     </div>
                     <h3 className="text-3xl md:text-4xl font-display font-bold text-pearl uppercase mb-2 group-hover:text-olive transition-colors leading-none">{exh.title}</h3>
                     <p className="text-stone-400 line-clamp-2 max-w-md font-mono text-xs mb-6">{exh.description}</p>
-                    <span className="inline-flex items-center gap-2 text-safety text-xs font-bold uppercase tracking-widest">
+                    <span className="inline-flex items-center gap-2 text-sulphur text-xs font-bold uppercase tracking-widest">
                       View Briefing <ArrowRight size={14} />
                     </span>
                   </div>

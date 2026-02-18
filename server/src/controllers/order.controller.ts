@@ -39,7 +39,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
         // Get cart items
         const cartItems = await prisma.cartItem.findMany({
             where: { userId },
-            include: { artwork: true },
+            include: { product: true },
         });
 
         if (cartItems.length === 0) {
@@ -50,7 +50,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
         // Calculate total
         let totalAmount = 0;
         for (const item of cartItems) {
-            totalAmount += Number(item.artwork.price) * item.quantity;
+            totalAmount += Number(item.product.price) * item.quantity;
         }
 
         // Create order transaction
@@ -64,17 +64,16 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
                     paymentMethod: paymentMethod || 'STRIPE',
                     items: {
                         create: cartItems.map(item => ({
-                            artworkId: item.artworkId,
+                            productId: item.productId,
                             quantity: item.quantity,
-                            priceAtPurchase: item.artwork.price,
+                            priceAtPurchase: item.product.price,
                             type: item.type,
-                            printSize: item.printSize,
                         })),
                     },
                 },
                 include: {
                     items: {
-                        include: { artwork: true },
+                        include: { product: true },
                     },
                     user: {
                         select: { id: true, fullName: true, email: true },
@@ -84,9 +83,15 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 
             // Mark originals as out of stock
             for (const item of cartItems) {
-                if (item.type === 'ORIGINAL') {
-                    await tx.artwork.update({
-                        where: { id: item.artworkId },
+                // Determine if stock needs adjustment. Assuming we just do it for now as per previous logic.
+                // Previous logic checked for 'ORIGINAL'. Now we might check for tracked inventory.
+                // Assuming all products have limited stock for now if inStock flag is used.
+                // Or check product type.
+                // For simplicity, sticking to logic: if cart item effectively reduces stock.
+                // If we want to mimic previous behavior:
+                if (item.type === 'ORIGINAL' || item.product.type === 'FIREARM') { // Validating against PurchaseType ORIGINAL if set, or Product Type
+                    await tx.product.update({
+                        where: { id: item.productId },
                         data: { inStock: false }
                     });
                 }
@@ -124,7 +129,7 @@ export const getUserOrders = async (req: Request, res: Response): Promise<void> 
                 include: {
                     items: {
                         include: {
-                            artwork: {
+                            product: {
                                 select: {
                                     id: true,
                                     title: true,
@@ -204,9 +209,9 @@ export const getAllOrders = async (req: Request, res: Response): Promise<void> =
                     },
                     items: {
                         include: {
-                            artwork: {
+                            product: {
                                 include: {
-                                    artist: {
+                                    manufacturer: {
                                         include: {
                                             user: {
                                                 select: {
@@ -282,9 +287,9 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
                 },
                 items: {
                     include: {
-                        artwork: {
+                        product: {
                             include: {
-                                artist: {
+                                manufacturer: {
                                     include: {
                                         user: {
                                             select: {
@@ -320,8 +325,8 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
     }
 };
 
-// Send artist availability request (Admin action)
-export const requestArtistConfirmation = async (req: Request, res: Response): Promise<void> => {
+// Send manufacturer availability request (Admin action)
+export const requestManufacturerConfirmation = async (req: Request, res: Response): Promise<void> => {
     try {
         const orderId = req.params.id as string;
 
@@ -331,9 +336,9 @@ export const requestArtistConfirmation = async (req: Request, res: Response): Pr
                 user: true,
                 items: {
                     include: {
-                        artwork: {
+                        product: {
                             include: {
-                                artist: {
+                                manufacturer: {
                                     include: {
                                         user: true
                                     }
@@ -352,7 +357,7 @@ export const requestArtistConfirmation = async (req: Request, res: Response): Pr
 
         if (order.status !== 'PAID') {
             res.status(StatusCodes.BAD_REQUEST).json({
-                message: `Cannot request artist confirmation for order with status: ${order.status}`
+                message: `Cannot request manufacturer confirmation for order with status: ${order.status}`
             });
             return;
         }
@@ -366,52 +371,53 @@ export const requestArtistConfirmation = async (req: Request, res: Response): Pr
             where: { id: orderId },
             data: {
                 status: 'AWAITING_CONFIRMATION',
-                artistNotifiedAt: new Date(),
-                artistConfirmationToken: confirmationToken,
-                artistConfirmationExpiry: tokenExpiry,
+                manufacturerNotifiedAt: new Date(),
+                manufacturerConfirmationToken: confirmationToken,
+                manufacturerConfirmationExpiry: tokenExpiry,
             }
         });
 
-        // Send email to each unique artist
-        const artistsSent = new Set<string>();
+        // Send email to each unique manufacturer
+        const manufacturersSent = new Set<string>();
 
         for (const item of order.items) {
-            const artist = item.artwork.artist;
-            if (artist && artist.user && !artistsSent.has(artist.userId)) {
-                artistsSent.add(artist.userId);
+            const manufacturer = item.product.manufacturer;
+            if (manufacturer && manufacturer.user && !manufacturersSent.has(manufacturer.userId)) {
+                manufacturersSent.add(manufacturer.userId);
 
-                const confirmUrl = `${env.CLIENT_URL}/api/orders/artist-confirm?token=${confirmationToken}&action=confirm`;
-                const declineUrl = `${env.CLIENT_URL}/api/orders/artist-confirm?token=${confirmationToken}&action=decline`;
+                const confirmUrl = `${env.CLIENT_URL}/api/orders/manufacturer-confirm?token=${confirmationToken}&action=confirm`;
+                const declineUrl = `${env.CLIENT_URL}/api/orders/manufacturer-confirm?token=${confirmationToken}&action=decline`;
 
+                // Using existing template function but renamed locally if imported or just mapped
                 const emailContent = getArtistAvailabilityRequestTemplate(
-                    artist.user.fullName,
-                    item.artwork.title,
-                    item.artwork.imageUrl,
+                    manufacturer.user.fullName,
+                    item.product.title,
+                    item.product.imageUrl,
                     order.id,
                     confirmUrl,
                     declineUrl
                 );
 
                 sendEmailAsync(
-                    artist.user.email,
-                    `Artwork Sold: ${item.artwork.title} - Action Required`,
+                    manufacturer.user.email,
+                    `Product Sold: ${item.product.title} - Action Required`,
                     emailContent
                 );
             }
         }
 
         res.status(StatusCodes.OK).json({
-            message: 'Artist confirmation request sent successfully',
-            artistsNotified: artistsSent.size
+            message: 'Manufacturer confirmation request sent successfully',
+            manufacturersNotified: manufacturersSent.size
         });
     } catch (error) {
-        console.error('Request artist confirmation error:', error);
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to send artist confirmation request' });
+        console.error('Request manufacturer confirmation error:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to send manufacturer confirmation request' });
     }
 };
 
-// Artist confirms/declines availability (Public endpoint with token)
-export const artistConfirmAvailability = async (req: Request, res: Response): Promise<void> => {
+// Manufacturer confirms/declines availability (Public endpoint with token)
+export const manufacturerConfirmAvailability = async (req: Request, res: Response): Promise<void> => {
     try {
         const token = typeof req.query.token === 'string' ? req.query.token : undefined;
         const action = typeof req.query.action === 'string' ? req.query.action : undefined;
@@ -422,14 +428,14 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
         }
 
         const order = await prisma.order.findFirst({
-            where: { artistConfirmationToken: token },
+            where: { manufacturerConfirmationToken: token },
             include: {
                 user: true,
                 items: {
                     include: {
-                        artwork: {
+                        product: {
                             include: {
-                                artist: {
+                                manufacturer: {
                                     include: {
                                         user: true
                                     }
@@ -446,7 +452,7 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
             return;
         }
 
-        if (order.artistConfirmationExpiry && new Date() > order.artistConfirmationExpiry) {
+        if (order.manufacturerConfirmationExpiry && new Date() > order.manufacturerConfirmationExpiry) {
             res.status(StatusCodes.BAD_REQUEST).json({ message: 'Confirmation link has expired' });
             return;
         }
@@ -456,26 +462,26 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
             return;
         }
 
-        // Get artist info from order items
-        const artistInfo = order.items[0]?.artwork?.artist?.user;
-        const artworkTitle = order.items[0]?.artwork?.title || 'Artwork';
+        // Get manufacturer info from order items
+        const manufacturerInfo = order.items[0]?.product?.manufacturer?.user;
+        const productTitle = order.items[0]?.product?.title || 'Product';
 
         if (action === 'confirm') {
             // Update order status
             await prisma.order.update({
                 where: { id: order.id },
                 data: {
-                    artistConfirmedAt: new Date(),
-                    artistConfirmedBy: artistInfo?.id,
-                    artistConfirmationToken: null, // Clear token
+                    manufacturerConfirmedAt: new Date(),
+                    manufacturerConfirmedBy: manufacturerInfo?.id,
+                    manufacturerConfirmationToken: null, // Clear token
                 }
             });
 
             // Notify admin
             const adminDashboardUrl = `${env.CLIENT_URL}/admin`;
             const emailContent = getArtistConfirmedNotificationTemplate(
-                artistInfo?.fullName || 'Artist',
-                artworkTitle,
+                manufacturerInfo?.fullName || 'Manufacturer',
+                productTitle,
                 order.id,
                 adminDashboardUrl
             );
@@ -483,12 +489,12 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
             // Send to admin email
             sendEmailAsync(
                 env.SMTP_USER || 'admin@armsammo.shop',
-                `Artist Confirmed: Order #${order.id.slice(-8).toUpperCase()}`,
+                `Manufacturer Confirmed: Order #${order.id.slice(-8).toUpperCase()}`,
                 emailContent
             );
 
             // Redirect to success page
-            res.redirect(`${env.CLIENT_URL}/artist-confirmation?status=confirmed&order=${order.id.slice(-8)}`);
+            res.redirect(`${env.CLIENT_URL}/manufacturer-confirmation?status=confirmed&order=${order.id.slice(-8)}`);
         } else if (action === 'decline') {
             // Update order status to cancelled
             await prisma.order.update({
@@ -496,15 +502,15 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
                 data: {
                     status: 'CANCELLED',
                     cancelledAt: new Date(),
-                    cancellationReason: 'Artwork not available - Artist declined',
-                    artistConfirmationToken: null,
+                    cancellationReason: 'Product not available - Manufacturer declined',
+                    manufacturerConfirmationToken: null,
                 }
             });
 
             // Notify collector
             const cancellationEmail = getOrderCancellationTemplate(
                 order as any,
-                'The artwork is currently not available. We apologize for the inconvenience.'
+                'The product is currently not available. We apologize for the inconvenience.'
             );
             sendEmailAsync(
                 order.user.email,
@@ -513,17 +519,17 @@ export const artistConfirmAvailability = async (req: Request, res: Response): Pr
             );
 
             // Redirect to decline confirmation page
-            res.redirect(`${env.CLIENT_URL}/artist-confirmation?status=declined&order=${order.id.slice(-8)}`);
+            res.redirect(`${env.CLIENT_URL}/manufacturer-confirmation?status=declined&order=${order.id.slice(-8)}`);
         } else {
             res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid action' });
         }
     } catch (error) {
-        console.error('Artist confirm availability error:', error);
+        console.error('Manufacturer confirm availability error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Failed to process confirmation' });
     }
 };
 
-// Admin confirms order (after artist confirmation)
+// Admin confirms order (after manufacturer confirmation)
 export const adminConfirmOrder = async (req: Request, res: Response): Promise<void> => {
     try {
         const orderId = req.params.id as string;
@@ -536,9 +542,9 @@ export const adminConfirmOrder = async (req: Request, res: Response): Promise<vo
                 user: true,
                 items: {
                     include: {
-                        artwork: {
+                        product: {
                             include: {
-                                artist: {
+                                manufacturer: {
                                     include: {
                                         user: true
                                     }
@@ -555,7 +561,7 @@ export const adminConfirmOrder = async (req: Request, res: Response): Promise<vo
             return;
         }
 
-        // Allow confirmation from AWAITING_CONFIRMATION (if artist confirmed) or PAID status
+        // Allow confirmation from AWAITING_CONFIRMATION (if manufacturer confirmed) or PAID status
         if (!['AWAITING_CONFIRMATION', 'PAID'].includes(order.status)) {
             res.status(StatusCodes.BAD_REQUEST).json({
                 message: `Cannot confirm order with status: ${order.status}`
@@ -603,9 +609,9 @@ export const markOrderPaid = async (req: Request, res: Response): Promise<void> 
                 user: true,
                 items: {
                     include: {
-                        artwork: {
+                        product: {
                             include: {
-                                artist: { include: { user: true } }
+                                manufacturer: { include: { user: true } }
                             }
                         }
                     }
@@ -667,9 +673,9 @@ export const markOrderShipped = async (req: Request, res: Response): Promise<voi
                 user: true,
                 items: {
                     include: {
-                        artwork: {
+                        product: {
                             include: {
-                                artist: {
+                                manufacturer: {
                                     include: {
                                         user: true
                                     }
@@ -735,9 +741,9 @@ export const markOrderDelivered = async (req: Request, res: Response): Promise<v
                 user: true,
                 items: {
                     include: {
-                        artwork: {
+                        product: {
                             include: {
-                                artist: {
+                                manufacturer: {
                                     include: {
                                         user: true
                                     }
@@ -801,7 +807,7 @@ export const cancelOrder = async (req: Request, res: Response): Promise<void> =>
                 user: true,
                 items: {
                     include: {
-                        artwork: true
+                        product: true
                     }
                 }
             }
@@ -812,22 +818,11 @@ export const cancelOrder = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-        if (['DELIVERED', 'CANCELLED'].includes(order.status)) {
+        if (['SHIPPED', 'DELIVERED', 'CANCELLED'].includes(order.status)) {
             res.status(StatusCodes.BAD_REQUEST).json({
                 message: `Cannot cancel order with status: ${order.status}`
             });
             return;
-        }
-
-        // Restore artwork stock if it was marked as sold
-        // Always try to restore stock for originals upon cancellation
-        for (const item of order.items) {
-            if (item.type === 'ORIGINAL') {
-                await prisma.artwork.update({
-                    where: { id: item.artworkId },
-                    data: { inStock: true }
-                });
-            }
         }
 
         // Update order status
@@ -837,11 +832,20 @@ export const cancelOrder = async (req: Request, res: Response): Promise<void> =>
                 status: 'CANCELLED',
                 cancelledAt: new Date(),
                 cancellationReason: reason,
-                artistConfirmationToken: null,
+                manufacturerConfirmationToken: null,
             }
         });
 
-        // Send cancellation email to collector
+        // Restore stock for items
+        for (const item of order.items) {
+            // restore stock
+            await prisma.product.update({
+                where: { id: item.productId },
+                data: { inStock: true }
+            });
+        }
+
+        // Send cancellation email
         const emailContent = getOrderCancellationTemplate(order as any, reason);
         sendEmailAsync(
             order.user.email,
@@ -908,9 +912,9 @@ export const sendOrderConfirmationEmails = async (orderId: string): Promise<void
                 user: true,
                 items: {
                     include: {
-                        artwork: {
+                        product: {
                             include: {
-                                artist: {
+                                manufacturer: {
                                     include: {
                                         user: true
                                     }
@@ -936,10 +940,10 @@ export const sendOrderConfirmationEmails = async (orderId: string): Promise<void
         );
 
         // 2. Send copy to admin with action button
-        const requestArtistUrl = `${env.CLIENT_URL}/admin?action=request-artist&order=${order.id}`;
-        const adminEmail = getAdminOrderCopyTemplate(order as any, requestArtistUrl);
+        const requestManufacturerUrl = `${env.CLIENT_URL}/admin?action=request-manufacturer&order=${order.id}`;
+        const adminEmail = getAdminOrderCopyTemplate(order as any, requestManufacturerUrl);
         sendEmailAsync(
-            env.SMTP_USER || 'admin@muraqqa.art',
+            env.SMTP_USER || 'admin@armsammo.shop',
             `New Order Received: #${order.id.slice(-8).toUpperCase()}`,
             adminEmail
         );

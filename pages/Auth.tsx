@@ -150,7 +150,7 @@ export const Auth: React.FC = () => {
 
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative z-10 w-full max-w-md">
                <div className="bg-gunmetal/30 backdrop-blur-xl border border-olive/30 p-10 shadow-2xl relative overflow-hidden clip-diagonal">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-olive to-safety"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-olive to-sulphur"></div>
                   <div className="text-center mb-8">
                      <h2 className="font-display text-3xl text-pearl mb-2 uppercase tracking-wide">
                         {registrationSuccess.requiresApproval ? 'CLEARANCE PENDING' : 'VERIFY COMMS'}
@@ -159,7 +159,7 @@ export const Auth: React.FC = () => {
                   </div>
                   {!registrationSuccess.requiresApproval && (
                      <div className="text-center space-y-4">
-                        <button onClick={handleResendVerification} disabled={isResendingVerification} className="text-safety hover:text-white transition-colors text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 mx-auto">
+                        <button onClick={handleResendVerification} disabled={isResendingVerification} className="text-sulphur hover:text-white transition-colors text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 mx-auto">
                            <Radio size={14} className={isResendingVerification ? "animate-pulse" : ""} />
                            {isResendingVerification ? 'PINGING...' : 'RE-ESTABLISH UPLINK'}
                         </button>
@@ -188,7 +188,7 @@ export const Auth: React.FC = () => {
                <div className="flex flex-col items-center justify-center gap-2 mb-2">
                   <Target size={48} className="text-olive mb-2" />
                   <h1 className="font-display text-6xl font-bold text-pearl tracking-tighter leading-none">AAA</h1>
-                  <div className="flex items-center gap-2 text-safety uppercase tracking-[0.5em] text-[10px] font-mono">
+                  <div className="flex items-center gap-2 text-sulphur uppercase tracking-[0.5em] text-[10px] font-mono">
                      <Shield size={10} /> Secure Access Terminal
                   </div>
                </div>
@@ -203,13 +203,13 @@ export const Auth: React.FC = () => {
 
                {/* Tabs */}
                <div className="flex mb-8 border-b border-white/10">
-                  <button onClick={() => { setIsLogin(true); setError(''); }} className={cn("flex-1 pb-4 text-xs font-bold uppercase tracking-widest transition-colors relative", isLogin ? "text-safety" : "text-stone-500 hover:text-safety")}>
+                  <button onClick={() => { setIsLogin(true); setError(''); }} className={cn("flex-1 pb-4 text-xs font-bold uppercase tracking-widest transition-colors relative", isLogin ? "text-sulphur" : "text-stone-500 hover:text-sulphur")}>
                      Identify
-                     {isLogin && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 w-full h-0.5 bg-safety" />}
+                     {isLogin && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 w-full h-0.5 bg-sulphur" />}
                   </button>
-                  <button onClick={() => { setIsLogin(false); setError(''); }} className={cn("flex-1 pb-4 text-xs font-bold uppercase tracking-widest transition-colors relative", !isLogin ? "text-safety" : "text-stone-500 hover:text-safety")}>
+                  <button onClick={() => { setIsLogin(false); setError(''); }} className={cn("flex-1 pb-4 text-xs font-bold uppercase tracking-widest transition-colors relative", !isLogin ? "text-sulphur" : "text-stone-500 hover:text-sulphur")}>
                      Enlist
-                     {!isLogin && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 w-full h-0.5 bg-safety" />}
+                     {!isLogin && <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 w-full h-0.5 bg-sulphur" />}
                   </button>
                </div>
 
@@ -218,29 +218,29 @@ export const Auth: React.FC = () => {
                      {!isLogin && (
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="space-y-4 overflow-hidden">
                            <div className="grid grid-cols-2 gap-4">
-                              <label className={cn("cursor-pointer border p-4 text-center transition-all bg-void/50", role === 'USER' ? "border-safety text-safety" : "border-white/5 text-stone-500 hover:border-white/20")}>
+                              <label className={cn("cursor-pointer border p-4 text-center transition-all bg-void/50", role === 'USER' ? "border-sulphur text-sulphur" : "border-white/5 text-stone-500 hover:border-white/20")}>
                                  <input type="radio" name="role" checked={role === 'USER'} onChange={() => setRole('USER')} className="hidden" />
                                  <User size={20} className="mx-auto mb-2" />
                                  <span className="text-[10px] font-bold uppercase tracking-widest">Operator</span>
                               </label>
-                              <label className={cn("cursor-pointer border p-4 text-center transition-all bg-void/50", role === 'ARTIST' ? "border-safety text-safety" : "border-white/5 text-stone-500 hover:border-white/20")}>
+                              <label className={cn("cursor-pointer border p-4 text-center transition-all bg-void/50", role === 'ARTIST' ? "border-sulphur text-sulphur" : "border-white/5 text-stone-500 hover:border-white/20")}>
                                  <input type="radio" name="role" checked={role === 'ARTIST'} onChange={() => setRole('ARTIST')} className="hidden" />
                                  <Award size={20} className="mx-auto mb-2" />
                                  <span className="text-[10px] font-bold uppercase tracking-widest">Supplier</span>
                               </label>
                            </div>
                            <div className="relative group">
-                              <input type="text" placeholder="FULL DESIGNATION" value={fullName} onChange={e => setFullName(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-safety outline-none placeholder:text-stone-600 transition-colors uppercase" required />
-                              <div className="absolute right-3 top-3 text-stone-600 group-focus-within:text-safety"><User size={14} /></div>
+                              <input type="text" placeholder="FULL DESIGNATION" value={fullName} onChange={e => setFullName(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-sulphur outline-none placeholder:text-stone-600 transition-colors uppercase" required />
+                              <div className="absolute right-3 top-3 text-stone-600 group-focus-within:text-sulphur"><User size={14} /></div>
                            </div>
                            <div className="relative group">
-                              <input type="tel" placeholder="COMMS (OPTIONAL)" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-safety outline-none placeholder:text-stone-600 transition-colors uppercase" />
-                              <div className="absolute right-3 top-3 text-stone-600 group-focus-within:text-safety"><Phone size={14} /></div>
+                              <input type="tel" placeholder="COMMS (OPTIONAL)" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-sulphur outline-none placeholder:text-stone-600 transition-colors uppercase" />
+                              <div className="absolute right-3 top-3 text-stone-600 group-focus-within:text-sulphur"><Phone size={14} /></div>
                            </div>
 
                            <div className="grid grid-cols-2 gap-4">
-                              <input type="text" placeholder="SECTOR (CITY)" value={city} onChange={e => setCity(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-safety outline-none placeholder:text-stone-600 transition-colors uppercase" />
-                              <select value={country} onChange={e => setCountry(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-safety outline-none text-stone-400">
+                              <input type="text" placeholder="SECTOR (CITY)" value={city} onChange={e => setCity(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-sulphur outline-none placeholder:text-stone-600 transition-colors uppercase" />
+                              <select value={country} onChange={e => setCountry(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-sulphur outline-none text-stone-400">
                                  <option value="Pakistan">PAKISTAN</option>
                                  <option value="UAE">UAE</option>
                                  <option value="UK">UK</option>
@@ -253,12 +253,12 @@ export const Auth: React.FC = () => {
 
                   <div className="space-y-4">
                      <div className="relative group">
-                        <input type="email" placeholder="ACCESS BADGE (EMAIL)" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-safety outline-none placeholder:text-stone-600 transition-colors uppercase" required />
-                        <div className="absolute right-3 top-3 text-stone-600 group-focus-within:text-safety"><Mail size={14} /></div>
+                        <input type="email" placeholder="ACCESS BADGE (EMAIL)" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-sulphur outline-none placeholder:text-stone-600 transition-colors uppercase" required />
+                        <div className="absolute right-3 top-3 text-stone-600 group-focus-within:text-sulphur"><Mail size={14} /></div>
                      </div>
                      <div className="relative group">
-                        <input type={showPassword ? 'text' : 'password'} placeholder="PASSCODE" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-safety outline-none placeholder:text-stone-600 transition-colors uppercase" required />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-stone-600 hover:text-safety transition-colors">
+                        <input type={showPassword ? 'text' : 'password'} placeholder="PASSCODE" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-void/50 border border-white/10 p-3 text-pearl font-mono text-sm focus:border-sulphur outline-none placeholder:text-stone-600 transition-colors uppercase" required />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-stone-600 hover:text-sulphur transition-colors">
                            {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                         </button>
                      </div>
@@ -268,14 +268,14 @@ export const Auth: React.FC = () => {
                   {!isLogin && password && (
                      <div className="flex gap-1 h-1 bg-void/50">
                         {[1, 2, 3, 4].map(i => (
-                           <div key={i} className={cn("flex-1 transition-colors duration-300", i <= passwordStrength ? (passwordStrength > 2 ? "bg-olive" : "bg-safety") : "bg-transparent")} />
+                           <div key={i} className={cn("flex-1 transition-colors duration-300", i <= passwordStrength ? (passwordStrength > 2 ? "bg-olive" : "bg-sulphur") : "bg-transparent")} />
                         ))}
                      </div>
                   )}
 
                   {isLogin && (
                      <div className="text-right">
-                        <Link to="/forgot-password" className="text-[10px] uppercase tracking-widest text-camo hover:text-safety transition-colors">Lost Access?</Link>
+                        <Link to="/forgot-password" className="text-[10px] uppercase tracking-widest text-camo hover:text-sulphur transition-colors">Lost Access?</Link>
                      </div>
                   )}
 
@@ -299,15 +299,15 @@ export const Auth: React.FC = () => {
 
                   <div className="flex gap-4">
                      {socialConfig.googleEnabled && (
-                        <button type="button" onClick={() => window.location.href = `${API_URL}/auth/google`} className="flex-1 border border-white/10 bg-void/30 p-3 flex items-center justify-center gap-2 hover:bg-white/5 hover:border-safety transition-colors group">
-                           <Chrome size={16} className="text-stone-400 group-hover:text-safety transition-colors" />
-                           <span className="text-xs uppercase font-bold text-stone-400 group-hover:text-safety transition-colors">Google</span>
+                        <button type="button" onClick={() => window.location.href = `${API_URL}/auth/google`} className="flex-1 border border-white/10 bg-void/30 p-3 flex items-center justify-center gap-2 hover:bg-white/5 hover:border-sulphur transition-colors group">
+                           <Chrome size={16} className="text-stone-400 group-hover:text-sulphur transition-colors" />
+                           <span className="text-xs uppercase font-bold text-stone-400 group-hover:text-sulphur transition-colors">Google</span>
                         </button>
                      )}
                      {socialConfig.facebookEnabled && (
-                        <button type="button" onClick={() => window.location.href = `${API_URL}/auth/facebook`} className="flex-1 border border-white/10 bg-void/30 p-3 flex items-center justify-center gap-2 hover:bg-white/5 hover:border-safety transition-colors group">
-                           <Facebook size={16} className="text-stone-400 group-hover:text-safety transition-colors" />
-                           <span className="text-xs uppercase font-bold text-stone-400 group-hover:text-safety transition-colors">Facebook</span>
+                        <button type="button" onClick={() => window.location.href = `${API_URL}/auth/facebook`} className="flex-1 border border-white/10 bg-void/30 p-3 flex items-center justify-center gap-2 hover:bg-white/5 hover:border-sulphur transition-colors group">
+                           <Facebook size={16} className="text-stone-400 group-hover:text-sulphur transition-colors" />
+                           <span className="text-xs uppercase font-bold text-stone-400 group-hover:text-sulphur transition-colors">Facebook</span>
                         </button>
                      )}
                   </div>

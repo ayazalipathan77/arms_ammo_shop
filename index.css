@@ -11,8 +11,8 @@
   /* Olive Drab */
   --color-camo: #8B8C7A;
   /* Camo Green */
-  --color-safety: #FF5722;
-  /* Safety Orange */
+  --color-sulphur: #D4FF00;
+  /* Sulphur Yellow */
   --color-brass: #B5A642;
   /* Brass */
 
@@ -58,11 +58,23 @@
   body {
     @apply antialiased overflow-x-hidden;
     font-family: 'Inter', sans-serif;
-    background-color: var(--color-void);
+    background-color: #050505;
     background-image:
-      radial-gradient(circle at 50% 50%, rgba(75, 83, 32, 0.05) 0%, transparent 50%),
-      linear-gradient(rgba(26, 28, 24, 0.95), rgba(26, 28, 24, 0.95)),
-      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234B5320' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      /* Subtle Radial Glow - Boosted Opacity */
+      radial-gradient(circle at 50% 0%, rgba(75, 83, 32, 0.25) 0%, transparent 60%),
+      /* Hex/Tech Pattern - Boosted Opacity */
+      linear-gradient(rgba(20, 20, 20, 0.85), rgba(20, 20, 20, 0.85)),
+      repeating-linear-gradient(45deg,
+        rgba(75, 83, 32, 0.08) 0px,
+        rgba(75, 83, 32, 0.08) 1px,
+        transparent 1px,
+        transparent 20px),
+      repeating-linear-gradient(-45deg,
+        rgba(75, 83, 32, 0.08) 0px,
+        rgba(75, 83, 32, 0.08) 1px,
+        transparent 1px,
+        transparent 20px);
+    background-attachment: fixed;
   }
 
   /* Autofill Styles */
@@ -88,7 +100,7 @@
 
   /* Custom Selection */
   ::selection {
-    @apply bg-safety text-void;
+    @apply bg-sulphur text-void;
   }
 }
 
@@ -100,6 +112,11 @@
 
   .text-stroke-sm {
     -webkit-text-stroke: 0.5px currentColor;
+  }
+
+  .text-outline-sulphur {
+    -webkit-text-stroke: 1px var(--color-sulphur);
+    color: transparent;
   }
 
   .font-tech {

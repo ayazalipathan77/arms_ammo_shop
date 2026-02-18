@@ -2,38 +2,34 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import prisma from '../config/database';
 import {
-    createArtworkSchema,
-    updateArtworkSchema,
-    artworkQuerySchema,
-} from '../validators/artwork.validator';
+    createProductSchema,
+    updateProductSchema,
+    productQuerySchema,
+} from '../validators/product.validator';
 import { Prisma } from '@prisma/client';
 
-// Get all artworks with filtering, sorting, and pagination
-export const getArtworks = async (req: Request, res: Response): Promise<void> => {
+// Get all products with filtering, sorting, and pagination
+export const getProducts = async (req: Request, res: Response): Promise<void> => {
     try {
-        const query = artworkQuerySchema.parse(req.query);
+        const query = productQuerySchema.parse(req.query);
 
         // Build where clause
-        const where: Prisma.ArtworkWhereInput = {};
+        const where: Prisma.ProductWhereInput = {};
 
         if (query.category) {
             where.category = query.category;
         }
 
-        if (query.medium) {
-            where.medium = query.medium;
+        if (query.type) {
+            where.type = query.type;
         }
 
-        if (query.artistId) {
-            where.artistId = query.artistId;
+        if (query.manufacturerId) {
+            where.manufacturerId = query.manufacturerId;
         }
 
         if (query.inStock !== undefined) {
             where.inStock = query.inStock;
-        }
-
-        if (query.isAuction !== undefined) {
-            where.isAuction = query.isAuction;
         }
 
         if (query.minPrice !== undefined || query.maxPrice !== undefined) {
@@ -50,18 +46,19 @@ export const getArtworks = async (req: Request, res: Response): Promise<void> =>
             where.OR = [
                 { title: { contains: query.search, mode: 'insensitive' } },
                 { description: { contains: query.search, mode: 'insensitive' } },
-                { artist: { user: { fullName: { contains: query.search, mode: 'insensitive' } } } },
+                { manufacturer: { user: { fullName: { contains: query.search, mode: 'insensitive' } } } },
+                { manufacturerName: { contains: query.search, mode: 'insensitive' } },
             ];
         }
 
         // Calculate pagination
         const skip = (query.page - 1) * query.limit;
 
-        const [artworks, total, totalAll, inStockCount, soldOutCount] = await Promise.all([
-            prisma.artwork.findMany({
+        const [products, total, totalAll, inStockCount, soldOutCount] = await Promise.all([
+            prisma.product.findMany({
                 where,
                 include: {
-                    artist: {
+                    manufacturer: {
                         include: {
                             user: {
                                 select: {
@@ -79,14 +76,14 @@ export const getArtworks = async (req: Request, res: Response): Promise<void> =>
                 skip,
                 take: query.limit,
             }),
-            prisma.artwork.count({ where }),
-            prisma.artwork.count(),
-            prisma.artwork.count({ where: { inStock: true } }),
-            prisma.artwork.count({ where: { inStock: false } }),
+            prisma.product.count({ where }),
+            prisma.product.count(),
+            prisma.product.count({ where: { inStock: true } }),
+            prisma.product.count({ where: { inStock: false } }),
         ]);
 
         res.status(StatusCodes.OK).json({
-            artworks,
+            products,
             pagination: {
                 total,
                 page: query.page,
@@ -107,22 +104,22 @@ export const getArtworks = async (req: Request, res: Response): Promise<void> =>
             });
             return;
         }
-        console.error('Get artworks error:', error);
+        console.error('Get products error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to fetch artworks',
+            message: 'Failed to fetch products',
         });
     }
 };
 
-// Get single artwork by ID
-export const getArtworkById = async (req: Request, res: Response): Promise<void> => {
+// Get single product by ID
+export const getProductById = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = req.params.id as string;
 
-        const artwork = await prisma.artwork.findUnique({
+        const product = await prisma.product.findUnique({
             where: { id },
             include: {
-                artist: {
+                manufacturer: {
                     include: {
                         user: {
                             select: {
@@ -149,32 +146,32 @@ export const getArtworkById = async (req: Request, res: Response): Promise<void>
             },
         });
 
-        if (!artwork) {
-            res.status(StatusCodes.NOT_FOUND).json({ message: 'Artwork not found' });
+        if (!product) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' });
             return;
         }
 
-        res.status(StatusCodes.OK).json({ artwork });
+        res.status(StatusCodes.OK).json({ product });
     } catch (error) {
-        console.error('Get artwork error:', error);
+        console.error('Get product error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to fetch artwork',
+            message: 'Failed to fetch product',
         });
     }
 };
 
-// Create new artwork (Artist only)
-export const createArtwork = async (req: Request, res: Response): Promise<void> => {
+// Create new product (Manufacturer only)
+export const createProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authenticated' });
             return;
         }
 
-        const validatedData = createArtworkSchema.parse(req.body);
+        const validatedData = createProductSchema.parse(req.body);
 
-        // Get artist profile for this user
-        const artist = await prisma.artist.findUnique({
+        // Get manufacturer profile for this user
+        const manufacturer = await prisma.manufacturer.findUnique({
             where: { userId: req.user.userId },
             include: {
                 user: {
@@ -185,27 +182,25 @@ export const createArtwork = async (req: Request, res: Response): Promise<void> 
             },
         });
 
-        if (!artist && req.user.role !== 'ADMIN') {
+        if (!manufacturer && req.user.role !== 'ADMIN') {
             res.status(StatusCodes.FORBIDDEN).json({
-                message: 'Artist profile not found. Only artists and admins can create artworks.',
+                message: 'Manufacturer profile not found. Only manufacturers and admins can create products.',
             });
             return;
         }
 
-        // Determine artist name: use provided name, or artist's full name, or fallback
-        const artistName = validatedData.artistName || artist?.user.fullName || 'Unknown Artist';
+        // Determine manufacturer name
+        const manufacturerName = validatedData.manufacturerName || manufacturer?.user.fullName || 'Unknown Manufacturer';
 
-        const { printOptions, ...restData } = validatedData;
-        const artwork = await prisma.artwork.create({
+        const product = await prisma.product.create({
             data: {
-                ...restData,
+                ...validatedData,
                 price: new Prisma.Decimal(validatedData.price),
-                artistId: artist?.id || null,
-                artistName,
-                printOptions: printOptions ?? Prisma.DbNull,
+                manufacturerId: manufacturer?.id || null,
+                manufacturerName,
             },
             include: {
-                artist: {
+                manufacturer: {
                     include: {
                         user: {
                             select: {
@@ -220,8 +215,8 @@ export const createArtwork = async (req: Request, res: Response): Promise<void> 
         });
 
         res.status(StatusCodes.CREATED).json({
-            message: 'Artwork created successfully',
-            artwork,
+            message: 'Product created successfully',
+            product,
         });
     } catch (error: any) {
         if (error.name === 'ZodError') {
@@ -231,15 +226,15 @@ export const createArtwork = async (req: Request, res: Response): Promise<void> 
             });
             return;
         }
-        console.error('Create artwork error:', error);
+        console.error('Create product error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to create artwork',
+            message: 'Failed to create product',
         });
     }
 };
 
-// Update artwork (Artist owner only)
-export const updateArtwork = async (req: Request, res: Response): Promise<void> => {
+// Update product (Manufacturer owner only)
+export const updateProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authenticated' });
@@ -247,44 +242,39 @@ export const updateArtwork = async (req: Request, res: Response): Promise<void> 
         }
 
         const id = req.params.id as string;
-        const validatedData = updateArtworkSchema.parse(req.body);
+        const validatedData = updateProductSchema.parse(req.body);
 
-        // Get artwork and verify ownership
-        const existingArtwork = await prisma.artwork.findUnique({
+        // Get product and verify ownership
+        const existingProduct = await prisma.product.findUnique({
             where: { id },
             include: {
-                artist: true,
+                manufacturer: true,
             },
         });
 
-        if (!existingArtwork) {
-            res.status(StatusCodes.NOT_FOUND).json({ message: 'Artwork not found' });
+        if (!existingProduct) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' });
             return;
         }
 
-        // Check if user is the artist owner or admin
-        if (existingArtwork.artist?.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+        // Check if user is the manufacturer owner or admin
+        if (existingProduct.manufacturer?.userId !== req.user.userId && req.user.role !== 'ADMIN') {
             res.status(StatusCodes.FORBIDDEN).json({
-                message: 'You can only update your own artworks',
+                message: 'You can only update your own products',
             });
             return;
         }
 
-        // Prepare update data
-        const { printOptions: updatedPrintOptions, ...restUpdateData } = validatedData;
-        const updateData: Prisma.ArtworkUpdateInput = { ...restUpdateData };
+        const updateData: Prisma.ProductUpdateInput = { ...validatedData };
         if (validatedData.price !== undefined) {
             updateData.price = new Prisma.Decimal(validatedData.price);
         }
-        if (updatedPrintOptions !== undefined) {
-            updateData.printOptions = updatedPrintOptions ?? Prisma.DbNull;
-        }
 
-        const artwork = await prisma.artwork.update({
+        const product = await prisma.product.update({
             where: { id },
             data: updateData,
             include: {
-                artist: {
+                manufacturer: {
                     include: {
                         user: {
                             select: {
@@ -299,8 +289,8 @@ export const updateArtwork = async (req: Request, res: Response): Promise<void> 
         });
 
         res.status(StatusCodes.OK).json({
-            message: 'Artwork updated successfully',
-            artwork,
+            message: 'Product updated successfully',
+            product,
         });
     } catch (error: any) {
         if (error.name === 'ZodError') {
@@ -310,15 +300,15 @@ export const updateArtwork = async (req: Request, res: Response): Promise<void> 
             });
             return;
         }
-        console.error('Update artwork error:', error);
+        console.error('Update product error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to update artwork',
+            message: 'Failed to update product',
         });
     }
 };
 
-// Delete artwork (Artist owner or Admin only)
-export const deleteArtwork = async (req: Request, res: Response): Promise<void> => {
+// Delete product (Manufacturer owner or Admin only)
+export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authenticated' });
@@ -327,68 +317,68 @@ export const deleteArtwork = async (req: Request, res: Response): Promise<void> 
 
         const id = req.params.id as string;
 
-        // Get artwork and verify ownership
-        const existingArtwork = await prisma.artwork.findUnique({
+        // Get product and verify ownership
+        const existingProduct = await prisma.product.findUnique({
             where: { id },
             include: {
-                artist: true,
+                manufacturer: true,
             },
         });
 
-        if (!existingArtwork) {
-            res.status(StatusCodes.NOT_FOUND).json({ message: 'Artwork not found' });
+        if (!existingProduct) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Product not found' });
             return;
         }
 
-        // Check if user is the artist owner or admin
-        if (existingArtwork.artist?.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+        // Check if user is the manufacturer owner or admin
+        if (existingProduct.manufacturer?.userId !== req.user.userId && req.user.role !== 'ADMIN') {
             res.status(StatusCodes.FORBIDDEN).json({
-                message: 'You can only delete your own artworks',
+                message: 'You can only delete your own products',
             });
             return;
         }
 
-        await prisma.artwork.delete({
+        await prisma.product.delete({
             where: { id },
         });
 
         res.status(StatusCodes.OK).json({
-            message: 'Artwork deleted successfully',
+            message: 'Product deleted successfully',
         });
     } catch (error) {
-        console.error('Delete artwork error:', error);
+        console.error('Delete product error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to delete artwork',
+            message: 'Failed to delete product',
         });
     }
 };
 
-// Get artworks by artist
-export const getArtworksByArtist = async (req: Request, res: Response): Promise<void> => {
+// Get products by manufacturer
+export const getProductsByManufacturer = async (req: Request, res: Response): Promise<void> => {
     try {
-        const artistId = req.params.artistId as string;
-        const query = artworkQuerySchema.parse(req.query);
+        const manufacturerId = req.params.manufacturerId as string;
+        const query = productQuerySchema.parse(req.query);
 
-        // Verify artist exists
-        const artist = await prisma.artist.findUnique({
-            where: { id: artistId },
+        // Verify manufacturer exists
+        const manufacturer = await prisma.manufacturer.findUnique({
+            where: { id: manufacturerId },
         });
 
-        if (!artist) {
-            res.status(StatusCodes.NOT_FOUND).json({ message: 'Artist not found' });
+        if (!manufacturer) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Manufacturer not found' });
             return;
         }
 
         const skip = (query.page - 1) * query.limit;
 
-        const total = await prisma.artwork.count({
-            where: { artistId },
+        const total = await prisma.product.count({
+            where: { manufacturerId },
         });
 
-        const artworks = await prisma.artwork.findMany({
-            where: { artistId },
+        const products = await prisma.product.findMany({
+            where: { manufacturerId },
             include: {
-                artist: {
+                manufacturer: {
                     include: {
                         user: {
                             select: {
@@ -408,7 +398,7 @@ export const getArtworksByArtist = async (req: Request, res: Response): Promise<
         });
 
         res.status(StatusCodes.OK).json({
-            artworks,
+            products,
             pagination: {
                 total,
                 page: query.page,
@@ -424,29 +414,29 @@ export const getArtworksByArtist = async (req: Request, res: Response): Promise<
             });
             return;
         }
-        console.error('Get artworks by artist error:', error);
+        console.error('Get products by manufacturer error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to fetch artworks',
+            message: 'Failed to fetch products',
         });
     }
 };
 
-// Get categories and mediums for filters
+// Get categories and types for filters
 export const getFilters = async (req: Request, res: Response): Promise<void> => {
     try {
-        const categories = await prisma.artwork.findMany({
+        const categories = await prisma.product.findMany({
             select: { category: true },
             distinct: ['category'],
         });
 
-        const mediums = await prisma.artwork.findMany({
-            select: { medium: true },
-            distinct: ['medium'],
+        const types = await prisma.product.findMany({
+            select: { type: true },
+            distinct: ['type'],
         });
 
         res.status(StatusCodes.OK).json({
             categories: categories.map(c => c.category),
-            mediums: mediums.map(m => m.medium),
+            types: types.map(t => t.type),
         });
     } catch (error) {
         console.error('Get filters error:', error);

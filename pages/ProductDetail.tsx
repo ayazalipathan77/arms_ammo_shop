@@ -54,7 +54,7 @@ export const ProductDetail: React.FC = () => {
         window.scrollTo(0, 0);
     }, [id]);
 
-    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-void"><Loader2 className="w-8 h-8 text-safety animate-spin" /></div>;
+    if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-void"><Loader2 className="w-8 h-8 text-sulphur animate-spin" /></div>;
     if (error || !product) return <div className="min-h-screen flex items-center justify-center bg-void text-pearl">{error || 'Product not found'}</div>;
 
     const relatedProducts = products.filter(p => p.id !== id && p.category === product.category).slice(0, 4);
@@ -83,7 +83,7 @@ export const ProductDetail: React.FC = () => {
             {/* Fullscreen Zoom */}
             {showZoom && (
                 <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center" onClick={() => setShowZoom(false)}>
-                    <button className="absolute top-6 right-6 text-stone-400 hover:text-safety transition-colors z-10">
+                    <button className="absolute top-6 right-6 text-stone-400 hover:text-sulphur transition-colors z-10">
                         <Maximize2 size={32} />
                     </button>
                     <img
@@ -96,7 +96,7 @@ export const ProductDetail: React.FC = () => {
 
             {/* Sticky Nav */}
             <div className="fixed top-24 left-0 w-full z-40 px-6 md:px-12 pointer-events-none">
-                <Link to={backTo} className="inline-flex items-center gap-2 text-camo hover:text-safety uppercase tracking-widest text-[10px] pointer-events-auto transition-colors bg-void/90 backdrop-blur border border-gunmetal px-4 py-2 font-bold font-display">
+                <Link to={backTo} className="inline-flex items-center gap-2 text-camo hover:text-sulphur uppercase tracking-widest text-[10px] pointer-events-auto transition-colors bg-void/90 backdrop-blur border border-gunmetal px-4 py-2 font-bold font-display">
                     <ArrowLeft size={12} /> Return to Base
                 </Link>
             </div>
@@ -121,7 +121,7 @@ export const ProductDetail: React.FC = () => {
                         {/* Zoom Trigger */}
                         <button
                             onClick={() => setShowZoom(true)}
-                            className="absolute bottom-8 right-8 bg-gunmetal/80 text-camo p-3 hover:text-safety hover:bg-void border border-stone-800 transition-all opacity-0 group-hover:opacity-100"
+                            className="absolute bottom-8 right-8 bg-gunmetal/80 text-camo p-3 hover:text-sulphur hover:bg-void border border-stone-800 transition-all opacity-0 group-hover:opacity-100"
                         >
                             <Maximize2 size={20} />
                         </button>
@@ -135,7 +135,7 @@ export const ProductDetail: React.FC = () => {
                                 onClick={() => setActiveImage(img)}
                                 className={cn(
                                     "w-16 h-16 md:w-20 md:h-20 border-2 transition-all p-1 bg-void",
-                                    activeImage === img ? "border-safety" : "border-stone-700 hover:border-camo"
+                                    activeImage === img ? "border-sulphur" : "border-stone-700 hover:border-camo"
                                 )}
                             >
                                 <img src={img} alt={`View ${idx}`} className="w-full h-full object-cover" />
@@ -151,7 +151,7 @@ export const ProductDetail: React.FC = () => {
                         {/* Header */}
                         <div className="space-y-4">
                             <div className="flex justify-between items-start border-b border-gunmetal pb-4">
-                                <Link to={`/brands/${product.manufacturerId}`} className="text-safety font-display text-sm tracking-widest uppercase hover:underline flex items-center gap-2">
+                                <Link to={`/brands/${product.manufacturerId}`} className="text-sulphur font-display text-sm tracking-widest uppercase hover:underline flex items-center gap-2">
                                     <Target size={16} /> {product.manufacturerName}
                                 </Link>
                                 <button onClick={() => setIsSaved(!isSaved)} className={cn("transition-colors", isSaved ? "text-alert" : "text-camo hover:text-alert")}>
@@ -229,9 +229,9 @@ export const ProductDetail: React.FC = () => {
                             <div className="flex items-center justify-between bg-gunmetal/20 p-4 border border-gunmetal">
                                 <span className="font-display text-sm text-camo uppercase">Quantity</span>
                                 <div className="flex items-center gap-4">
-                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-stone-400 hover:text-safety"><Minus size={18} /></button>
+                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-stone-400 hover:text-sulphur"><Minus size={18} /></button>
                                     <span className="font-mono text-xl text-pearl w-8 text-center">{quantity}</span>
-                                    <button onClick={() => setQuantity(quantity + 1)} className="text-stone-400 hover:text-safety"><Plus size={18} /></button>
+                                    <button onClick={() => setQuantity(quantity + 1)} className="text-stone-400 hover:text-sulphur"><Plus size={18} /></button>
                                 </div>
                             </div>
 
@@ -246,10 +246,10 @@ export const ProductDetail: React.FC = () => {
 
                             <div className="flex justify-center gap-6 pt-2">
                                 <span className="flex items-center gap-2 text-[10px] text-camo uppercase tracking-widest font-mono">
-                                    <ShieldCheck size={12} className="text-safety" /> FFL Required
+                                    <ShieldCheck size={12} className="text-sulphur" /> FFL Required
                                 </span>
                                 <span className="flex items-center gap-2 text-[10px] text-camo uppercase tracking-widest font-mono">
-                                    <Truck size={12} className="text-safety" /> Secure Transit
+                                    <Truck size={12} className="text-sulphur" /> Secure Transit
                                 </span>
                             </div>
                         </div>
@@ -265,10 +265,10 @@ export const ProductDetail: React.FC = () => {
                     <div className="mt-20">
                         <div className="flex items-end justify-between mb-8 border-b border-gunmetal pb-4">
                             <div>
-                                <p className="text-safety text-xs font-display tracking-widest mb-1">Related Gear</p>
+                                <p className="text-sulphur text-xs font-display tracking-widest mb-1">Related Gear</p>
                                 <h3 className="font-display text-3xl text-pearl">You Might Also Need</h3>
                             </div>
-                            <Link to="/shop" className="text-camo hover:text-safety text-xs font-display tracking-widest uppercase mb-2">
+                            <Link to="/shop" className="text-camo hover:text-sulphur text-xs font-display tracking-widest uppercase mb-2">
                                 View Full Catalog →
                             </Link>
                         </div>

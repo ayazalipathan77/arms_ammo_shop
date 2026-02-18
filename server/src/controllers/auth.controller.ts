@@ -48,13 +48,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 verificationToken,
                 verificationTokenExpiry,
                 isEmailVerified: false,
-                isApproved: validatedData.role === 'USER', // Users are auto-approved, artists need admin approval
+                isApproved: validatedData.role === 'USER', // Users are auto-approved, manufacturers need admin approval
             },
         });
 
-        // If user is an artist, create artist profile
-        if (validatedData.role === 'ARTIST') {
-            await prisma.artist.create({
+        // If user is a manufacturer, create manufacturer profile
+        if (validatedData.role === 'MANUFACTURER') {
+            await prisma.manufacturer.create({
                 data: {
                     userId: user.id,
                 },
@@ -100,11 +100,11 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         sendEmailAsync(user.email, 'Verify Your Email - Arms & Ammo Shop', emailContent);
 
         res.status(StatusCodes.CREATED).json({
-            message: validatedData.role === 'ARTIST'
+            message: validatedData.role === 'MANUFACTURER'
                 ? 'Registration successful! Please verify your email. After verification, your account will be reviewed by our team.'
                 : 'Registration successful! Please verify your email to continue.',
             requiresVerification: true,
-            requiresApproval: validatedData.role === 'ARTIST',
+            requiresApproval: validatedData.role === 'MANUFACTURER',
             user: {
                 id: user.id,
                 email: user.email,
@@ -130,16 +130,18 @@ const mergeGuestCart = async (userId: string, guestCart: any[]) => {
     if (!guestCart || guestCart.length === 0) return;
 
     for (const item of guestCart) {
-        // Verify artwork exists
-        const artwork = await prisma.artwork.findUnique({ where: { id: item.artworkId } });
-        if (!artwork) continue;
+        // Verify product exists
+        const product = await prisma.product.findUnique({ where: { id: item.productId } });
+        if (!product) continue;
+
+        // Ensure type matches enum
+        const purchaseType = item.type === 'ORIGINAL' || item.type === 'PRINT' ? item.type : 'ORIGINAL';
 
         const existingItem = await prisma.cartItem.findFirst({
             where: {
                 userId,
-                artworkId: item.artworkId,
-                type: item.type,
-                printSize: item.printSize || null,
+                productId: item.productId,
+                type: purchaseType,
             },
         });
 
@@ -154,10 +156,9 @@ const mergeGuestCart = async (userId: string, guestCart: any[]) => {
             await prisma.cartItem.create({
                 data: {
                     userId,
-                    artworkId: item.artworkId,
+                    productId: item.productId,
                     quantity: item.quantity,
-                    type: item.type,
-                    printSize: item.printSize || null,
+                    type: purchaseType,
                 },
             });
         }
@@ -174,7 +175,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         const user = await prisma.user.findUnique({
             where: { email: validatedData.email },
             include: {
-                artistProfile: true,
+                manufacturerProfile: true, // Updated from artistProfile
             },
         });
 
@@ -216,11 +217,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
-        // Check artist approval (only for artists)
-        if (user.role === 'ARTIST' && !user.isApproved) {
+        // Check manufacturer approval (only for manufacturers)
+        if (user.role === 'MANUFACTURER' && !user.isApproved) {
             res.status(StatusCodes.FORBIDDEN).json({
-                message: 'Your artist account is pending approval. You will be notified once approved.',
-                code: 'ARTIST_NOT_APPROVED'
+                message: 'Your manufacturer account is pending approval. You will be notified once approved.',
+                code: 'MANUFACTURER_NOT_APPROVED'
             });
             return;
         }
@@ -248,7 +249,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                 role: user.role,
                 isEmailVerified: user.isEmailVerified,
                 isApproved: user.isApproved,
-                artistProfile: user.artistProfile,
+                manufacturerProfile: user.manufacturerProfile,
             },
         });
     } catch (error: any) {
@@ -274,7 +275,7 @@ export const getMe = async (req: Request, res: Response): Promise<void> => {
         const user = await prisma.user.findUnique({
             where: { id: req.user.userId },
             include: {
-                artistProfile: true,
+                manufacturerProfile: true, // Updated
             },
         });
 
@@ -440,9 +441,9 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
         });
 
         // Return different messages based on role
-        if (user.role === 'ARTIST') {
+        if (user.role === 'MANUFACTURER') {
             res.status(StatusCodes.OK).json({
-                message: 'Email verified successfully! Your artist account is now pending admin approval. You will be notified once approved.',
+                message: 'Email verified successfully! Your manufacturer account is now pending admin approval. You will be notified once approved.',
                 requiresApproval: true,
                 isApproved: false,
                 role: user.role

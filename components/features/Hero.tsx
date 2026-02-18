@@ -60,7 +60,7 @@ const Hero = () => {
         return (
             <section className="relative h-screen w-full bg-void overflow-hidden flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-safety animate-spin mx-auto mb-4" />
+                    <Loader2 className="w-12 h-12 text-sulphur animate-spin mx-auto mb-4" />
                     <p className="text-pearl/60 text-sm uppercase tracking-widest font-mono">Initializing Systems...</p>
                 </div>
             </section>
@@ -101,10 +101,10 @@ const Hero = () => {
             <div className="absolute inset-0 pointer-events-none z-10 border-[20px] border-transparent">
                 <div className="w-full h-full border border-white/5 relative">
                     {/* Corners */}
-                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-safety"></div>
-                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-safety"></div>
-                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-safety"></div>
-                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-safety"></div>
+                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-sulphur"></div>
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-sulphur"></div>
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-sulphur"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-sulphur"></div>
 
                     {/* Crosshairs */}
                     <div className="absolute top-1/2 left-8 w-4 h-[1px] bg-white/20"></div>
@@ -119,7 +119,7 @@ const Hero = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         key={`sub-${current}`}
-                        className="flex items-center justify-center gap-3 text-safety font-mono text-xs md:text-sm tracking-[0.5em] uppercase"
+                        className="flex items-center justify-center gap-3 text-sulphur font-mono text-xs md:text-sm tracking-[0.5em] uppercase"
                     >
                         <Crosshair size={14} className="animate-spin-slow" />
                         {heroConfig?.subtitle || banners[current].subtitle}
@@ -131,7 +131,7 @@ const Hero = () => {
                     </h1>
 
                     <div className="pt-8 pointer-events-auto">
-                        <Button variant="outline" className="text-white border-white/20 hover:border-safety hover:text-safety hover:bg-void/80 backdrop-blur-sm px-8 py-6 text-sm tracking-[0.2em]">
+                        <Button variant="outline" className="text-white border-white/20 hover:border-sulphur hover:text-sulphur hover:bg-void/80 backdrop-blur-sm px-8 py-6 text-sm tracking-[0.2em]">
                             INIITIATE ACCESS
                         </Button>
                     </div>
@@ -143,7 +143,7 @@ const Hero = () => {
 
                 {/* Counter */}
                 <div className="font-mono text-xs flex flex-col gap-1 text-stone-500">
-                    <span className="text-safety text-lg tracking-widest">0{current + 1}</span>
+                    <span className="text-sulphur text-lg tracking-widest">0{current + 1}</span>
                     <span className="w-8 h-[1px] bg-stone-700"></span>
                     <span className="tracking-widest">0{banners.length}</span>
                 </div>
@@ -152,13 +152,13 @@ const Hero = () => {
                 <div className="flex items-center gap-2 pointer-events-auto">
                     <button
                         onClick={prevSlide}
-                        className="w-12 h-12 flex items-center justify-center border border-white/10 hover:border-safety text-stone-400 hover:text-safety transition-all bg-void/50 backdrop-blur-sm group/btn"
+                        className="w-12 h-12 flex items-center justify-center border border-white/10 hover:border-sulphur text-stone-400 hover:text-sulphur transition-all bg-void/50 backdrop-blur-sm group/btn"
                     >
                         <ChevronLeft size={20} className="group-hover/btn:-translate-x-1 transition-transform" />
                     </button>
                     <button
                         onClick={nextSlide}
-                        className="w-12 h-12 flex items-center justify-center border border-white/10 hover:border-safety text-stone-400 hover:text-safety transition-all bg-void/50 backdrop-blur-sm group/btn"
+                        className="w-12 h-12 flex items-center justify-center border border-white/10 hover:border-sulphur text-stone-400 hover:text-sulphur transition-all bg-void/50 backdrop-blur-sm group/btn"
                     >
                         <ChevronRight size={20} className="group-hover/btn:translate-x-1 transition-transform" />
                     </button>
@@ -172,7 +172,7 @@ const Hero = () => {
                     initial={{ width: "0%" }}
                     animate={{ width: "100%" }}
                     transition={{ duration: 7, ease: "linear" }}
-                    className="h-full bg-safety"
+                    className="h-full bg-sulphur"
                 />
             </div>
         </section>

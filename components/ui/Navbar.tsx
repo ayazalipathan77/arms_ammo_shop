@@ -64,7 +64,7 @@ const Navbar: React.FC = () => {
                                 AAA
                             </h1>
                             <div className="flex items-center gap-2 text-[0.6rem] uppercase tracking-[0.3em] text-camo font-mono">
-                                <Radio size={8} className="text-safety animate-pulse" />
+                                <Radio size={8} className="text-sulphur animate-pulse" />
                                 <span>Systems Online</span>
                             </div>
                         </div>
@@ -79,8 +79,8 @@ const Navbar: React.FC = () => {
                                     key={link.path}
                                     to={link.path}
                                     className={cn(
-                                        "text-xs uppercase tracking-[0.15em] font-bold px-4 py-2 transition-all hover:text-safety hover:bg-white/5 clip-diagonal",
-                                        isActive ? "text-safety bg-white/5" : "text-stone-400"
+                                        "text-xs uppercase tracking-[0.15em] font-bold px-4 py-2 transition-all hover:text-sulphur hover:drop-shadow-[0_0_8px_rgba(212,255,0,0.5)] clip-diagonal",
+                                        isActive ? "text-sulphur drop-shadow-[0_0_8px_rgba(212,255,0,0.5)]" : "text-stone-400"
                                     )}
                                 >
                                     {link.name}
@@ -93,21 +93,21 @@ const Navbar: React.FC = () => {
                     <div className="flex items-center gap-4 z-50">
                         <button
                             onClick={() => setSearchOpen(true)}
-                            className="text-stone-400 hover:text-safety transition-colors p-2"
+                            className="text-stone-400 hover:text-brass transition-colors p-2"
                         >
                             <Search size={20} />
                         </button>
 
                         {user && (
-                            <Link to="/wishlist" className="text-stone-400 hover:text-safety transition-colors p-2 hidden sm:block" title="Wishlist">
+                            <Link to="/wishlist" className="text-stone-400 hover:text-brass transition-colors p-2 hidden sm:block" title="Wishlist">
                                 <Heart size={20} />
                             </Link>
                         )}
 
-                        <Link to="/cart" className="text-stone-400 hover:text-safety transition-colors relative p-2 group">
+                        <Link to="/cart" className="text-stone-400 hover:text-brass transition-colors relative p-2 group">
                             <ShoppingBag size={20} className="group-hover:fill-current" />
                             {cart.length > 0 && (
-                                <span className="absolute top-0 right-0 bg-safety text-void text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-sm">
+                                <span className="absolute top-0 right-0 bg-sulphur text-void text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-sm">
                                     {cart.length}
                                 </span>
                             )}
@@ -118,7 +118,7 @@ const Navbar: React.FC = () => {
                                 <button
                                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                                     onBlur={() => setTimeout(() => setUserMenuOpen(false), 200)}
-                                    className="flex items-center gap-2 text-stone-400 hover:text-safety transition-colors focus:outline-none p-2"
+                                    className="flex items-center gap-2 text-stone-400 hover:text-brass transition-colors focus:outline-none p-2"
                                 >
                                     <User size={20} />
                                 </button>
@@ -147,13 +147,13 @@ const Navbar: React.FC = () => {
 
                                         <Link
                                             to="/profile"
-                                            className="block px-4 py-2 text-xs text-stone-300 hover:text-safety hover:bg-gunmetal/50 transition-colors uppercase tracking-wider"
+                                            className="block px-4 py-2 text-xs text-stone-300 hover:text-brass hover:bg-gunmetal/50 transition-colors uppercase tracking-wider"
                                         >
                                             Profile
                                         </Link>
                                         <Link
                                             to="/wishlist"
-                                            className="block px-4 py-2 text-xs text-stone-300 hover:text-safety hover:bg-gunmetal/50 transition-colors uppercase tracking-wider"
+                                            className="block px-4 py-2 text-xs text-stone-300 hover:text-brass hover:bg-gunmetal/50 transition-colors uppercase tracking-wider"
                                         >
                                             Wishlist
                                         </Link>
@@ -175,7 +175,7 @@ const Navbar: React.FC = () => {
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="md:hidden text-stone-400 hover:text-safety"
+                            className="md:hidden text-stone-400 hover:text-brass"
                         >
                             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
@@ -198,8 +198,8 @@ const Navbar: React.FC = () => {
                                 key={link.path}
                                 to={link.path}
                                 className={cn(
-                                    "font-display text-3xl uppercase tracking-widest transition-colors hover:text-safety w-full text-center border-b border-gunmetal pb-4",
-                                    isActive ? "text-safety border-safety" : "text-stone-500"
+                                    "font-display text-3xl uppercase tracking-widest transition-colors hover:text-brass w-full text-center border-b border-gunmetal pb-4",
+                                    isActive ? "text-brass border-brass" : "text-stone-500"
                                 )}
                             >
                                 {link.name}

@@ -15,8 +15,8 @@ import './config/passport';
 
 // Import Routes
 import authRoutes from './routes/auth.routes';
-import artworkRoutes from './routes/artwork.routes';
-import artistRoutes from './routes/artist.routes';
+import productRoutes from './routes/product.routes';
+import manufacturerRoutes from './routes/manufacturer.routes';
 import cartRoutes from './routes/cart.routes';
 import orderRoutes from './routes/order.routes';
 import paymentRoutes from './routes/payment.routes';
@@ -97,8 +97,8 @@ app.get('/api/config', (req: Request, res: Response) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/artworks', artworkRoutes);
-app.use('/api/artists', artistRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/manufacturers', manufacturerRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);

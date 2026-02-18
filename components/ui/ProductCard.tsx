@@ -113,7 +113,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
                             {product.manufacturerName}
                         </span>
                     </div>
-                    <h3 className="text-pearl font-display font-bold text-lg uppercase tracking-wide truncate group-hover:text-safety transition-colors">
+                    <h3 className="text-pearl font-display font-bold text-lg uppercase tracking-wide truncate group-hover:text-sulphur transition-colors">
                         {product.title}
                     </h3>
                     <div className="flex justify-between items-end mt-3 border-t border-white/10 pt-3 group-hover:border-olive/30 transition-colors">
@@ -133,7 +133,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, className }) => {
                     disabled={isLoading}
                     className={cn(
                         "absolute top-4 right-4 z-30 p-2 rounded-sm transition-all duration-300 hover:bg-black/50 backdrop-blur-sm",
-                        isFavorited ? "text-safety" : "text-stone-400 opacity-0 group-hover:opacity-100"
+                        isFavorited ? "text-sulphur" : "text-stone-400 opacity-0 group-hover:opacity-100"
                     )}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}

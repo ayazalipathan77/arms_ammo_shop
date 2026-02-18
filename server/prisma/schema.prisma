@@ -171,6 +171,8 @@ model Order {
   manufacturerNotifiedAt    DateTime?
   manufacturerConfirmedAt   DateTime?
   manufacturerConfirmedBy   String?   // Manufacturer user ID
+  manufacturerConfirmationToken String?
+  manufacturerConfirmationExpiry DateTime?
   adminConfirmedAt          DateTime?
   adminConfirmedBy          String?   // Admin user ID
   shippedAt                 DateTime?

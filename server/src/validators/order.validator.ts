@@ -2,10 +2,9 @@ import { z } from 'zod';
 
 // Order item schema for order creation
 const orderItemSchema = z.object({
-    artworkId: z.string().uuid('Invalid artwork ID'),
+    productId: z.string().uuid('Invalid product ID'),
     quantity: z.number().int().positive().default(1),
-    type: z.enum(['ORIGINAL', 'PRINT']).default('ORIGINAL'),
-    printSize: z.string().optional(),
+    type: z.enum(['FIREARM', 'AMMO', 'OPTIC', 'ACCESSORY']).optional(), // Optional, inferred or just pass through
 });
 
 // Create order schema

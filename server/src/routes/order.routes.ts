@@ -4,8 +4,8 @@ import {
     getUserOrders,
     getAllOrders,
     getOrderById,
-    requestArtistConfirmation,
-    artistConfirmAvailability,
+    requestManufacturerConfirmation,
+    manufacturerConfirmAvailability,
     adminConfirmOrder,
     markOrderPaid,
     markOrderShipped,
@@ -17,8 +17,8 @@ import { authenticate, authorizeRole } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// Public route for artist confirmation (via email link)
-router.get('/artist-confirm', artistConfirmAvailability);
+// Public route for manufacturer confirmation (via email link)
+router.get('/manufacturer-confirm', manufacturerConfirmAvailability);
 
 // User routes (must be before /:id to avoid conflict)
 router.post('/', authenticate, createOrder);
@@ -28,7 +28,7 @@ router.get('/my-orders', authenticate, getUserOrders);
 router.get('/', authenticate, authorizeRole('ADMIN'), getAllOrders);
 // Allow users to view their own orders (ownership checked in controller)
 router.get('/:id', authenticate, getOrderById);
-router.post('/:id/request-artist-confirmation', authenticate, authorizeRole('ADMIN'), requestArtistConfirmation);
+router.post('/:id/request-manufacturer-confirmation', authenticate, authorizeRole('ADMIN'), requestManufacturerConfirmation);
 router.put('/:id/pay', authenticate, authorizeRole('ADMIN'), markOrderPaid);
 router.put('/:id/confirm', authenticate, authorizeRole('ADMIN'), adminConfirmOrder);
 router.put('/:id/ship', authenticate, authorizeRole('ADMIN'), markOrderShipped);

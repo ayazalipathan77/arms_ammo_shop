@@ -172,13 +172,13 @@ export const Showroom: React.FC = () => {
           <div className="flex flex-col md:flex-row gap-4 mt-8">
             {/* Search */}
             <div className="relative flex-1 md:max-w-md group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-600 group-focus-within:text-safety transition-colors" size={16} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-600 group-focus-within:text-sulphur transition-colors" size={16} />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="SEARCH DATABASE // KEYWORD OR ID"
-                className="w-full bg-black/20 border border-gunmetal text-pearl text-xs font-mono py-4 pl-12 pr-4 focus:outline-none focus:border-safety transition-all placeholder:text-stone-700 uppercase"
+                className="w-full bg-black/20 border border-gunmetal text-pearl text-xs font-mono py-4 pl-12 pr-4 focus:outline-none focus:border-sulphur transition-all placeholder:text-stone-700 uppercase"
               />
             </div>
 
@@ -187,12 +187,12 @@ export const Showroom: React.FC = () => {
               onClick={() => setFilterOpen(true)}
               className={cn(
                 "flex items-center gap-2 px-8 py-3 bg-black/20 border text-xs font-display tracking-widest uppercase transition-all",
-                hasActiveFilters ? "border-safety text-safety" : "border-gunmetal text-camo hover:border-olive hover:text-pearl"
+                hasActiveFilters ? "border-sulphur text-sulphur" : "border-gunmetal text-camo hover:border-olive hover:text-pearl"
               )}
             >
               <Filter size={14} />
               Mission Specs
-              {hasActiveFilters && <span className="w-2 h-2 bg-safety rounded-full animate-pulse ml-1"></span>}
+              {hasActiveFilters && <span className="w-2 h-2 bg-sulphur rounded-full animate-pulse ml-1"></span>}
             </button>
           </div>
         </div>
@@ -208,7 +208,7 @@ export const Showroom: React.FC = () => {
             <div className="flex flex-col items-center justify-center py-32 border border-dashed border-gunmetal bg-black/10">
               <Target size={48} className="text-gunmetal mb-4" />
               <p className="font-display text-xl text-stone-500 uppercase">No Matches Found</p>
-              <button onClick={clearFilters} className="mt-4 text-safety font-mono text-xs hover:underline uppercase">Reset Parameters</button>
+              <button onClick={clearFilters} className="mt-4 text-sulphur font-mono text-xs hover:underline uppercase">Reset Parameters</button>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -236,7 +236,7 @@ export const Showroom: React.FC = () => {
                       </div>
                     )}
                     <div className="absolute bottom-0 left-0 w-full p-3 bg-gradient-to-t from-black via-black/80 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                      <span className="text-safety font-mono text-[10px] uppercase tracking-widest flex items-center gap-2">
+                      <span className="text-sulphur font-mono text-[10px] uppercase tracking-widest flex items-center gap-2">
                         View Dossier <ChevronRight size={10} />
                       </span>
                     </div>
@@ -273,11 +273,11 @@ export const Showroom: React.FC = () => {
           {pagination.totalPages > 1 && (
             <div className="flex justify-center mt-16 gap-2">
               {/* Simple Pagination for Aesthetic */}
-              <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 border border-gunmetal text-stone-500 hover:text-safety disabled:opacity-30"><ChevronLeft size={20} /></button>
+              <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 border border-gunmetal text-stone-500 hover:text-sulphur disabled:opacity-30"><ChevronLeft size={20} /></button>
               <div className="flex items-center gap-1 font-mono text-sm text-camo px-4">
                 PAGE <span className="text-pearl">{currentPage}</span> / {pagination.totalPages}
               </div>
-              <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pagination.totalPages} className="p-2 border border-gunmetal text-stone-500 hover:text-safety disabled:opacity-30"><ChevronRight size={20} /></button>
+              <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pagination.totalPages} className="p-2 border border-gunmetal text-stone-500 hover:text-sulphur disabled:opacity-30"><ChevronRight size={20} /></button>
             </div>
           )}
         </div>
@@ -300,7 +300,7 @@ export const Showroom: React.FC = () => {
             >
               <div className="flex justify-between items-center mb-10 border-b border-gunmetal pb-6">
                 <h2 className="font-display text-2xl text-pearl uppercase tracking-wider">Parameters</h2>
-                <button onClick={() => setFilterOpen(false)} className="text-stone-500 hover:text-safety"><X size={24} /></button>
+                <button onClick={() => setFilterOpen(false)} className="text-stone-500 hover:text-sulphur"><X size={24} /></button>
               </div>
 
               <div className="space-y-8 font-mono text-sm">
@@ -314,7 +314,7 @@ export const Showroom: React.FC = () => {
                         onClick={() => setSelectedCategory(cat)}
                         className={cn(
                           "w-full text-left py-2 px-3 uppercase tracking-wide transition-colors border-l-2",
-                          selectedCategory === cat ? "border-safety text-pearl bg-white/5" : "border-transparent text-stone-500 hover:text-camo"
+                          selectedCategory === cat ? "border-sulphur text-pearl bg-white/5" : "border-transparent text-stone-500 hover:text-camo"
                         )}
                       >
                         {cat}
@@ -333,7 +333,7 @@ export const Showroom: React.FC = () => {
                         onClick={() => setSelectedType(typ)}
                         className={cn(
                           "w-full text-left py-2 px-3 uppercase tracking-wide transition-colors border-l-2",
-                          selectedType === typ ? "border-safety text-pearl bg-white/5" : "border-transparent text-stone-500 hover:text-camo"
+                          selectedType === typ ? "border-sulphur text-pearl bg-white/5" : "border-transparent text-stone-500 hover:text-camo"
                         )}
                       >
                         {typ}
@@ -352,7 +352,7 @@ export const Showroom: React.FC = () => {
                         onClick={() => setSelectedStock(opt)}
                         className={cn(
                           "flex-1 py-2 text-xs uppercase border transition-colors",
-                          selectedStock === opt ? "border-safety text-safety bg-safety/10" : "border-gunmetal text-stone-600 hover:border-camo"
+                          selectedStock === opt ? "border-sulphur text-sulphur bg-sulphur/10" : "border-gunmetal text-stone-600 hover:border-camo"
                         )}
                       >
                         {opt}

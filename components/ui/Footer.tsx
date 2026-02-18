@@ -33,18 +33,18 @@ const Footer = () => {
 
                 {/* Links 1 */}
                 <div>
-                    <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] mb-6 text-safety flex items-center gap-2"><MapPin size={12} /> Navigation</h3>
+                    <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] mb-6 text-sulphur flex items-center gap-2"><MapPin size={12} /> Navigation</h3>
                     <ul className="space-y-3 font-mono text-xs">
-                        <li><Link to="/collections" className="hover:text-olive transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Showcases</Link></li>
-                        <li><Link to="/brands" className="hover:text-olive transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Manufacturers</Link></li>
-                        <li><Link to="/journal" className="hover:text-olive transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Intel / News</Link></li>
-                        <li><Link to="/auth" className="hover:text-olive transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Access Portal</Link></li>
+                        <li><Link to="/collections" className="hover:text-brass transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Showcases</Link></li>
+                        <li><Link to="/brands" className="hover:text-brass transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Manufacturers</Link></li>
+                        <li><Link to="/journal" className="hover:text-brass transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Intel / News</Link></li>
+                        <li><Link to="/auth" className="hover:text-brass transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Access Portal</Link></li>
                     </ul>
                 </div>
 
                 {/* Links 2 */}
                 <div>
-                    <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] mb-6 text-safety flex items-center gap-2"><Shield size={12} /> Support Operations</h3>
+                    <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] mb-6 text-sulphur flex items-center gap-2"><Shield size={12} /> Support Operations</h3>
                     <ul className="space-y-3 font-mono text-xs">
                         <li><Link to="/cart" className="hover:text-olive transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Requisition List</Link></li>
                         <li><Link to="/contact" className="hover:text-olive transition-colors uppercase tracking-wider flex items-center gap-2 hover:translate-x-2 duration-300"><span className="w-1 h-1 bg-stone-600"></span> Contact Command</Link></li>
@@ -55,7 +55,7 @@ const Footer = () => {
 
                 {/* Newsletter */}
                 <div>
-                    <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] mb-6 text-safety">Secure Comms</h3>
+                    <h3 className="font-display text-xs font-bold uppercase tracking-[0.2em] mb-6 text-sulphur">Secure Comms</h3>
                     <p className="font-mono text-xs text-camo mb-4">Join the mailing list for new gear drops and exclusive tactical intel.</p>
                     <div className="flex border-b border-gunmetal pb-2 items-center">
                         <input

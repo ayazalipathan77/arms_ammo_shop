@@ -2,21 +2,21 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import prisma from '../config/database';
 import {
-    updateArtistProfileSchema,
-    artistQuerySchema,
-} from '../validators/artist.validator';
+    updateManufacturerProfileSchema,
+    manufacturerQuerySchema,
+} from '../validators/manufacturer.validator';
 import { Prisma } from '@prisma/client';
 
-// Get all artists with filtering and pagination
-export const getArtists = async (req: Request, res: Response): Promise<void> => {
+// Get all manufacturers with filtering and pagination
+export const getManufacturers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const query = artistQuerySchema.parse(req.query);
+        const query = manufacturerQuerySchema.parse(req.query);
 
         // Build where clause
-        const where: Prisma.ArtistWhereInput = {};
+        const where: Prisma.ManufacturerWhereInput = {};
 
-        if (query.originCity) {
-            where.originCity = { contains: query.originCity, mode: 'insensitive' };
+        if (query.countryOfOrigin) {
+            where.countryOfOrigin = { contains: query.countryOfOrigin, mode: 'insensitive' };
         }
 
         if (query.search) {
@@ -27,9 +27,9 @@ export const getArtists = async (req: Request, res: Response): Promise<void> => 
 
         const skip = (query.page - 1) * query.limit;
 
-        const total = await prisma.artist.count({ where });
+        const total = await prisma.manufacturer.count({ where });
 
-        const artists = await prisma.artist.findMany({
+        const manufacturers = await prisma.manufacturer.findMany({
             where,
             include: {
                 user: {
@@ -41,7 +41,7 @@ export const getArtists = async (req: Request, res: Response): Promise<void> => 
                 },
                 _count: {
                     select: {
-                        artworks: true,
+                        products: true,
                     },
                 },
             },
@@ -53,7 +53,7 @@ export const getArtists = async (req: Request, res: Response): Promise<void> => 
         });
 
         res.status(StatusCodes.OK).json({
-            artists,
+            manufacturers,
             pagination: {
                 total,
                 page: query.page,
@@ -69,19 +69,19 @@ export const getArtists = async (req: Request, res: Response): Promise<void> => 
             });
             return;
         }
-        console.error('Get artists error:', error);
+        console.error('Get manufacturers error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to fetch artists',
+            message: 'Failed to fetch manufacturers',
         });
     }
 };
 
-// Get single artist by ID
-export const getArtistById = async (req: Request, res: Response): Promise<void> => {
+// Get single manufacturer by ID
+export const getManufacturerById = async (req: Request, res: Response): Promise<void> => {
     try {
         const id = req.params.id as string;
 
-        const artist = await prisma.artist.findUnique({
+        const manufacturer = await prisma.manufacturer.findUnique({
             where: { id },
             include: {
                 user: {
@@ -92,39 +92,39 @@ export const getArtistById = async (req: Request, res: Response): Promise<void> 
                         createdAt: true,
                     },
                 },
-                artworks: {
+                products: {
                     where: { inStock: true },
                     orderBy: { createdAt: 'desc' },
                     take: 6,
                 },
                 _count: {
                     select: {
-                        artworks: true,
+                        products: true,
                     },
                 },
             },
         });
 
-        if (!artist) {
-            res.status(StatusCodes.NOT_FOUND).json({ message: 'Artist not found' });
+        if (!manufacturer) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Manufacturer not found' });
             return;
         }
 
-        res.status(StatusCodes.OK).json({ artist });
+        res.status(StatusCodes.OK).json({ manufacturer });
     } catch (error) {
-        console.error('Get artist error:', error);
+        console.error('Get manufacturer error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to fetch artist',
+            message: 'Failed to fetch manufacturer',
         });
     }
 };
 
-// Get artist by user ID
-export const getArtistByUserId = async (req: Request, res: Response): Promise<void> => {
+// Get manufacturer by user ID
+export const getManufacturerByUserId = async (req: Request, res: Response): Promise<void> => {
     try {
         const userId = req.params.userId as string;
 
-        const artist = await prisma.artist.findUnique({
+        const manufacturer = await prisma.manufacturer.findUnique({
             where: { userId },
             include: {
                 user: {
@@ -135,33 +135,33 @@ export const getArtistByUserId = async (req: Request, res: Response): Promise<vo
                         createdAt: true,
                     },
                 },
-                artworks: {
+                products: {
                     orderBy: { createdAt: 'desc' },
                 },
                 _count: {
                     select: {
-                        artworks: true,
+                        products: true,
                     },
                 },
             },
         });
 
-        if (!artist) {
-            res.status(StatusCodes.NOT_FOUND).json({ message: 'Artist not found' });
+        if (!manufacturer) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Manufacturer not found' });
             return;
         }
 
-        res.status(StatusCodes.OK).json({ artist });
+        res.status(StatusCodes.OK).json({ manufacturer });
     } catch (error) {
-        console.error('Get artist by user ID error:', error);
+        console.error('Get manufacturer by user ID error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: 'Failed to fetch artist',
+            message: 'Failed to fetch manufacturer',
         });
     }
 };
 
-// Update artist profile (Artist only - own profile)
-export const updateArtistProfile = async (req: Request, res: Response): Promise<void> => {
+// Update manufacturer profile (Manufacturer only - own profile)
+export const updateManufacturerProfile = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authenticated' });
@@ -169,20 +169,20 @@ export const updateArtistProfile = async (req: Request, res: Response): Promise<
         }
 
         const id = req.params.id as string;
-        const validatedData = updateArtistProfileSchema.parse(req.body);
+        const validatedData = updateManufacturerProfileSchema.parse(req.body);
 
-        // Get artist and verify ownership
-        const existingArtist = await prisma.artist.findUnique({
+        // Get manufacturer and verify ownership
+        const existingManufacturer = await prisma.manufacturer.findUnique({
             where: { id },
         });
 
-        if (!existingArtist) {
-            res.status(StatusCodes.NOT_FOUND).json({ message: 'Artist not found' });
+        if (!existingManufacturer) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Manufacturer not found' });
             return;
         }
 
-        // Check if user is the artist owner or admin
-        if (existingArtist.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+        // Check if user is the manufacturer owner or admin
+        if (existingManufacturer.userId !== req.user.userId && req.user.role !== 'ADMIN') {
             res.status(StatusCodes.FORBIDDEN).json({
                 message: 'You can only update your own profile',
             });
@@ -195,7 +195,7 @@ export const updateArtistProfile = async (req: Request, res: Response): Promise<
             portfolioUrl: validatedData.portfolioUrl === '' ? null : validatedData.portfolioUrl,
         };
 
-        const artist = await prisma.artist.update({
+        const manufacturer = await prisma.manufacturer.update({
             where: { id },
             data: updateData,
             include: {
@@ -211,7 +211,7 @@ export const updateArtistProfile = async (req: Request, res: Response): Promise<
 
         res.status(StatusCodes.OK).json({
             message: 'Profile updated successfully',
-            artist,
+            manufacturer,
         });
     } catch (error: any) {
         if (error.name === 'ZodError') {
@@ -221,15 +221,15 @@ export const updateArtistProfile = async (req: Request, res: Response): Promise<
             });
             return;
         }
-        console.error('Update artist profile error:', error);
+        console.error('Update manufacturer profile error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: 'Failed to update profile',
         });
     }
 };
 
-// Get artist stats (for artist dashboard)
-export const getArtistStats = async (req: Request, res: Response): Promise<void> => {
+// Get manufacturer stats (for manufacturer dashboard)
+export const getManufacturerStats = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authenticated' });
@@ -238,49 +238,49 @@ export const getArtistStats = async (req: Request, res: Response): Promise<void>
 
         const id = req.params.id as string;
 
-        // Get artist and verify ownership
-        const artist = await prisma.artist.findUnique({
+        // Get manufacturer and verify ownership
+        const manufacturer = await prisma.manufacturer.findUnique({
             where: { id },
         });
 
-        if (!artist) {
-            res.status(StatusCodes.NOT_FOUND).json({ message: 'Artist not found' });
+        if (!manufacturer) {
+            res.status(StatusCodes.NOT_FOUND).json({ message: 'Manufacturer not found' });
             return;
         }
 
-        // Check if user is the artist owner or admin
-        if (artist.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+        // Check if user is the manufacturer owner or admin
+        if (manufacturer.userId !== req.user.userId && req.user.role !== 'ADMIN') {
             res.status(StatusCodes.FORBIDDEN).json({
                 message: 'You can only view your own stats',
             });
             return;
         }
 
-        // Get artwork count and total price sum
-        const totalArtworks = await prisma.artwork.count({
-            where: { artistId: id },
+        // Get product count and total price sum
+        const totalProducts = await prisma.product.count({
+            where: { manufacturerId: id },
         });
 
-        const priceSum = await prisma.artwork.aggregate({
-            where: { artistId: id },
+        const priceSum = await prisma.product.aggregate({
+            where: { manufacturerId: id },
             _sum: {
                 price: true,
             },
         });
 
-        // Get artworks in stock vs sold
-        const inStockCount = await prisma.artwork.count({
-            where: { artistId: id, inStock: true },
+        // Get products in stock vs sold
+        const inStockCount = await prisma.product.count({
+            where: { manufacturerId: id, inStock: true },
         });
 
-        const soldCount = await prisma.artwork.count({
-            where: { artistId: id, inStock: false },
+        const soldCount = await prisma.product.count({
+            where: { manufacturerId: id, inStock: false },
         });
 
         // Get total sales from orders
         const sales = await prisma.orderItem.findMany({
             where: {
-                artwork: { artistId: id },
+                product: { manufacturerId: id },
                 order: {
                     status: {
                         in: ['PAID', 'SHIPPED', 'DELIVERED'],
@@ -302,10 +302,10 @@ export const getArtistStats = async (req: Request, res: Response): Promise<void>
         // Get recent orders
         const recentOrders = await prisma.orderItem.findMany({
             where: {
-                artwork: { artistId: id },
+                product: { manufacturerId: id },
             },
             include: {
-                artwork: {
+                product: {
                     select: {
                         title: true,
                         imageUrl: true,
@@ -331,32 +331,32 @@ export const getArtistStats = async (req: Request, res: Response): Promise<void>
 
         res.status(StatusCodes.OK).json({
             stats: {
-                totalArtworks,
+                totalProducts,
                 inStockCount,
                 soldCount,
                 totalRevenue,
                 totalSales,
-                averagePrice: totalArtworks > 0 ? totalPriceValue / totalArtworks : 0,
+                averagePrice: totalProducts > 0 ? totalPriceValue / totalProducts : 0,
             },
             recentOrders,
         });
     } catch (error) {
-        console.error('Get artist stats error:', error);
+        console.error('Get manufacturer stats error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: 'Failed to fetch stats',
         });
     }
 };
 
-// Get my artist profile (for logged in artist)
-export const getMyArtistProfile = async (req: Request, res: Response): Promise<void> => {
+// Get my manufacturer profile (for logged in manufacturer)
+export const getMyManufacturerProfile = async (req: Request, res: Response): Promise<void> => {
     try {
         if (!req.user) {
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authenticated' });
             return;
         }
 
-        const artist = await prisma.artist.findUnique({
+        const manufacturer = await prisma.manufacturer.findUnique({
             where: { userId: req.user.userId },
             include: {
                 user: {
@@ -368,27 +368,27 @@ export const getMyArtistProfile = async (req: Request, res: Response): Promise<v
                         createdAt: true,
                     },
                 },
-                artworks: {
+                products: {
                     orderBy: { createdAt: 'desc' },
                 },
                 _count: {
                     select: {
-                        artworks: true,
+                        products: true,
                     },
                 },
             },
         });
 
-        if (!artist) {
+        if (!manufacturer) {
             res.status(StatusCodes.NOT_FOUND).json({
-                message: 'Artist profile not found. You may not have an artist account.'
+                message: 'Manufacturer profile not found. You may not have a manufacturer account.'
             });
             return;
         }
 
-        res.status(StatusCodes.OK).json({ artist });
+        res.status(StatusCodes.OK).json({ manufacturer });
     } catch (error) {
-        console.error('Get my artist profile error:', error);
+        console.error('Get my manufacturer profile error:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             message: 'Failed to fetch profile',
         });

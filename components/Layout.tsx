@@ -6,7 +6,7 @@ import ParticleSystem from './features/ParticleSystem';
 
 const Layout: React.FC = () => {
     return (
-        <div className="relative min-h-screen bg-void text-pearl selection:bg-safety selection:text-void font-body overflow-x-hidden transition-colors duration-500 high-contrast:bg-[#F5F5DC] high-contrast:text-black">
+        <div className="relative min-h-screen bg-transparent text-pearl selection:bg-sulphur selection:text-void font-body overflow-x-hidden transition-colors duration-500 high-contrast:bg-[#F5F5DC] high-contrast:text-black">
             {/* Background Elements */}
             <ParticleSystem />
 
